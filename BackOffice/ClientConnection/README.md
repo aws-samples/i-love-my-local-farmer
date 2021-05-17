@@ -1,4 +1,4 @@
-# ClientConnection
+# ClientConnection CDK App
 
 Here is our CDK deployment of our client VPN connection components. This is all the stuff that we deploy into the VPC that was deployed as part of the BaseInfra stack.
 
