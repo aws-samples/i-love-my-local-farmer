@@ -15,26 +15,48 @@ package com.ilmlf.adconnector.customresource;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.ilmlf.customresource.utils.CloudFormationCustomResourceIsCompleteResponse;
 import com.ilmlf.customresource.utils.CloudFormationCustomResourceOnEventResponse;
+import com.ilmlf.customresource.utils.RequestType;
 import software.amazon.awssdk.services.directory.DirectoryClient;
 import software.amazon.awssdk.services.directory.model.DescribeDirectoriesRequest;
 import software.amazon.awssdk.services.directory.model.DirectoryDescription;
 import software.amazon.awssdk.services.directory.model.DirectoryStage;
 
+
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
-public class IsCompleteHandler implements RequestHandler<CloudFormationCustomResourceOnEventResponse, CloudFormationCustomResourceIsCompleteResponse> {
+public class IsCompleteHandler implements
+    RequestHandler<CloudFormationCustomResourceOnEventResponse, Map> {
 
-    @Override
-    public CloudFormationCustomResourceIsCompleteResponse handleRequest(CloudFormationCustomResourceOnEventResponse event, Context context) {
 
-        DirectoryDescription directory = DirectoryClient.builder().build()
-                .describeDirectories(DescribeDirectoriesRequest.builder()
-                        .directoryIds(Collections.singletonList((String) event.getData().get("DirectoryId")))
-                        .build()).directoryDescriptions().get(0);
-        CloudFormationCustomResourceIsCompleteResponse response = new CloudFormationCustomResourceIsCompleteResponse();
-        response.setIsComplete(directory.stage().equals(DirectoryStage.ACTIVE));
-        return response;
+  @Override
+  public HashMap<String, Object> handleRequest(
+      CloudFormationCustomResourceOnEventResponse event, Context context) {
+    System.out.println("isCompleteHandler event: " + event.toString());
+
+    HashMap<String, Object> response = new HashMap();
+
+    DirectoryDescription directory = DirectoryClient.builder().build()
+        .describeDirectories(DescribeDirectoriesRequest.builder()
+            .directoryIds(Collections.singletonList(event.getPhysicalResourceId()))
+            .build()).directoryDescriptions().get(0);
+    Map<String, String> data = Map.of("DirectoryId", event.getPhysicalResourceId());
+
+    Boolean isComplete = false;
+    if (event.getRequestType().equals(RequestType.Create)) {
+      isComplete = directory.stage().equals(DirectoryStage.DELETED);
+    } else {
+      isComplete = directory.stage().equals(DirectoryStage.ACTIVE);
     }
+    response.put("IsComplete", isComplete);
+
+    if(isComplete) {
+      response.put("Data", data);
+    }
+
+    System.out.println("response: " + response);
+    return response;
+  }
 }
