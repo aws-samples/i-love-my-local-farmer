@@ -22,44 +22,44 @@ import software.amazon.awssdk.services.secretsmanager.model.SecretsManagerExcept
 
 public abstract class SecretsUtil {
 
-    public static JSONObject getSecret(String dbSecretName) {
-        SecretsManagerClient secretsClient = SecretsManagerClient.builder()
-                .httpClientBuilder(UrlConnectionHttpClient.builder())
-                .build();
+  public static JSONObject getSecret(String dbSecretName) {
+    SecretsManagerClient secretsClient = SecretsManagerClient.builder()
+        .httpClientBuilder(UrlConnectionHttpClient.builder())
+        .build();
 
-        try {
-            GetSecretValueRequest valueRequest = GetSecretValueRequest.builder()
-                    .secretId(dbSecretName)
-                    .build();
+    try {
+      GetSecretValueRequest valueRequest = GetSecretValueRequest.builder()
+          .secretId(dbSecretName)
+          .build();
 
-            GetSecretValueResponse valueResponse = secretsClient.getSecretValue(valueRequest);
-            String secret = valueResponse.secretString();
-            JSONObject jo = new JSONObject(secret);
-            secretsClient.close();
-            return jo;
-        } catch (SecretsManagerException e) {
-            System.err.println(e.awsErrorDetails().errorMessage());
-            throw new RuntimeException(e);
-        }
+      GetSecretValueResponse valueResponse = secretsClient.getSecretValue(valueRequest);
+      String secret = valueResponse.secretString();
+      JSONObject jo = new JSONObject(secret);
+      secretsClient.close();
+      return jo;
+    } catch (SecretsManagerException e) {
+      System.err.println(e.awsErrorDetails().errorMessage());
+      throw new RuntimeException(e);
     }
+  }
 
-    public static String getSecretValue(String dbSecretName) {
-        SecretsManagerClient secretsClient = SecretsManagerClient.builder()
-                .httpClientBuilder(UrlConnectionHttpClient.builder())
-                .build();
+  public static String getSecretValue(String dbSecretName) {
+    SecretsManagerClient secretsClient = SecretsManagerClient.builder()
+        .httpClientBuilder(UrlConnectionHttpClient.builder())
+        .build();
 
-        try {
-            GetSecretValueRequest valueRequest = GetSecretValueRequest.builder()
-                    .secretId(dbSecretName)
-                    .build();
+    try {
+      GetSecretValueRequest valueRequest = GetSecretValueRequest.builder()
+          .secretId(dbSecretName)
+          .build();
 
-            GetSecretValueResponse valueResponse = secretsClient.getSecretValue(valueRequest);
-            String secret = valueResponse.secretString();
-            secretsClient.close();
-            return secret;
-        } catch (SecretsManagerException e) {
-            System.err.println(e.awsErrorDetails().errorMessage());
-            throw new RuntimeException(e);
-        }
+      GetSecretValueResponse valueResponse = secretsClient.getSecretValue(valueRequest);
+      String secret = valueResponse.secretString();
+      secretsClient.close();
+      return secret;
+    } catch (SecretsManagerException e) {
+      System.err.println(e.awsErrorDetails().errorMessage());
+      throw new RuntimeException(e);
     }
+  }
 }
