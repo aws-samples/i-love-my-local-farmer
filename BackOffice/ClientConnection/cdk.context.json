@@ -1,0 +1,56 @@
+{
+  "vpcId": "vpc-08e80cc4a16cfe7de",
+  "onPremiseCidr": "172.16.0.0/16",
+  "domain": "ilovemylocalfarmer.com",
+  "dns": [
+    "172.16.0.94",
+    "172.16.0.126"
+  ],
+  "clientVpnCidr": "172.31.0.0/16",
+  "clientVpnCertificate": "arn:aws:acm:eu-west-1:433621526002:certificate/f09c1fca-1ffd-4768-b4e6-7f424f2f7c61",
+  "DomainAdminSecretArn": "arn:aws:secretsmanager:eu-west-1:433621526002:secret:DomainAdminPassword-bkMygJ",
+  "vpc-provider:account=433621526002:filter.vpc-id=vpc-08e80cc4a16cfe7de:region=eu-west-1:returnAsymmetricSubnets=true": {
+    "vpcId": "vpc-08e80cc4a16cfe7de",
+    "vpcCidrBlock": "172.30.0.0/16",
+    "availabilityZones": [],
+    "vpnGatewayId": "vgw-0763ab2be144fa3d3",
+    "subnetGroups": [
+      {
+        "name": "Private",
+        "type": "Private",
+        "subnets": [
+          {
+            "subnetId": "subnet-0a09bd99e088ba02c",
+            "cidr": "172.30.128.0/18",
+            "availabilityZone": "eu-west-1a",
+            "routeTableId": "rtb-0148e3842aae53b8b"
+          },
+          {
+            "subnetId": "subnet-0e3872c05f4f16fe9",
+            "cidr": "172.30.192.0/18",
+            "availabilityZone": "eu-west-1b",
+            "routeTableId": "rtb-0ff2d5a0981d71a85"
+          }
+        ]
+      },
+      {
+        "name": "Public",
+        "type": "Public",
+        "subnets": [
+          {
+            "subnetId": "subnet-0b1522e5c438446d2",
+            "cidr": "172.30.0.0/18",
+            "availabilityZone": "eu-west-1a",
+            "routeTableId": "rtb-0a10b7c910078e2f1"
+          },
+          {
+            "subnetId": "subnet-0527ace6a2e3a7dd7",
+            "cidr": "172.30.64.0/18",
+            "availabilityZone": "eu-west-1b",
+            "routeTableId": "rtb-07f3aa9932be0b75d"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "customerGatewayDeviceIP": "34.244.24.124",
+  "vpcCidr": "172.30.0.0/16",
+  "onPremiseCidr": "172.16.0.0/16",
+  "availability-zones:account=433621526002:region=eu-west-1": [
+    "eu-west-1a",
+    "eu-west-1b",
+    "eu-west-1c"
+  ]
+}
