@@ -13,61 +13,89 @@ limitations under the License.
 
 package com.ilmlf.clientconnection;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;
 import software.amazon.awscdk.core.Construct;
-import software.amazon.awscdk.services.ec2.*;
+import software.amazon.awscdk.services.ec2.ClientVpnAuthorizationRuleOptions;
+import software.amazon.awscdk.services.ec2.ClientVpnEndpoint;
+import software.amazon.awscdk.services.ec2.ClientVpnEndpointOptions;
+import software.amazon.awscdk.services.ec2.ClientVpnRouteOptions;
+import software.amazon.awscdk.services.ec2.ClientVpnRouteTarget;
+import software.amazon.awscdk.services.ec2.ClientVpnUserBasedAuthentication;
+import software.amazon.awscdk.services.ec2.ISubnet;
+import software.amazon.awscdk.services.ec2.IVpc;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
+/** ClientVpnConstruct. */
 public class ClientVpnConstruct extends Construct {
 
-    @lombok.Builder
-    @Data
-    public static class ClientVpnProps {
+  /** Client VPN required properties. */
+  @lombok.Builder
+  @Data
+  public static class ClientVpnProps {
 
-        private IVpc vpc;
-        private String domainName;
-        private String secretId;
-        private List<String> dnsIps;
-    }
+    private IVpc vpc;
+    private String domainName;
+    private String secretId;
+    private List<String> dnsIps;
+  }
 
-    public ClientVpnConstruct(software.constructs.@NotNull Construct scope, @NotNull String id, ClientVpnProps props) {
-        super(scope, id);
+  /**
+   * Client VPN Construct.
+   *
+   * @param scope CDK construct scope
+   * @param id construct Id
+   * @param props ClientVpnProps
+   */
+  public ClientVpnConstruct(
+      software.constructs.@NotNull Construct scope, @NotNull String id, ClientVpnProps props) {
+    super(scope, id);
 
-        String serverCertificateArn = this.getNode().tryGetContext("clientVpnCertificate").toString();
-        String cidr = this.getNode().tryGetContext("clientVpnCidr").toString();
-        String onPremiseCidr = this.getNode().tryGetContext("onPremiseCidr").toString();
-        String secretId = this.getNode().tryGetContext("DomainAdminSecretArn").toString();
+    String serverCertificateArn = this.getNode().tryGetContext("clientVpnCertificate").toString();
+    String cidr = this.getNode().tryGetContext("clientVpnCidr").toString();
+    String onPremiseCidr = this.getNode().tryGetContext("onPremiseCidr").toString();
+    String secretId = this.getNode().tryGetContext("DomainAdminSecretArn").toString();
 
-        AdConnectorConstruct adConnector = new AdConnectorConstruct(this, "OnPremiseADConnector",
-                 AdConnectorConstruct.AdConnectorProps.builder()
+    AdConnectorConstruct adConnector =
+        new AdConnectorConstruct(
+            this,
+            "OnPremiseADConnector",
+            AdConnectorConstruct.AdConnectorProps.builder()
                 .vpcId(props.vpc.getVpcId())
                 .domainName(props.domainName)
                 .dnsIps(props.dnsIps)
-                .subnetIds(props.vpc.getPrivateSubnets().stream()
+                .subnetIds(
+                    props.vpc.getPrivateSubnets().stream()
                         .map(ISubnet::getSubnetId)
                         .collect(Collectors.toList()))
                 .secretId(secretId)
-                .build()
-        );
+                .build());
 
-        ClientVpnEndpoint clientVpn = props.vpc.addClientVpnEndpoint("VpnClientEndpoint", ClientVpnEndpointOptions.builder()
+    ClientVpnEndpoint clientVpn =
+        props.vpc.addClientVpnEndpoint(
+            "VpnClientEndpoint",
+            ClientVpnEndpointOptions.builder()
                 .cidr(cidr)
                 .serverCertificateArn(serverCertificateArn)
-                .userBasedAuthentication(ClientVpnUserBasedAuthentication.activeDirectory(adConnector.directoryId))
+                .userBasedAuthentication(
+                    ClientVpnUserBasedAuthentication.activeDirectory(adConnector.directoryId))
                 .dnsServers(props.dnsIps)
                 .splitTunnel(true)
                 .build());
 
-
-            props.vpc.getPrivateSubnets().forEach((subnet) ->
-            clientVpn.addRoute("onPremiseRoute-" + subnet.getSubnetId(), ClientVpnRouteOptions.builder()
-                    .cidr(onPremiseCidr)
-                    .target(ClientVpnRouteTarget.subnet(subnet))
-                    .build())
-        );
-        clientVpn.addAuthorizationRule("onPremise", ClientVpnAuthorizationRuleOptions.builder().cidr(onPremiseCidr).build());
-    }
+    props
+        .vpc
+        .getPrivateSubnets()
+        .forEach(
+            (subnet) ->
+                clientVpn.addRoute(
+                    "onPremiseRoute-" + subnet.getSubnetId(),
+                    ClientVpnRouteOptions.builder()
+                        .cidr(onPremiseCidr)
+                        .target(ClientVpnRouteTarget.subnet(subnet))
+                        .build()));
+    clientVpn.addAuthorizationRule(
+        "onPremise", ClientVpnAuthorizationRuleOptions.builder().cidr(onPremiseCidr).build());
+  }
 }

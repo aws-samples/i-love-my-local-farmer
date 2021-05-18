@@ -29,43 +29,55 @@ import java.util.Map;
 import static com.ilmlf.customresource.utils.SecretsUtil.getSecretValue;
 
 
-public class OnEventHandler implements RequestHandler<CloudFormationCustomResourceEvent, CloudFormationCustomResourceOnEventResponse> {
+public class OnEventHandler
+    implements
+    RequestHandler<CloudFormationCustomResourceEvent, Object> {
 
-    DirectoryClient directoryClient = DirectoryClient.builder().build();
+  DirectoryClient directoryClient = DirectoryClient.builder().build();
 
-    @Override
-    public CloudFormationCustomResourceOnEventResponse handleRequest(CloudFormationCustomResourceEvent event, Context context) {
-        Map<String, Object> properties = event.getResourceProperties();
-        String secret = getSecretValue(properties.get("secretId").toString());
+  @Override
+  public Object handleRequest(
+      CloudFormationCustomResourceEvent event,
+      Context context) {
 
-        String directoryId = event.getPhysicalResourceId();
-        switch(event.getRequestType()) {
-            case "Create":
-                directoryId = directoryClient
-                        .connectDirectory(ConnectDirectoryRequest.builder()
-                                .connectSettings(DirectoryConnectSettings.builder()
-                                        .customerUserName("Admin")
-                                        .customerDnsIps((Collection<String>) properties.get("dnsIps"))
-                                        .subnetIds((Collection<String>) properties.get("subnetIds"))
-                                        .vpcId((String) properties.get("vpcId"))
-                                        .build())
-                                .name(properties.get("domainName").toString())
-                                .password(secret)
-                                .size("Small")
-                                .build())
-                        .directoryId();
-                break;
-            case "Update":
-                break;
-            case "Delete":
-                directoryClient.deleteDirectory(DeleteDirectoryRequest.builder().directoryId(directoryId).build());
-                break;
-        }
+    System.out.println("onEventHandler event: " + event.toString());
+    Map<String, Object> properties = event.getResourceProperties();
+    String secret = getSecretValue(properties.get("secretId").toString());
 
-            CloudFormationCustomResourceOnEventResponse response = CloudFormationCustomResourceOnEventResponse.fromEvent(event);
-
-            response.setPhysicalResourceId(directoryId);
-            response.setData(Collections.singletonMap("DirectoryId", directoryId));
-            return response;
+    String directoryId = event.getPhysicalResourceId();
+    System.out.println("action:" + event.getRequestType() + " AD Connector");
+    switch (event.getRequestType()) {
+      case "Create":
+        directoryId = directoryClient
+            .connectDirectory(ConnectDirectoryRequest.builder()
+                .connectSettings(DirectoryConnectSettings.builder()
+                    .customerUserName("Admin")
+                    .customerDnsIps((Collection<String>) properties.get("dnsIps"))
+                    .subnetIds((Collection<String>) properties.get("subnetIds"))
+                    .vpcId((String) properties.get("vpcId"))
+                    .build())
+                .name(properties.get("domainName").toString())
+                .password(secret)
+                .size("Small")
+                .build())
+            .directoryId();
+        break;
+      case "Update":
+        break;
+      case "Delete":
+        directoryClient
+            .deleteDirectory(DeleteDirectoryRequest.builder().directoryId(directoryId).build());
+        break;
     }
+
+    CloudFormationCustomResourceOnEventResponse response =
+        CloudFormationCustomResourceOnEventResponse.fromEvent(event);
+
+
+    response.setPhysicalResourceId(directoryId);
+    response.setData(Collections.singletonMap("DirectoryId", directoryId));
+    System.out.println("result: Successfully " + event.getRequestType() + " AD Connector.");
+    System.out.println("response: " + response);
+    return response;
+  }
 }

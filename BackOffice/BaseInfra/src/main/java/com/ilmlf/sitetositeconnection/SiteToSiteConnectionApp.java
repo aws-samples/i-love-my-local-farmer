@@ -18,17 +18,16 @@ import software.amazon.awscdk.core.Environment;
 import software.amazon.awscdk.core.StackProps;
 
 public class SiteToSiteConnectionApp {
-    public static void main(final String[] args) {
-        App app = new App();
+  public static void main(final String[] args) {
+    App app = new App();
 
-        new SiteToSiteConnectionStack(app, "SiteToSiteBaseInfra", StackProps.builder()
-                .env(Environment.builder()
-                        .account("433621526002")
-                        .region("eu-west-1")
-                        .build())
-                .build());
-
-
-        app.synth();
-    }
+    new SiteToSiteConnectionStack(
+        app,
+        "SiteToSiteBaseInfra",
+        StackProps.builder()
+            .env(Environment.builder().account("433621526002").region("eu-west-1").build())
+            .description("Site to Site Base infra Stack (uksb-1rsq7leb5)")
+            .build());
+    app.synth();
+  }
 }
