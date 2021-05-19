@@ -203,7 +203,7 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
         "Properties": {
           "Code": {
             "S3Bucket": {
-              "Ref": "AssetParametersaa86c257beca5296bf786a2937a1d7ef689983aeb089625d461c3fcd468dc83bS3Bucket50F258CE"
+              "Ref": "AssetParametersdbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6fS3BucketF841326C"
             },
             "S3Key": {
               "Fn::Join": [
@@ -216,7 +216,7 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParametersaa86c257beca5296bf786a2937a1d7ef689983aeb089625d461c3fcd468dc83bS3VersionKeyBDA49782"
+                            "Ref": "AssetParametersdbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6fS3VersionKeyE60236D7"
                           }
                         ]
                       }
@@ -229,7 +229,7 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParametersaa86c257beca5296bf786a2937a1d7ef689983aeb089625d461c3fcd468dc83bS3VersionKeyBDA49782"
+                            "Ref": "AssetParametersdbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6fS3VersionKeyE60236D7"
                           }
                         ]
                       }
@@ -341,7 +341,7 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
         "Properties": {
           "Code": {
             "S3Bucket": {
-              "Ref": "AssetParametersaa86c257beca5296bf786a2937a1d7ef689983aeb089625d461c3fcd468dc83bS3Bucket50F258CE"
+              "Ref": "AssetParametersdbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6fS3BucketF841326C"
             },
             "S3Key": {
               "Fn::Join": [
@@ -354,7 +354,7 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParametersaa86c257beca5296bf786a2937a1d7ef689983aeb089625d461c3fcd468dc83bS3VersionKeyBDA49782"
+                            "Ref": "AssetParametersdbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6fS3VersionKeyE60236D7"
                           }
                         ]
                       }
@@ -367,7 +367,7 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParametersaa86c257beca5296bf786a2937a1d7ef689983aeb089625d461c3fcd468dc83bS3VersionKeyBDA49782"
+                            "Ref": "AssetParametersdbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6fS3VersionKeyE60236D7"
                           }
                         ]
                       }
@@ -951,17 +951,17 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
               "Arn"
             ]
           },
+          "secretId": "arn:aws:secretsmanager:eu-west-1:053319678981:secret:DomainAdminPassword-qWxv2k",
+          "vpcId": "vpc-12345",
           "subnetIds": [
             "p-12345",
             "p-67890"
           ],
-          "vpcId": "vpc-12345",
-          "secretId": "arn:aws:secretsmanager:eu-west-1:053319678981:secret:DomainAdminPassword-qWxv2k",
+          "domainName": "ilovemylocalfarmer.com",
           "dnsIps": [
             "172.16.0.94",
             "172.16.0.126"
-          ],
-          "domainName": "ilovemylocalfarmer.com"
+          ]
         },
         "UpdateReplacePolicy": "Delete",
         "DeletionPolicy": "Delete"
@@ -1093,17 +1093,17 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
       }
     },
     "Parameters": {
-      "AssetParametersaa86c257beca5296bf786a2937a1d7ef689983aeb089625d461c3fcd468dc83bS3Bucket50F258CE": {
+      "AssetParametersdbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6fS3BucketF841326C": {
         "Type": "String",
-        "Description": "S3 bucket for asset \"aa86c257beca5296bf786a2937a1d7ef689983aeb089625d461c3fcd468dc83b\""
+        "Description": "S3 bucket for asset \"dbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6f\""
       },
-      "AssetParametersaa86c257beca5296bf786a2937a1d7ef689983aeb089625d461c3fcd468dc83bS3VersionKeyBDA49782": {
+      "AssetParametersdbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6fS3VersionKeyE60236D7": {
         "Type": "String",
-        "Description": "S3 key for asset version \"aa86c257beca5296bf786a2937a1d7ef689983aeb089625d461c3fcd468dc83b\""
+        "Description": "S3 key for asset version \"dbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6f\""
       },
-      "AssetParametersaa86c257beca5296bf786a2937a1d7ef689983aeb089625d461c3fcd468dc83bArtifactHashFF161914": {
+      "AssetParametersdbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6fArtifactHash7165D341": {
         "Type": "String",
-        "Description": "Artifact hash for asset \"aa86c257beca5296bf786a2937a1d7ef689983aeb089625d461c3fcd468dc83b\""
+        "Description": "Artifact hash for asset \"dbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6f\""
       },
       "AssetParameters67b7823b74bc135986aa72f889d6a8da058d0c4a20cbc2dfc6f78995fdd2fc24S3Bucket4D46ABB5": {
         "Type": "String",
