@@ -3,7 +3,7 @@ name: SiteToSiteConn Pull Request Action
 on:
   pull_request:
     branches: [ main ]
-    types: [opened]
+    types: [opened, edited, synchronize, reopened]
     paths:
       - 'BackOffice/BaseInfra/**'
 

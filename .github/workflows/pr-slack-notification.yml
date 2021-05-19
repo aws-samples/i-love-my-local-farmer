@@ -3,7 +3,10 @@ name: Slack Notification
 on:
   pull_request:
     branches: [ main ]
-    types: [opened]
+    types: [opened, edited, synchronize, reopened]
+  pull_request_review:
+    branches: [ main ]
+    types: [submitted, dismissed]
 
 jobs:
   build:
