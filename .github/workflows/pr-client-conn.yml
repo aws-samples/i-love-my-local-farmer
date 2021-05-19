@@ -2,7 +2,7 @@ name: ClientConn Pull Request Action
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ * ]
     types: [opened, edited, synchronize, reopened]
     paths:
       - 'BackOffice/ClientConnection/**'
