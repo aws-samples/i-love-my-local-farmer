@@ -17,7 +17,12 @@ import software.amazon.awscdk.core.App;
 import software.amazon.awscdk.core.Environment;
 import software.amazon.awscdk.core.StackProps;
 
-public class ClientConnectionApp {
+public final class ClientConnectionApp {
+
+  private ClientConnectionApp() {
+    throw new IllegalStateException("Entrypoint class");
+  }
+
   /**
    * CDK Entrypoint.
    * @param args for cdk

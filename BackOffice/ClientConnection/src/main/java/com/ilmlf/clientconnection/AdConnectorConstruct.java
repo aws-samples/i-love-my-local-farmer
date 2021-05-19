@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import lombok.Data;
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import software.amazon.awscdk.core.BundlingOptions;
 import software.amazon.awscdk.core.Construct;
@@ -44,6 +45,10 @@ import software.amazon.awscdk.services.s3.assets.AssetOptions;
  */
 public class AdConnectorConstruct extends Construct {
 
+  /**
+   * The Active directory connector Id created by the construct.
+   */
+  @Getter
   public final String directoryId;
 
   /**
@@ -53,10 +58,29 @@ public class AdConnectorConstruct extends Construct {
   @Data
   public static class AdConnectorProps {
 
+    /**
+     * VpcId hosting the AD Connector.
+     */
     private String vpcId;
+
+    /**
+     * AD Domain Name.
+     */
     private String domainName;
+
+    /**
+     * Secret manager's Secret Id of the AD domain admin password.
+     */
     private String secretId;
+
+    /**
+     * List of DNS hosts IPs from On Premise infrastructure.
+     */
     private List<String> dnsIps;
+
+    /**
+     * List of subnet ids to put the AD Connector in.
+     */
     private List<String> subnetIds;
   }
 
