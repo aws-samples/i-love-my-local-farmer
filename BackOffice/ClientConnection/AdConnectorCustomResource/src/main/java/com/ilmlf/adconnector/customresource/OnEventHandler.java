@@ -13,32 +13,28 @@ limitations under the License.
 
 package com.ilmlf.adconnector.customresource;
 
+import static com.ilmlf.customresource.utils.SecretsUtil.getSecretValue;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
-import com.ilmlf.customresource.utils.CloudFormationCustomResourceOnEventResponse;
+import java.security.InvalidParameterException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import software.amazon.awssdk.services.directory.DirectoryClient;
 import software.amazon.awssdk.services.directory.model.ConnectDirectoryRequest;
 import software.amazon.awssdk.services.directory.model.DeleteDirectoryRequest;
 import software.amazon.awssdk.services.directory.model.DirectoryConnectSettings;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-
-import static com.ilmlf.customresource.utils.SecretsUtil.getSecretValue;
-
-
-public class OnEventHandler
-    implements
-    RequestHandler<CloudFormationCustomResourceEvent, Object> {
+/** CRUD AD Connector Async custom resource handler. */
+public class OnEventHandler implements RequestHandler<CloudFormationCustomResourceEvent, Map> {
 
   DirectoryClient directoryClient = DirectoryClient.builder().build();
 
   @Override
-  public Object handleRequest(
-      CloudFormationCustomResourceEvent event,
-      Context context) {
+  public HashMap<String, Object> handleRequest(
+      CloudFormationCustomResourceEvent event, Context context) {
 
     System.out.println("onEventHandler event: " + event.toString());
     Map<String, Object> properties = event.getResourceProperties();
@@ -46,38 +42,44 @@ public class OnEventHandler
 
     String directoryId = event.getPhysicalResourceId();
     System.out.println("action:" + event.getRequestType() + " AD Connector");
-    switch (event.getRequestType()) {
+    String requestType = event.getRequestType();
+    switch (requestType) {
       case "Create":
-        directoryId = directoryClient
-            .connectDirectory(ConnectDirectoryRequest.builder()
-                .connectSettings(DirectoryConnectSettings.builder()
-                    .customerUserName("Admin")
-                    .customerDnsIps((Collection<String>) properties.get("dnsIps"))
-                    .subnetIds((Collection<String>) properties.get("subnetIds"))
-                    .vpcId((String) properties.get("vpcId"))
-                    .build())
-                .name(properties.get("domainName").toString())
-                .password(secret)
-                .size("Small")
-                .build())
-            .directoryId();
+        directoryId =
+            directoryClient
+                .connectDirectory(
+                    ConnectDirectoryRequest.builder()
+                        .connectSettings(
+                            DirectoryConnectSettings.builder()
+                                .customerUserName("Admin")
+                                .customerDnsIps((Collection<String>) properties.get("dnsIps"))
+                                .subnetIds((Collection<String>) properties.get("subnetIds"))
+                                .vpcId((String) properties.get("vpcId"))
+                                .build())
+                        .name(properties.get("domainName").toString())
+                        .password(secret)
+                        .size("Small")
+                        .build())
+                .directoryId();
         break;
       case "Update":
         break;
       case "Delete":
-        directoryClient
-            .deleteDirectory(DeleteDirectoryRequest.builder().directoryId(directoryId).build());
+        directoryClient.deleteDirectory(
+            DeleteDirectoryRequest.builder().directoryId(directoryId).build());
         break;
+      default:
+        throw new InvalidParameterException("Invalid RequestType " + requestType);
     }
 
-    CloudFormationCustomResourceOnEventResponse response =
-        CloudFormationCustomResourceOnEventResponse.fromEvent(event);
+    HashMap<String, Object> response = new HashMap<>();
+    response.put("PhysicalResourceId", directoryId);
+    response.put("PhysicalResourceId", directoryId);
+    response.put("RequestType", event.getRequestType());
 
-
-    response.setPhysicalResourceId(directoryId);
-    response.setData(Collections.singletonMap("DirectoryId", directoryId));
     System.out.println("result: Successfully " + event.getRequestType() + " AD Connector.");
     System.out.println("response: " + response);
+
     return response;
   }
 }

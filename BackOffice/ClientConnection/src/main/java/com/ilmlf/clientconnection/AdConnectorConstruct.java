@@ -126,6 +126,7 @@ public class AdConnectorConstruct extends Construct {
                 .actions(Arrays.asList(
                     "secretsmanager:GetSecretValue",
                     "ds:ConnectDirectory",
+                    "ds:DeleteDirectory",
                     "ec2:DescribeSubnets",
                     "ec2:DescribeVpcs",
                     "ec2:CreateSecurityGroup",

@@ -15,44 +15,48 @@ package com.ilmlf.adconnector.customresource;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.ilmlf.customresource.utils.CloudFormationCustomResourceOnEventResponse;
-import com.ilmlf.customresource.utils.RequestType;
+import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
+import java.util.List;
 import software.amazon.awssdk.services.directory.DirectoryClient;
 import software.amazon.awssdk.services.directory.model.DescribeDirectoriesRequest;
 import software.amazon.awssdk.services.directory.model.DirectoryDescription;
 import software.amazon.awssdk.services.directory.model.DirectoryStage;
 
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class IsCompleteHandler implements
-    RequestHandler<CloudFormationCustomResourceOnEventResponse, Map> {
+public class IsCompleteHandler implements RequestHandler<CloudFormationCustomResourceEvent, Map> {
 
+  private DirectoryDescription directory;
 
   @Override
   public HashMap<String, Object> handleRequest(
-      CloudFormationCustomResourceOnEventResponse event, Context context) {
+      CloudFormationCustomResourceEvent event, Context context) {
     System.out.println("isCompleteHandler event: " + event.toString());
 
     HashMap<String, Object> response = new HashMap();
 
-    DirectoryDescription directory = DirectoryClient.builder().build()
-        .describeDirectories(DescribeDirectoriesRequest.builder()
-            .directoryIds(Collections.singletonList(event.getPhysicalResourceId()))
-            .build()).directoryDescriptions().get(0);
-    Map<String, String> data = Map.of("DirectoryId", event.getPhysicalResourceId());
+    String physicalResourceId = event.getPhysicalResourceId();
+    List<DirectoryDescription> directoryDescriptions =
+        DirectoryClient.builder()
+            .build()
+            .describeDirectories(
+                DescribeDirectoriesRequest.builder()
+                    .directoryIds(Collections.singletonList(physicalResourceId))
+                    .build())
+            .directoryDescriptions();
+    Map<String, String> data = Map.of("DirectoryId", physicalResourceId);
 
-    Boolean isComplete = false;
-    if (event.getRequestType().equals(RequestType.Create)) {
-      isComplete = directory.stage().equals(DirectoryStage.DELETED);
+    Boolean isComplete;
+    if (event.getRequestType().equals("Delete")) {
+      isComplete = directoryDescriptions.isEmpty();
     } else {
-      isComplete = directory.stage().equals(DirectoryStage.ACTIVE);
+      isComplete = directoryDescriptions.get(0).stage().equals(DirectoryStage.ACTIVE);
     }
     response.put("IsComplete", isComplete);
 
-    if(isComplete) {
+    if (isComplete) {
       response.put("Data", data);
     }
 
