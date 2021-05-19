@@ -1,15 +1,15 @@
-name: ClientConn Pull Request Action
+name: SiteToSiteConn Pull Request Action
 
 on:
   pull_request:
     branches: [ main ]
     types: [opened]
     paths:
-      - 'BackOffice/ClientConnection/**'
+      - 'BackOffice/BaseInfra/**'
 
 defaults:
   run:
-    working-directory: ./BackOffice/ClientConnection
+    working-directory: ./BackOffice/BaseInfra
 
 jobs:
   build:
