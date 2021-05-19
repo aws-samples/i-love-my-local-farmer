@@ -13,6 +13,7 @@ limitations under the License.
 
 package com.ilmlf.clientconnection;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Data;
@@ -49,7 +50,8 @@ public class ClientVpnConstruct extends Construct {
    * @param props ClientVpnProps
    */
   public ClientVpnConstruct(
-      software.constructs.@NotNull Construct scope, @NotNull String id, ClientVpnProps props) {
+      software.constructs.@NotNull Construct scope, @NotNull String id, ClientVpnProps props)
+      throws IOException {
     super(scope, id);
 
     String serverCertificateArn = this.getNode().tryGetContext("clientVpnCertificate").toString();

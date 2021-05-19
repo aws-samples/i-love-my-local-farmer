@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.ilmlf.customresource.utils;
+package com.ilmlf.adconnector.customresource;
 
 import org.json.JSONObject;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
@@ -22,44 +22,46 @@ import software.amazon.awssdk.services.secretsmanager.model.SecretsManagerExcept
 
 public abstract class SecretsUtil {
 
-  public static JSONObject getSecret(String dbSecretName) {
+  public static JSONObject getSecret(String secretId) {
     SecretsManagerClient secretsClient = SecretsManagerClient.builder()
         .httpClientBuilder(UrlConnectionHttpClient.builder())
         .build();
 
     try {
       GetSecretValueRequest valueRequest = GetSecretValueRequest.builder()
-          .secretId(dbSecretName)
+          .secretId(secretId)
           .build();
 
       GetSecretValueResponse valueResponse = secretsClient.getSecretValue(valueRequest);
       String secret = valueResponse.secretString();
       JSONObject jo = new JSONObject(secret);
-      secretsClient.close();
       return jo;
     } catch (SecretsManagerException e) {
       System.err.println(e.awsErrorDetails().errorMessage());
       throw new RuntimeException(e);
+    } finally {
+      secretsClient.close();
     }
   }
 
-  public static String getSecretValue(String dbSecretName) {
+  public static String getSecretValue(String secretId) {
     SecretsManagerClient secretsClient = SecretsManagerClient.builder()
         .httpClientBuilder(UrlConnectionHttpClient.builder())
         .build();
 
     try {
       GetSecretValueRequest valueRequest = GetSecretValueRequest.builder()
-          .secretId(dbSecretName)
+          .secretId(secretId)
           .build();
 
       GetSecretValueResponse valueResponse = secretsClient.getSecretValue(valueRequest);
       String secret = valueResponse.secretString();
-      secretsClient.close();
       return secret;
     } catch (SecretsManagerException e) {
       System.err.println(e.awsErrorDetails().errorMessage());
       throw new RuntimeException(e);
+    } finally {
+      secretsClient.close();
     }
   }
 }

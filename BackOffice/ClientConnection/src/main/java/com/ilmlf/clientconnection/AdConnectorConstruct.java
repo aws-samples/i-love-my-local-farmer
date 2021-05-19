@@ -13,14 +13,17 @@ limitations under the License.
 
 package com.ilmlf.clientconnection;
 
+import static com.ilmlf.clientconnection.Hashing.hashDirectory;
 import static java.util.Collections.singletonList;
 import static software.amazon.awscdk.core.BundlingOutput.ARCHIVED;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.TreeMap;
 import lombok.Data;
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import software.amazon.awscdk.core.BundlingOptions;
 import software.amazon.awscdk.core.Construct;
@@ -44,6 +47,10 @@ import software.amazon.awscdk.services.s3.assets.AssetOptions;
  */
 public class AdConnectorConstruct extends Construct {
 
+  /**
+   * The Active directory connector Id created by the construct.
+   */
+  @Getter
   public final String directoryId;
 
   /**
@@ -53,10 +60,29 @@ public class AdConnectorConstruct extends Construct {
   @Data
   public static class AdConnectorProps {
 
+    /**
+     * VpcId hosting the AD Connector.
+     */
     private String vpcId;
+
+    /**
+     * AD Domain Name.
+     */
     private String domainName;
+
+    /**
+     * Secret manager's Secret Id of the AD domain admin password.
+     */
     private String secretId;
+
+    /**
+     * List of DNS hosts IPs from On Premise infrastructure.
+     */
     private List<String> dnsIps;
+
+    /**
+     * List of subnet ids to put the AD Connector in.
+     */
     private List<String> subnetIds;
   }
 
@@ -68,7 +94,8 @@ public class AdConnectorConstruct extends Construct {
    * @param props AdConnector Properties
    */
   public AdConnectorConstruct(
-      software.constructs.@NotNull Construct scope, @NotNull String id, AdConnectorProps props) {
+      software.constructs.@NotNull Construct scope, @NotNull String id, AdConnectorProps props)
+      throws IOException {
     super(scope, id);
 
 
@@ -93,6 +120,7 @@ public class AdConnectorConstruct extends Construct {
         .user("root")
         .outputType(ARCHIVED);
 
+
     Function onEventHandler = new Function(this, "onEventHandler", FunctionProps.builder()
         .runtime(Runtime.JAVA_11)
         .code(Code.fromAsset("./AdConnectorCustomResource", AssetOptions.builder()
@@ -100,12 +128,9 @@ public class AdConnectorConstruct extends Construct {
                 // TODO: add capability to use local bundling (.local) instead of docker one
                 .command(adConnectorCustomResourcePackagingInstructions)
                 .build())
+            .assetHash(hashDirectory("./AdConnectorCustomResource/src/", false))
             .build()))
         .handler("com.ilmlf.adconnector.customresource.OnEventHandler")
-        .environment(Map.of(
-            "POWERTOOLS_LOG_LEVEL", "DEBUG",
-            "POWERTOOLS_SERVICE_NAME", "com.ilmlf.adconnector.customresource.OnEventHandler"
-        ))
         .memorySize(1024)
         .timeout(Duration.seconds(10))
         .logRetention(RetentionDays.ONE_WEEK)
@@ -126,6 +151,7 @@ public class AdConnectorConstruct extends Construct {
                 .actions(Arrays.asList(
                     "secretsmanager:GetSecretValue",
                     "ds:ConnectDirectory",
+                    "ds:DeleteDirectory",
                     "ec2:DescribeSubnets",
                     "ec2:DescribeVpcs",
                     "ec2:CreateSecurityGroup",
@@ -148,12 +174,9 @@ public class AdConnectorConstruct extends Construct {
                 .bundling(builderOptions
                     .command(adConnectorCustomResourcePackagingInstructions)
                     .build())
+                .assetHash(hashDirectory("./AdConnectorCustomResource/src", false))
                 .build()))
         .handler("com.ilmlf.adconnector.customresource.IsCompleteHandler")
-        .environment(Map.of(
-            "POWERTOOLS_LOG_LEVEL", "DEBUG",
-            "POWERTOOLS_SERVICE_NAME", "com.ilmlf.adconnector.customresource.IsCompleteHandler"
-        ))
         .memorySize(1024)
         .timeout(Duration.seconds(10))
         .logRetention(RetentionDays.ONE_WEEK)
@@ -175,16 +198,17 @@ public class AdConnectorConstruct extends Construct {
         .build()
     );
 
+    TreeMap resourceProperties = new TreeMap();
+    resourceProperties.put("vpcId", props.vpcId);
+    resourceProperties.put("domainName", props.domainName);
+    resourceProperties.put("dnsIps", props.dnsIps);
+    resourceProperties.put("subnetIds", props.subnetIds);
+    resourceProperties.put("secretId", props.secretId);
+
     CustomResource resource = new CustomResource(scope, "ADConnector", CustomResourceProps.builder()
         .serviceToken(provider.getServiceToken())
         .resourceType("Custom::ADConnector")
-        .properties(Map.of(
-            "vpcId", props.vpcId,
-            "domainName", props.domainName,
-            "dnsIps", props.dnsIps,
-            "subnetIds", props.subnetIds,
-            "secretId", props.secretId
-        ))
+        .properties(resourceProperties)
         .build()
     );
     this.directoryId = resource.getAttString("DirectoryId");
