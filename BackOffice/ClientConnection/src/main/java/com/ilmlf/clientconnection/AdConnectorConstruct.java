@@ -42,53 +42,36 @@ import software.amazon.awscdk.services.lambda.Runtime;
 import software.amazon.awscdk.services.logs.RetentionDays;
 import software.amazon.awscdk.services.s3.assets.AssetOptions;
 
-/**
- * Custom resource to create AD Connector.
- */
+/** Custom resource to create AD Connector. */
 public class AdConnectorConstruct extends Construct {
 
-  /**
-   * The Active directory connector Id created by the construct.
-   */
-  @Getter
-  public final String directoryId;
+  /** The Active directory connector Id created by the construct. */
+  @Getter public final String directoryId;
 
-  /**
-   * AD Connector construct's required properties.
-   */
+  /** AD Connector construct's required properties. */
   @lombok.Builder
   @Data
   public static class AdConnectorProps {
 
-    /**
-     * VpcId hosting the AD Connector.
-     */
+    /** VpcId hosting the AD Connector. */
     private String vpcId;
 
-    /**
-     * AD Domain Name.
-     */
+    /** AD Domain Name. */
     private String domainName;
 
-    /**
-     * Secret manager's Secret Id of the AD domain admin password.
-     */
+    /** Secret manager's Secret Id of the AD domain admin password. */
     private String secretId;
 
-    /**
-     * List of DNS hosts IPs from On Premise infrastructure.
-     */
+    /** List of DNS hosts IPs from On Premise infrastructure. */
     private List<String> dnsIps;
 
-    /**
-     * List of subnet ids to put the AD Connector in.
-     */
+    /** List of subnet ids to put the AD Connector in. */
     private List<String> subnetIds;
   }
 
   /**
    * AD Connector construct.
-
+   *
    * @param scope CDK scope
    * @param id construct Id
    * @param props AdConnector Properties
@@ -98,105 +81,121 @@ public class AdConnectorConstruct extends Construct {
       throws IOException {
     super(scope, id);
 
+    List<String> adConnectorCustomResourcePackagingInstructions =
+        Arrays.asList(
+            "/bin/sh",
+            "-c",
+            "mvn clean install "
+                + "&& cp /asset-input/target/AdConnectorCustomResource.jar /asset-output/");
 
-    List<String> adConnectorCustomResourcePackagingInstructions = Arrays.asList(
-        "/bin/sh",
-        "-c",
-        "mvn clean install "
-        + "&& cp /asset-input/target/AdConnectorCustomResource.jar /asset-output/"
-    );
+    BundlingOptions.Builder builderOptions =
+        BundlingOptions.builder()
+            .command(adConnectorCustomResourcePackagingInstructions)
+            .image(Runtime.JAVA_11.getBundlingImage())
+            .volumes(
+                singletonList(
+                    // Mount local .m2 repo to avoid download all the deps again inside the
+                    // container
+                    DockerVolume.builder()
+                        .hostPath(System.getProperty("user.home") + "/.m2/")
+                        .containerPath("/root/.m2/")
+                        .build()))
+            .user("root")
+            .outputType(ARCHIVED);
 
-
-    BundlingOptions.Builder builderOptions = BundlingOptions.builder()
-        .command(adConnectorCustomResourcePackagingInstructions)
-        .image(Runtime.JAVA_11.getBundlingImage())
-        .volumes(singletonList(
-            // Mount local .m2 repo to avoid download all the deps again inside the container
-            DockerVolume.builder()
-                .hostPath(System.getProperty("user.home") + "/.m2/")
-                .containerPath("/root/.m2/")
-                .build()
-        ))
-        .user("root")
-        .outputType(ARCHIVED);
-
-
-    Function onEventHandler = new Function(this, "onEventHandler", FunctionProps.builder()
-        .runtime(Runtime.JAVA_11)
-        .code(Code.fromAsset("./AdConnectorCustomResource", AssetOptions.builder()
-            .bundling(builderOptions
-                // TODO: add capability to use local bundling (.local) instead of docker one
-                .command(adConnectorCustomResourcePackagingInstructions)
-                .build())
-            .assetHash(hashDirectory("./AdConnectorCustomResource/src/", false))
-            .build()))
-        .handler("com.ilmlf.adconnector.customresource.OnEventHandler")
-        .memorySize(1024)
-        .timeout(Duration.seconds(10))
-        .logRetention(RetentionDays.ONE_WEEK)
-        .build());
+    Function onEventHandler =
+        new Function(
+            this,
+            "onEventHandler",
+            FunctionProps.builder()
+                .runtime(Runtime.JAVA_11)
+                .code(
+                    Code.fromAsset(
+                        "./AdConnectorCustomResource",
+                        AssetOptions.builder()
+                            .bundling(
+                                builderOptions
+                                    // TODO: add capability to use local bundling (.local) instead
+                                    // of docker one
+                                    .command(adConnectorCustomResourcePackagingInstructions)
+                                    .build())
+                            .assetHash(
+                                hashDirectory(
+                                    "./AdConnectorCustomResource/src/main/java/com/ilmlf/adconnector/customresource/OnEventHandler.java",
+                                    false))
+                            .build()))
+                .handler("com.ilmlf.adconnector.customresource.OnEventHandler")
+                .memorySize(1024)
+                .timeout(Duration.seconds(10))
+                .logRetention(RetentionDays.ONE_WEEK)
+                .build());
 
     onEventHandler.addToRolePolicy(
         new PolicyStatement(
             PolicyStatementProps.builder()
                 .actions(singletonList("secretsmanager:GetSecretValue"))
                 .resources(Collections.singletonList(props.secretId))
-                .build()
-        )
-    );
+                .build()));
 
     onEventHandler.addToRolePolicy(
         new PolicyStatement(
             PolicyStatementProps.builder()
-                .actions(Arrays.asList(
-                    "secretsmanager:GetSecretValue",
-                    "ds:ConnectDirectory",
-                    "ds:DeleteDirectory",
-                    "ec2:DescribeSubnets",
-                    "ec2:DescribeVpcs",
-                    "ec2:CreateSecurityGroup",
-                    "ec2:CreateNetworkInterface",
-                    "ec2:DescribeNetworkInterfaces",
-                    "ec2:AuthorizeSecurityGroupIngress",
-                    "ec2:AuthorizeSecurityGroupEgress",
-                    "ec2:CreateTags"
-                ))
+                .actions(
+                    Arrays.asList(
+                        "secretsmanager:GetSecretValue",
+                        "ds:ConnectDirectory",
+                        "ds:DeleteDirectory",
+                        "ec2:DescribeSubnets",
+                        "ec2:DescribeVpcs",
+                        "ec2:CreateSecurityGroup",
+                        "ec2:CreateNetworkInterface",
+                        "ec2:DescribeNetworkInterfaces",
+                        "ec2:AuthorizeSecurityGroupIngress",
+                        "ec2:AuthorizeSecurityGroupEgress",
+                        "ec2:CreateTags"))
                 .resources(Collections.singletonList("*"))
-                .build()
-        )
-    );
+                .build()));
 
-
-    Function isCompleteHandler = new Function(this, "isCompleteHandler", FunctionProps.builder()
-        .runtime(Runtime.JAVA_11)
-        .code(Code.fromAsset("./AdConnectorCustomResource",
-            AssetOptions.builder()
-                .bundling(builderOptions
-                    .command(adConnectorCustomResourcePackagingInstructions)
-                    .build())
-                .assetHash(hashDirectory("./AdConnectorCustomResource/src", false))
-                .build()))
-        .handler("com.ilmlf.adconnector.customresource.IsCompleteHandler")
-        .memorySize(1024)
-        .timeout(Duration.seconds(10))
-        .logRetention(RetentionDays.ONE_WEEK)
-        .build());
+    Function isCompleteHandler =
+        new Function(
+            this,
+            "isCompleteHandler",
+            FunctionProps.builder()
+                .runtime(Runtime.JAVA_11)
+                .code(
+                    Code.fromAsset(
+                        "./AdConnectorCustomResource",
+                        AssetOptions.builder()
+                            .bundling(
+                                builderOptions
+                                    .command(adConnectorCustomResourcePackagingInstructions)
+                                    .build())
+                            .assetHash(
+                                hashDirectory(
+                                    "./AdConnectorCustomResource/src/main/java/com/ilmlf/adconnector/customresource/IsCompleteHandler.java",
+                                    false))
+                            .build()))
+                .handler("com.ilmlf.adconnector.customresource.IsCompleteHandler")
+                .memorySize(1024)
+                .timeout(Duration.seconds(10))
+                .logRetention(RetentionDays.ONE_WEEK)
+                .build());
 
     isCompleteHandler.addToRolePolicy(
         new PolicyStatement(
             PolicyStatementProps.builder()
                 .actions(singletonList("ds:DescribeDirectories"))
                 .resources(Collections.singletonList("*"))
-                .build()
-        )
-    );
+                .build()));
 
-
-    Provider provider = new Provider(scope, "adConnectorProvider", ProviderProps.builder()
-        .onEventHandler(onEventHandler)
-        .isCompleteHandler(isCompleteHandler)
-        .build()
-    );
+    Provider provider =
+        new Provider(
+            scope,
+            "adConnectorProvider",
+            ProviderProps.builder()
+                .onEventHandler(onEventHandler)
+                .isCompleteHandler(isCompleteHandler)
+                .build());
 
     TreeMap resourceProperties = new TreeMap();
     resourceProperties.put("vpcId", props.vpcId);
@@ -205,12 +204,15 @@ public class AdConnectorConstruct extends Construct {
     resourceProperties.put("subnetIds", props.subnetIds);
     resourceProperties.put("secretId", props.secretId);
 
-    CustomResource resource = new CustomResource(scope, "ADConnector", CustomResourceProps.builder()
-        .serviceToken(provider.getServiceToken())
-        .resourceType("Custom::ADConnector")
-        .properties(resourceProperties)
-        .build()
-    );
+    CustomResource resource =
+        new CustomResource(
+            scope,
+            "ADConnector",
+            CustomResourceProps.builder()
+                .serviceToken(provider.getServiceToken())
+                .resourceType("Custom::ADConnector")
+                .properties(resourceProperties)
+                .build());
     this.directoryId = resource.getAttString("DirectoryId");
   }
 }
