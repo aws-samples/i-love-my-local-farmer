@@ -203,7 +203,7 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
         "Properties": {
           "Code": {
             "S3Bucket": {
-              "Ref": "AssetParametersdbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6fS3BucketF841326C"
+              "Ref": "AssetParametersc0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05S3Bucket1EC6DE48"
             },
             "S3Key": {
               "Fn::Join": [
@@ -216,7 +216,7 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParametersdbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6fS3VersionKeyE60236D7"
+                            "Ref": "AssetParametersc0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05S3VersionKeyB4F863B8"
                           }
                         ]
                       }
@@ -229,7 +229,7 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParametersdbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6fS3VersionKeyE60236D7"
+                            "Ref": "AssetParametersc0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05S3VersionKeyB4F863B8"
                           }
                         ]
                       }
@@ -244,12 +244,6 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
               "ClientVpnOnPremiseADConnectoronEventHandlerServiceRoleCEC4BEE6",
               "Arn"
             ]
-          },
-          "Environment": {
-            "Variables": {
-              "POWERTOOLS_LOG_LEVEL": "DEBUG",
-              "POWERTOOLS_SERVICE_NAME": "com.ilmlf.adconnector.customresource.OnEventHandler"
-            }
           },
           "Handler": "com.ilmlf.adconnector.customresource.OnEventHandler",
           "MemorySize": 1024,
@@ -341,7 +335,7 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
         "Properties": {
           "Code": {
             "S3Bucket": {
-              "Ref": "AssetParametersdbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6fS3BucketF841326C"
+              "Ref": "AssetParametersc0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05S3Bucket1EC6DE48"
             },
             "S3Key": {
               "Fn::Join": [
@@ -354,7 +348,7 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParametersdbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6fS3VersionKeyE60236D7"
+                            "Ref": "AssetParametersc0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05S3VersionKeyB4F863B8"
                           }
                         ]
                       }
@@ -367,7 +361,7 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParametersdbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6fS3VersionKeyE60236D7"
+                            "Ref": "AssetParametersc0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05S3VersionKeyB4F863B8"
                           }
                         ]
                       }
@@ -382,12 +376,6 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
               "ClientVpnOnPremiseADConnectorisCompleteHandlerServiceRoleEF97E18F",
               "Arn"
             ]
-          },
-          "Environment": {
-            "Variables": {
-              "POWERTOOLS_LOG_LEVEL": "DEBUG",
-              "POWERTOOLS_SERVICE_NAME": "com.ilmlf.adconnector.customresource.IsCompleteHandler"
-            }
           },
           "Handler": "com.ilmlf.adconnector.customresource.IsCompleteHandler",
           "MemorySize": 1024,
@@ -951,17 +939,17 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
               "Arn"
             ]
           },
+          "dnsIps": [
+            "172.16.0.94",
+            "172.16.0.126"
+          ],
+          "domainName": "ilovemylocalfarmer.com",
           "secretId": "arn:aws:secretsmanager:eu-west-1:053319678981:secret:DomainAdminPassword-qWxv2k",
-          "vpcId": "vpc-12345",
           "subnetIds": [
             "p-12345",
             "p-67890"
           ],
-          "domainName": "ilovemylocalfarmer.com",
-          "dnsIps": [
-            "172.16.0.94",
-            "172.16.0.126"
-          ]
+          "vpcId": "vpc-12345"
         },
         "UpdateReplacePolicy": "Delete",
         "DeletionPolicy": "Delete"
@@ -1093,17 +1081,17 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
       }
     },
     "Parameters": {
-      "AssetParametersdbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6fS3BucketF841326C": {
+      "AssetParametersc0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05S3Bucket1EC6DE48": {
         "Type": "String",
-        "Description": "S3 bucket for asset \"dbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6f\""
+        "Description": "S3 bucket for asset \"c0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05\""
       },
-      "AssetParametersdbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6fS3VersionKeyE60236D7": {
+      "AssetParametersc0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05S3VersionKeyB4F863B8": {
         "Type": "String",
-        "Description": "S3 key for asset version \"dbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6f\""
+        "Description": "S3 key for asset version \"c0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05\""
       },
-      "AssetParametersdbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6fArtifactHash7165D341": {
+      "AssetParametersc0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05ArtifactHashC13F0208": {
         "Type": "String",
-        "Description": "Artifact hash for asset \"dbf28a89cedf2ab2a651e304db635fc0de0147cdfd89b752ff8e8585595dfc6f\""
+        "Description": "Artifact hash for asset \"c0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05\""
       },
       "AssetParameters67b7823b74bc135986aa72f889d6a8da058d0c4a20cbc2dfc6f78995fdd2fc24S3Bucket4D46ABB5": {
         "Type": "String",

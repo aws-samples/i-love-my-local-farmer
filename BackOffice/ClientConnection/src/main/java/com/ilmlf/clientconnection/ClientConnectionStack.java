@@ -13,6 +13,7 @@ limitations under the License.
 
 package com.ilmlf.clientconnection;
 
+import java.io.IOException;
 import java.util.List;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
@@ -29,7 +30,8 @@ public class ClientConnectionStack extends Stack {
    * @param id id
    * @param props props
    */
-  public ClientConnectionStack(final Construct scope, final String id, final StackProps props) {
+  public ClientConnectionStack(final Construct scope, final String id, final StackProps props)
+      throws IOException {
     super(scope, id, props);
 
     String vpcId = this.getNode().tryGetContext("vpcId").toString();

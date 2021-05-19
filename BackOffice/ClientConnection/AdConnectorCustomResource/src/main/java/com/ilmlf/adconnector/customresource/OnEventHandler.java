@@ -13,7 +13,7 @@ limitations under the License.
 
 package com.ilmlf.adconnector.customresource;
 
-import static com.ilmlf.customresource.utils.SecretsUtil.getSecretValue;
+import static com.ilmlf.adconnector.customresource.SecretsUtil.getSecretValue;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;

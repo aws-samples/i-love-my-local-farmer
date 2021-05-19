@@ -13,6 +13,7 @@ limitations under the License.
 
 package com.ilmlf.clientconnection;
 
+import java.io.IOException;
 import software.amazon.awscdk.core.App;
 import software.amazon.awscdk.core.Environment;
 import software.amazon.awscdk.core.StackProps;
@@ -27,7 +28,7 @@ public final class ClientConnectionApp {
    * CDK Entrypoint.
    * @param args for cdk
    */
-  public static void main(final String[] args) {
+  public static void main(final String[] args) throws IOException {
     App app = new App();
 
     new ClientConnectionStack(app, "ClientConnBaseInfra", StackProps.builder()
