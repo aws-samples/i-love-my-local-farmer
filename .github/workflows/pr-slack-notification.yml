@@ -2,19 +2,36 @@ name: Slack Notification
 
 on:
   pull_request:
-    branches: [ main ]
-    types: [opened, edited, synchronize, reopened]
+    branches: [main]
+    types: [opened, synchronize, reopened]
   pull_request_review:
-    branches: [ main ]
-    types: [submitted, dismissed]
+    branches: [main]
+    types: [submitted]
 
 jobs:
-  build:
+  notify:
     runs-on: ubuntu-latest
 
+    env:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      EVENT_NAME: ${{ github.event_name }}
+      ACTION_NAME: ${{ github.event.action }}
+
     steps:
-      - name: Slack notification
+      - name: New Pull Request
+        if: ${{ github.event_name == 'pull_request' && github.event.action != 'synchronize' }}
         env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CUSTOM_PAYLOAD: '{"Content": "*{{ EVENT_PAYLOAD.pull_request.title}}*\n @{{ GITHUB_ACTOR }} published a new pull request: {{ EVENT_PAYLOAD.pull_request.html_url }}"}'
+          SLACK_CUSTOM_PAYLOAD: '{"Content": "*{{ EVENT_PAYLOAD.pull_request.title}}*\n @{{ GITHUB_ACTOR }} {{ ACTION_NAME }} pull request: {{ EVENT_PAYLOAD.pull_request.html_url }}"}'
+        uses: Ilshidur/action-slack@2.0.2
+
+      - name: Update Pull Request
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'synchronize' }}
+        env:
+          SLACK_CUSTOM_PAYLOAD: '{"Content": "*{{ EVENT_PAYLOAD.pull_request.title}}*\n @{{ GITHUB_ACTOR }} updated pull request: {{ EVENT_PAYLOAD.pull_request.html_url }}"}'
+        uses: Ilshidur/action-slack@2.0.2
+
+      - name: Review Approval
+        if: ${{ github.event_name == 'pull_request_review' && github.event.review.state === 'approved' }}
+        env:
+          SLACK_CUSTOM_PAYLOAD: '{"Content": "*{{ EVENT_PAYLOAD.pull_request.title}}*\n @{{ GITHUB_ACTOR }} approved pull request: {{ EVENT_PAYLOAD.pull_request.html_url }}"}'
         uses: Ilshidur/action-slack@2.0.2
