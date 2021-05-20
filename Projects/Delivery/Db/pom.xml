@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.myorg</groupId>
-    <artifactId>delivery</artifactId>
+    <artifactId>db</artifactId>
     <version>0.1</version>
 
     <properties>
@@ -30,7 +30,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.0.0</version>
                 <configuration>
-                    <mainClass>com.myorg.DeliveryApp</mainClass>
+                    <mainClass>com.myorg.DbApp</mainClass>
                 </configuration>
             </plugin>
         </plugins>
