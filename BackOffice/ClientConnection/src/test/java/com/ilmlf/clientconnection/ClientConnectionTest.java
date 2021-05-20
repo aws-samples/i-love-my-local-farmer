@@ -21,7 +21,9 @@ import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 
 public class ClientConnectionTest {
   private final static ObjectMapper JSON =
-      new ObjectMapper().configure(SerializationFeature.INDENT_OUTPUT, true);
+      new ObjectMapper()
+          .configure(SerializationFeature.INDENT_OUTPUT, true)
+      .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
 
   @BeforeAll
   public static void beforeAll() {

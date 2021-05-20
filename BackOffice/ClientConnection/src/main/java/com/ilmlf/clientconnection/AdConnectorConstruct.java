@@ -94,14 +94,6 @@ public class AdConnectorConstruct extends Construct {
         BundlingOptions.builder()
             .command(adConnectorCustomResourcePackagingInstructions)
             .image(Runtime.JAVA_11.getBundlingImage())
-            .volumes(
-                singletonList(
-                    // Mount local .m2 repo to avoid download all the deps again inside the
-                    // container
-                    DockerVolume.builder()
-                        .hostPath(System.getProperty("user.home") + "/.m2/")
-                        .containerPath("/root/.m2/")
-                        .build()))
             .user("root")
             .outputType(ARCHIVED);
 
@@ -115,7 +107,8 @@ public class AdConnectorConstruct extends Construct {
                     Code.fromAsset(
                         "./AdConnectorCustomResource",
                         AssetOptions.builder()
-                            .assetHashType(AssetHashType.SOURCE)
+                            .assetHashType(AssetHashType.CUSTOM)
+                            .assetHash("test")
                             .bundling(
                                 builderOptions
                                     // TODO: add capability to use local bundling (.local) instead
@@ -165,7 +158,8 @@ public class AdConnectorConstruct extends Construct {
                     Code.fromAsset(
                         "./AdConnectorCustomResource",
                         AssetOptions.builder()
-                            .assetHashType(AssetHashType.SOURCE)
+                            .assetHashType(AssetHashType.CUSTOM)
+                            .assetHash("test")
                             .bundling(
                                 builderOptions
                                     .command(adConnectorCustomResourcePackagingInstructions)
