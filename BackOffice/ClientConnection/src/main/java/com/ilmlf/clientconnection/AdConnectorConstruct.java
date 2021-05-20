@@ -30,8 +30,6 @@ import software.amazon.awscdk.core.BundlingOptions;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.CustomResource;
 import software.amazon.awscdk.core.CustomResourceProps;
-import software.amazon.awscdk.core.DockerImage;
-import software.amazon.awscdk.core.DockerVolume;
 import software.amazon.awscdk.core.Duration;
 import software.amazon.awscdk.customresources.Provider;
 import software.amazon.awscdk.customresources.ProviderProps;
