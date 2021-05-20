@@ -1,136 +1,185 @@
 com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
   {
-    "Resources": {
-      "VpcVpnClientEndpointLogGroup57D91305": {
-        "Type": "AWS::Logs::LogGroup",
-        "Properties": {
-          "RetentionInDays": 731
-        },
-        "UpdateReplacePolicy": "Retain",
-        "DeletionPolicy": "Retain"
-      },
-      "VpcVpnClientEndpointSecurityGroupFFE8B2CE": {
-        "Type": "AWS::EC2::SecurityGroup",
-        "Properties": {
-          "GroupDescription": "test/Vpc/VpnClientEndpoint/SecurityGroup",
-          "SecurityGroupEgress": [
-            {
-              "CidrIp": "0.0.0.0/0",
-              "Description": "Allow all outbound traffic by default",
-              "IpProtocol": "-1"
-            }
-          ],
-          "VpcId": "vpc-12345"
+    "Outputs": {
+      "VpcVpnClientEndpointSelfServicePortalUrl42E6DE1B": {
+        "Value": {
+          "Fn::Join": [
+            "",
+            [
+              "https://self-service.clientvpn.amazonaws.com/endpoints/",
+              {
+                "Ref": "VpcVpnClientEndpointFF7CE2D1"
+              }
+            ]
+          ]
         }
+      }
+    },
+    "Parameters": {
+      "AssetParameters67b7823b74bc135986aa72f889d6a8da058d0c4a20cbc2dfc6f78995fdd2fc24ArtifactHashBA91B77F": {
+        "Description": "Artifact hash for asset \"67b7823b74bc135986aa72f889d6a8da058d0c4a20cbc2dfc6f78995fdd2fc24\"",
+        "Type": "String"
       },
-      "VpcVpnClientEndpointFF7CE2D1": {
-        "Type": "AWS::EC2::ClientVpnEndpoint",
+      "AssetParameters67b7823b74bc135986aa72f889d6a8da058d0c4a20cbc2dfc6f78995fdd2fc24S3Bucket4D46ABB5": {
+        "Description": "S3 bucket for asset \"67b7823b74bc135986aa72f889d6a8da058d0c4a20cbc2dfc6f78995fdd2fc24\"",
+        "Type": "String"
+      },
+      "AssetParameters67b7823b74bc135986aa72f889d6a8da058d0c4a20cbc2dfc6f78995fdd2fc24S3VersionKeyB0F28861": {
+        "Description": "S3 key for asset version \"67b7823b74bc135986aa72f889d6a8da058d0c4a20cbc2dfc6f78995fdd2fc24\"",
+        "Type": "String"
+      },
+      "AssetParameters770523fe8cda2b705b21def7a947b03a454811e05e040e6d776a351d646ece9fArtifactHash0944B33B": {
+        "Description": "Artifact hash for asset \"770523fe8cda2b705b21def7a947b03a454811e05e040e6d776a351d646ece9f\"",
+        "Type": "String"
+      },
+      "AssetParameters770523fe8cda2b705b21def7a947b03a454811e05e040e6d776a351d646ece9fS3Bucket51003488": {
+        "Description": "S3 bucket for asset \"770523fe8cda2b705b21def7a947b03a454811e05e040e6d776a351d646ece9f\"",
+        "Type": "String"
+      },
+      "AssetParameters770523fe8cda2b705b21def7a947b03a454811e05e040e6d776a351d646ece9fS3VersionKey6DFEA61E": {
+        "Description": "S3 key for asset version \"770523fe8cda2b705b21def7a947b03a454811e05e040e6d776a351d646ece9f\"",
+        "Type": "String"
+      },
+      "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cArtifactHash627DAAA7": {
+        "Description": "Artifact hash for asset \"c691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49c\"",
+        "Type": "String"
+      },
+      "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cS3BucketEAC9DD43": {
+        "Description": "S3 bucket for asset \"c691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49c\"",
+        "Type": "String"
+      },
+      "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cS3VersionKeyDD9AE9E7": {
+        "Description": "S3 key for asset version \"c691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49c\"",
+        "Type": "String"
+      }
+    },
+    "Resources": {
+      "ClientVpnADConnector398A194F": {
+        "DeletionPolicy": "Delete",
         "Properties": {
-          "AuthenticationOptions": [
-            {
-              "ActiveDirectory": {
-                "DirectoryId": {
-                  "Fn::GetAtt": [
-                    "ClientVpnADConnector398A194F",
-                    "DirectoryId"
-                  ]
-                }
-              },
-              "Type": "directory-service-authentication"
-            }
-          ],
-          "ClientCidrBlock": "172.31.0.0/16",
-          "ConnectionLogOptions": {
-            "CloudwatchLogGroup": {
-              "Ref": "VpcVpnClientEndpointLogGroup57D91305"
-            },
-            "Enabled": true
+          "ServiceToken": {
+            "Fn::GetAtt": [
+              "ClientVpnadConnectorProviderframeworkonEvent0365ACCF",
+              "Arn"
+            ]
           },
-          "ServerCertificateArn": "arn:aws:acm:eu-west-1:433621526002:certificate/f09c1fca-1ffd-4768-b4e6-7f424f2f7c61",
-          "DnsServers": [
+          "dnsIps": [
             "172.16.0.94",
             "172.16.0.126"
           ],
-          "SecurityGroupIds": [
-            {
-              "Fn::GetAtt": [
-                "VpcVpnClientEndpointSecurityGroupFFE8B2CE",
-                "GroupId"
+          "domainName": "ilovemylocalfarmer.com",
+          "secretId": "arn:aws:secretsmanager:eu-west-1:053319678981:secret:DomainAdminPassword-qWxv2k",
+          "subnetIds": [
+            "p-12345",
+            "p-67890"
+          ],
+          "vpcId": "vpc-12345"
+        },
+        "Type": "Custom::ADConnector",
+        "UpdateReplacePolicy": "Delete"
+      },
+      "ClientVpnOnPremiseADConnectorisCompleteHandler843CC5F1": {
+        "DependsOn": [
+          "ClientVpnOnPremiseADConnectorisCompleteHandlerServiceRoleDefaultPolicyA802110D",
+          "ClientVpnOnPremiseADConnectorisCompleteHandlerServiceRoleEF97E18F"
+        ],
+        "Properties": {
+          "Code": {
+            "S3Bucket": {
+              "Ref": "AssetParameters770523fe8cda2b705b21def7a947b03a454811e05e040e6d776a351d646ece9fS3Bucket51003488"
+            },
+            "S3Key": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Fn::Select": [
+                      0,
+                      {
+                        "Fn::Split": [
+                          "||",
+                          {
+                            "Ref": "AssetParameters770523fe8cda2b705b21def7a947b03a454811e05e040e6d776a351d646ece9fS3VersionKey6DFEA61E"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "Fn::Select": [
+                      1,
+                      {
+                        "Fn::Split": [
+                          "||",
+                          {
+                            "Ref": "AssetParameters770523fe8cda2b705b21def7a947b03a454811e05e040e6d776a351d646ece9fS3VersionKey6DFEA61E"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
               ]
             }
-          ],
-          "SplitTunnel": true,
-          "VpcId": "vpc-12345"
-        }
-      },
-      "VpcVpnClientEndpointAssociation06D0E5EB5": {
-        "Type": "AWS::EC2::ClientVpnTargetNetworkAssociation",
-        "Properties": {
-          "ClientVpnEndpointId": {
-            "Ref": "VpcVpnClientEndpointFF7CE2D1"
           },
-          "SubnetId": "p-12345"
-        }
-      },
-      "VpcVpnClientEndpointAssociation1C1885946": {
-        "Type": "AWS::EC2::ClientVpnTargetNetworkAssociation",
-        "Properties": {
-          "ClientVpnEndpointId": {
-            "Ref": "VpcVpnClientEndpointFF7CE2D1"
+          "Handler": "com.ilmlf.adconnector.customresource.IsCompleteHandler",
+          "MemorySize": 1024,
+          "Role": {
+            "Fn::GetAtt": [
+              "ClientVpnOnPremiseADConnectorisCompleteHandlerServiceRoleEF97E18F",
+              "Arn"
+            ]
           },
-          "SubnetId": "p-67890"
-        }
-      },
-      "VpcVpnClientEndpointAuthorizeAll6127D700": {
-        "Type": "AWS::EC2::ClientVpnAuthorizationRule",
-        "Properties": {
-          "ClientVpnEndpointId": {
-            "Ref": "VpcVpnClientEndpointFF7CE2D1"
-          },
-          "TargetNetworkCidr": "1.2.3.4/5",
-          "AuthorizeAllGroups": true
-        }
-      },
-      "VpcVpnClientEndpointonPremiseRoutep123456C529374": {
-        "Type": "AWS::EC2::ClientVpnRoute",
-        "Properties": {
-          "ClientVpnEndpointId": {
-            "Ref": "VpcVpnClientEndpointFF7CE2D1"
-          },
-          "DestinationCidrBlock": "172.16.0.0/16",
-          "TargetVpcSubnetId": "p-12345"
+          "Runtime": "java11",
+          "Timeout": 10
         },
-        "DependsOn": [
-          "VpcVpnClientEndpointAssociation06D0E5EB5",
-          "VpcVpnClientEndpointAssociation1C1885946"
-        ]
+        "Type": "AWS::Lambda::Function"
       },
-      "VpcVpnClientEndpointonPremiseRoutep678904A950966": {
-        "Type": "AWS::EC2::ClientVpnRoute",
+      "ClientVpnOnPremiseADConnectorisCompleteHandlerLogRetention5ACF97E2": {
         "Properties": {
-          "ClientVpnEndpointId": {
-            "Ref": "VpcVpnClientEndpointFF7CE2D1"
+          "LogGroupName": {
+            "Fn::Join": [
+              "",
+              [
+                "/aws/lambda/",
+                {
+                  "Ref": "ClientVpnOnPremiseADConnectorisCompleteHandler843CC5F1"
+                }
+              ]
+            ]
           },
-          "DestinationCidrBlock": "172.16.0.0/16",
-          "TargetVpcSubnetId": "p-67890"
+          "RetentionInDays": 7,
+          "ServiceToken": {
+            "Fn::GetAtt": [
+              "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A",
+              "Arn"
+            ]
+          }
         },
-        "DependsOn": [
-          "VpcVpnClientEndpointAssociation06D0E5EB5",
-          "VpcVpnClientEndpointAssociation1C1885946"
-        ]
+        "Type": "Custom::LogRetention"
       },
-      "VpcVpnClientEndpointonPremise1CA94A06": {
-        "Type": "AWS::EC2::ClientVpnAuthorizationRule",
+      "ClientVpnOnPremiseADConnectorisCompleteHandlerServiceRoleDefaultPolicyA802110D": {
         "Properties": {
-          "ClientVpnEndpointId": {
-            "Ref": "VpcVpnClientEndpointFF7CE2D1"
+          "PolicyDocument": {
+            "Statement": [
+              {
+                "Action": "ds:DescribeDirectories",
+                "Effect": "Allow",
+                "Resource": "*"
+              }
+            ],
+            "Version": "2012-10-17"
           },
-          "TargetNetworkCidr": "172.16.0.0/16",
-          "AuthorizeAllGroups": true
-        }
+          "PolicyName": "ClientVpnOnPremiseADConnectorisCompleteHandlerServiceRoleDefaultPolicyA802110D",
+          "Roles": [
+            {
+              "Ref": "ClientVpnOnPremiseADConnectorisCompleteHandlerServiceRoleEF97E18F"
+            }
+          ]
+        },
+        "Type": "AWS::IAM::Policy"
       },
-      "ClientVpnOnPremiseADConnectoronEventHandlerServiceRoleCEC4BEE6": {
-        "Type": "AWS::IAM::Role",
+      "ClientVpnOnPremiseADConnectorisCompleteHandlerServiceRoleEF97E18F": {
         "Properties": {
           "AssumeRolePolicyDocument": {
             "Statement": [
@@ -158,10 +207,121 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
               ]
             }
           ]
-        }
+        },
+        "Type": "AWS::IAM::Role"
+      },
+      "ClientVpnOnPremiseADConnectoronEventHandler3B64B117": {
+        "DependsOn": [
+          "ClientVpnOnPremiseADConnectoronEventHandlerServiceRoleDefaultPolicyB2B5BCAF",
+          "ClientVpnOnPremiseADConnectoronEventHandlerServiceRoleCEC4BEE6"
+        ],
+        "Properties": {
+          "Code": {
+            "S3Bucket": {
+              "Ref": "AssetParameters770523fe8cda2b705b21def7a947b03a454811e05e040e6d776a351d646ece9fS3Bucket51003488"
+            },
+            "S3Key": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Fn::Select": [
+                      0,
+                      {
+                        "Fn::Split": [
+                          "||",
+                          {
+                            "Ref": "AssetParameters770523fe8cda2b705b21def7a947b03a454811e05e040e6d776a351d646ece9fS3VersionKey6DFEA61E"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "Fn::Select": [
+                      1,
+                      {
+                        "Fn::Split": [
+                          "||",
+                          {
+                            "Ref": "AssetParameters770523fe8cda2b705b21def7a947b03a454811e05e040e6d776a351d646ece9fS3VersionKey6DFEA61E"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              ]
+            }
+          },
+          "Handler": "com.ilmlf.adconnector.customresource.OnEventHandler",
+          "MemorySize": 1024,
+          "Role": {
+            "Fn::GetAtt": [
+              "ClientVpnOnPremiseADConnectoronEventHandlerServiceRoleCEC4BEE6",
+              "Arn"
+            ]
+          },
+          "Runtime": "java11",
+          "Timeout": 10
+        },
+        "Type": "AWS::Lambda::Function"
+      },
+      "ClientVpnOnPremiseADConnectoronEventHandlerLogRetentionABE201A9": {
+        "Properties": {
+          "LogGroupName": {
+            "Fn::Join": [
+              "",
+              [
+                "/aws/lambda/",
+                {
+                  "Ref": "ClientVpnOnPremiseADConnectoronEventHandler3B64B117"
+                }
+              ]
+            ]
+          },
+          "RetentionInDays": 7,
+          "ServiceToken": {
+            "Fn::GetAtt": [
+              "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A",
+              "Arn"
+            ]
+          }
+        },
+        "Type": "Custom::LogRetention"
+      },
+      "ClientVpnOnPremiseADConnectoronEventHandlerServiceRoleCEC4BEE6": {
+        "Properties": {
+          "AssumeRolePolicyDocument": {
+            "Statement": [
+              {
+                "Action": "sts:AssumeRole",
+                "Effect": "Allow",
+                "Principal": {
+                  "Service": "lambda.amazonaws.com"
+                }
+              }
+            ],
+            "Version": "2012-10-17"
+          },
+          "ManagedPolicyArns": [
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "arn:",
+                  {
+                    "Ref": "AWS::Partition"
+                  },
+                  ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                ]
+              ]
+            }
+          ]
+        },
+        "Type": "AWS::IAM::Role"
       },
       "ClientVpnOnPremiseADConnectoronEventHandlerServiceRoleDefaultPolicyB2B5BCAF": {
-        "Type": "AWS::IAM::Policy",
         "Properties": {
           "PolicyDocument": {
             "Statement": [
@@ -196,14 +356,18 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
               "Ref": "ClientVpnOnPremiseADConnectoronEventHandlerServiceRoleCEC4BEE6"
             }
           ]
-        }
+        },
+        "Type": "AWS::IAM::Policy"
       },
-      "ClientVpnOnPremiseADConnectoronEventHandler3B64B117": {
-        "Type": "AWS::Lambda::Function",
+      "ClientVpnadConnectorProviderframeworkisCompleteF325554D": {
+        "DependsOn": [
+          "ClientVpnadConnectorProviderframeworkisCompleteServiceRoleDefaultPolicy37BFB1AC",
+          "ClientVpnadConnectorProviderframeworkisCompleteServiceRole2E920406"
+        ],
         "Properties": {
           "Code": {
             "S3Bucket": {
-              "Ref": "AssetParametersc0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05S3Bucket1EC6DE48"
+              "Ref": "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cS3BucketEAC9DD43"
             },
             "S3Key": {
               "Fn::Join": [
@@ -216,7 +380,7 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParametersc0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05S3VersionKeyB4F863B8"
+                            "Ref": "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cS3VersionKeyDD9AE9E7"
                           }
                         ]
                       }
@@ -229,7 +393,7 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParametersc0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05S3VersionKeyB4F863B8"
+                            "Ref": "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cS3VersionKeyDD9AE9E7"
                           }
                         ]
                       }
@@ -239,47 +403,36 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
               ]
             }
           },
+          "Description": "AWS CDK resource provider framework - isComplete (test/ClientVpn/adConnectorProvider)",
+          "Environment": {
+            "Variables": {
+              "USER_IS_COMPLETE_FUNCTION_ARN": {
+                "Fn::GetAtt": [
+                  "ClientVpnOnPremiseADConnectorisCompleteHandler843CC5F1",
+                  "Arn"
+                ]
+              },
+              "USER_ON_EVENT_FUNCTION_ARN": {
+                "Fn::GetAtt": [
+                  "ClientVpnOnPremiseADConnectoronEventHandler3B64B117",
+                  "Arn"
+                ]
+              }
+            }
+          },
+          "Handler": "framework.isComplete",
           "Role": {
             "Fn::GetAtt": [
-              "ClientVpnOnPremiseADConnectoronEventHandlerServiceRoleCEC4BEE6",
+              "ClientVpnadConnectorProviderframeworkisCompleteServiceRole2E920406",
               "Arn"
             ]
           },
-          "Handler": "com.ilmlf.adconnector.customresource.OnEventHandler",
-          "MemorySize": 1024,
-          "Runtime": "java11",
-          "Timeout": 10
+          "Runtime": "nodejs14.x",
+          "Timeout": 900
         },
-        "DependsOn": [
-          "ClientVpnOnPremiseADConnectoronEventHandlerServiceRoleDefaultPolicyB2B5BCAF",
-          "ClientVpnOnPremiseADConnectoronEventHandlerServiceRoleCEC4BEE6"
-        ]
+        "Type": "AWS::Lambda::Function"
       },
-      "ClientVpnOnPremiseADConnectoronEventHandlerLogRetentionABE201A9": {
-        "Type": "Custom::LogRetention",
-        "Properties": {
-          "ServiceToken": {
-            "Fn::GetAtt": [
-              "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A",
-              "Arn"
-            ]
-          },
-          "LogGroupName": {
-            "Fn::Join": [
-              "",
-              [
-                "/aws/lambda/",
-                {
-                  "Ref": "ClientVpnOnPremiseADConnectoronEventHandler3B64B117"
-                }
-              ]
-            ]
-          },
-          "RetentionInDays": 7
-        }
-      },
-      "ClientVpnOnPremiseADConnectorisCompleteHandlerServiceRoleEF97E18F": {
-        "Type": "AWS::IAM::Role",
+      "ClientVpnadConnectorProviderframeworkisCompleteServiceRole2E920406": {
         "Properties": {
           "AssumeRolePolicyDocument": {
             "Statement": [
@@ -307,35 +460,54 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
               ]
             }
           ]
-        }
+        },
+        "Type": "AWS::IAM::Role"
       },
-      "ClientVpnOnPremiseADConnectorisCompleteHandlerServiceRoleDefaultPolicyA802110D": {
-        "Type": "AWS::IAM::Policy",
+      "ClientVpnadConnectorProviderframeworkisCompleteServiceRoleDefaultPolicy37BFB1AC": {
         "Properties": {
           "PolicyDocument": {
             "Statement": [
               {
-                "Action": "ds:DescribeDirectories",
+                "Action": "lambda:InvokeFunction",
                 "Effect": "Allow",
-                "Resource": "*"
+                "Resource": {
+                  "Fn::GetAtt": [
+                    "ClientVpnOnPremiseADConnectoronEventHandler3B64B117",
+                    "Arn"
+                  ]
+                }
+              },
+              {
+                "Action": "lambda:InvokeFunction",
+                "Effect": "Allow",
+                "Resource": {
+                  "Fn::GetAtt": [
+                    "ClientVpnOnPremiseADConnectorisCompleteHandler843CC5F1",
+                    "Arn"
+                  ]
+                }
               }
             ],
             "Version": "2012-10-17"
           },
-          "PolicyName": "ClientVpnOnPremiseADConnectorisCompleteHandlerServiceRoleDefaultPolicyA802110D",
+          "PolicyName": "ClientVpnadConnectorProviderframeworkisCompleteServiceRoleDefaultPolicy37BFB1AC",
           "Roles": [
             {
-              "Ref": "ClientVpnOnPremiseADConnectorisCompleteHandlerServiceRoleEF97E18F"
+              "Ref": "ClientVpnadConnectorProviderframeworkisCompleteServiceRole2E920406"
             }
           ]
-        }
+        },
+        "Type": "AWS::IAM::Policy"
       },
-      "ClientVpnOnPremiseADConnectorisCompleteHandler843CC5F1": {
-        "Type": "AWS::Lambda::Function",
+      "ClientVpnadConnectorProviderframeworkonEvent0365ACCF": {
+        "DependsOn": [
+          "ClientVpnadConnectorProviderframeworkonEventServiceRoleDefaultPolicy5A097B15",
+          "ClientVpnadConnectorProviderframeworkonEventServiceRole3BD736DB"
+        ],
         "Properties": {
           "Code": {
             "S3Bucket": {
-              "Ref": "AssetParametersc0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05S3Bucket1EC6DE48"
+              "Ref": "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cS3BucketEAC9DD43"
             },
             "S3Key": {
               "Fn::Join": [
@@ -348,7 +520,7 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParametersc0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05S3VersionKeyB4F863B8"
+                            "Ref": "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cS3VersionKeyDD9AE9E7"
                           }
                         ]
                       }
@@ -361,7 +533,7 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParametersc0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05S3VersionKeyB4F863B8"
+                            "Ref": "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cS3VersionKeyDD9AE9E7"
                           }
                         ]
                       }
@@ -371,47 +543,39 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
               ]
             }
           },
+          "Description": "AWS CDK resource provider framework - onEvent (test/ClientVpn/adConnectorProvider)",
+          "Environment": {
+            "Variables": {
+              "USER_IS_COMPLETE_FUNCTION_ARN": {
+                "Fn::GetAtt": [
+                  "ClientVpnOnPremiseADConnectorisCompleteHandler843CC5F1",
+                  "Arn"
+                ]
+              },
+              "USER_ON_EVENT_FUNCTION_ARN": {
+                "Fn::GetAtt": [
+                  "ClientVpnOnPremiseADConnectoronEventHandler3B64B117",
+                  "Arn"
+                ]
+              },
+              "WAITER_STATE_MACHINE_ARN": {
+                "Ref": "ClientVpnadConnectorProviderwaiterstatemachine19CCE80E"
+              }
+            }
+          },
+          "Handler": "framework.onEvent",
           "Role": {
             "Fn::GetAtt": [
-              "ClientVpnOnPremiseADConnectorisCompleteHandlerServiceRoleEF97E18F",
+              "ClientVpnadConnectorProviderframeworkonEventServiceRole3BD736DB",
               "Arn"
             ]
           },
-          "Handler": "com.ilmlf.adconnector.customresource.IsCompleteHandler",
-          "MemorySize": 1024,
-          "Runtime": "java11",
-          "Timeout": 10
+          "Runtime": "nodejs14.x",
+          "Timeout": 900
         },
-        "DependsOn": [
-          "ClientVpnOnPremiseADConnectorisCompleteHandlerServiceRoleDefaultPolicyA802110D",
-          "ClientVpnOnPremiseADConnectorisCompleteHandlerServiceRoleEF97E18F"
-        ]
-      },
-      "ClientVpnOnPremiseADConnectorisCompleteHandlerLogRetention5ACF97E2": {
-        "Type": "Custom::LogRetention",
-        "Properties": {
-          "ServiceToken": {
-            "Fn::GetAtt": [
-              "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A",
-              "Arn"
-            ]
-          },
-          "LogGroupName": {
-            "Fn::Join": [
-              "",
-              [
-                "/aws/lambda/",
-                {
-                  "Ref": "ClientVpnOnPremiseADConnectorisCompleteHandler843CC5F1"
-                }
-              ]
-            ]
-          },
-          "RetentionInDays": 7
-        }
+        "Type": "AWS::Lambda::Function"
       },
       "ClientVpnadConnectorProviderframeworkonEventServiceRole3BD736DB": {
-        "Type": "AWS::IAM::Role",
         "Properties": {
           "AssumeRolePolicyDocument": {
             "Statement": [
@@ -439,10 +603,10 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
               ]
             }
           ]
-        }
+        },
+        "Type": "AWS::IAM::Role"
       },
       "ClientVpnadConnectorProviderframeworkonEventServiceRoleDefaultPolicy5A097B15": {
-        "Type": "AWS::IAM::Policy",
         "Properties": {
           "PolicyDocument": {
             "Statement": [
@@ -482,10 +646,14 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
               "Ref": "ClientVpnadConnectorProviderframeworkonEventServiceRole3BD736DB"
             }
           ]
-        }
+        },
+        "Type": "AWS::IAM::Policy"
       },
-      "ClientVpnadConnectorProviderframeworkonEvent0365ACCF": {
-        "Type": "AWS::Lambda::Function",
+      "ClientVpnadConnectorProviderframeworkonTimeout19EC45EF": {
+        "DependsOn": [
+          "ClientVpnadConnectorProviderframeworkonTimeoutServiceRoleDefaultPolicyA54A147E",
+          "ClientVpnadConnectorProviderframeworkonTimeoutServiceRoleAD836F6F"
+        ],
         "Properties": {
           "Code": {
             "S3Bucket": {
@@ -525,183 +693,36 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
               ]
             }
           },
-          "Role": {
-            "Fn::GetAtt": [
-              "ClientVpnadConnectorProviderframeworkonEventServiceRole3BD736DB",
-              "Arn"
-            ]
-          },
-          "Description": "AWS CDK resource provider framework - onEvent (test/ClientVpn/adConnectorProvider)",
+          "Description": "AWS CDK resource provider framework - onTimeout (test/ClientVpn/adConnectorProvider)",
           "Environment": {
             "Variables": {
-              "USER_ON_EVENT_FUNCTION_ARN": {
-                "Fn::GetAtt": [
-                  "ClientVpnOnPremiseADConnectoronEventHandler3B64B117",
-                  "Arn"
-                ]
-              },
               "USER_IS_COMPLETE_FUNCTION_ARN": {
                 "Fn::GetAtt": [
                   "ClientVpnOnPremiseADConnectorisCompleteHandler843CC5F1",
                   "Arn"
                 ]
               },
-              "WAITER_STATE_MACHINE_ARN": {
-                "Ref": "ClientVpnadConnectorProviderwaiterstatemachine19CCE80E"
-              }
-            }
-          },
-          "Handler": "framework.onEvent",
-          "Runtime": "nodejs14.x",
-          "Timeout": 900
-        },
-        "DependsOn": [
-          "ClientVpnadConnectorProviderframeworkonEventServiceRoleDefaultPolicy5A097B15",
-          "ClientVpnadConnectorProviderframeworkonEventServiceRole3BD736DB"
-        ]
-      },
-      "ClientVpnadConnectorProviderframeworkisCompleteServiceRole2E920406": {
-        "Type": "AWS::IAM::Role",
-        "Properties": {
-          "AssumeRolePolicyDocument": {
-            "Statement": [
-              {
-                "Action": "sts:AssumeRole",
-                "Effect": "Allow",
-                "Principal": {
-                  "Service": "lambda.amazonaws.com"
-                }
-              }
-            ],
-            "Version": "2012-10-17"
-          },
-          "ManagedPolicyArns": [
-            {
-              "Fn::Join": [
-                "",
-                [
-                  "arn:",
-                  {
-                    "Ref": "AWS::Partition"
-                  },
-                  ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-                ]
-              ]
-            }
-          ]
-        }
-      },
-      "ClientVpnadConnectorProviderframeworkisCompleteServiceRoleDefaultPolicy37BFB1AC": {
-        "Type": "AWS::IAM::Policy",
-        "Properties": {
-          "PolicyDocument": {
-            "Statement": [
-              {
-                "Action": "lambda:InvokeFunction",
-                "Effect": "Allow",
-                "Resource": {
-                  "Fn::GetAtt": [
-                    "ClientVpnOnPremiseADConnectoronEventHandler3B64B117",
-                    "Arn"
-                  ]
-                }
-              },
-              {
-                "Action": "lambda:InvokeFunction",
-                "Effect": "Allow",
-                "Resource": {
-                  "Fn::GetAtt": [
-                    "ClientVpnOnPremiseADConnectorisCompleteHandler843CC5F1",
-                    "Arn"
-                  ]
-                }
-              }
-            ],
-            "Version": "2012-10-17"
-          },
-          "PolicyName": "ClientVpnadConnectorProviderframeworkisCompleteServiceRoleDefaultPolicy37BFB1AC",
-          "Roles": [
-            {
-              "Ref": "ClientVpnadConnectorProviderframeworkisCompleteServiceRole2E920406"
-            }
-          ]
-        }
-      },
-      "ClientVpnadConnectorProviderframeworkisCompleteF325554D": {
-        "Type": "AWS::Lambda::Function",
-        "Properties": {
-          "Code": {
-            "S3Bucket": {
-              "Ref": "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cS3BucketEAC9DD43"
-            },
-            "S3Key": {
-              "Fn::Join": [
-                "",
-                [
-                  {
-                    "Fn::Select": [
-                      0,
-                      {
-                        "Fn::Split": [
-                          "||",
-                          {
-                            "Ref": "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cS3VersionKeyDD9AE9E7"
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "Fn::Select": [
-                      1,
-                      {
-                        "Fn::Split": [
-                          "||",
-                          {
-                            "Ref": "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cS3VersionKeyDD9AE9E7"
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              ]
-            }
-          },
-          "Role": {
-            "Fn::GetAtt": [
-              "ClientVpnadConnectorProviderframeworkisCompleteServiceRole2E920406",
-              "Arn"
-            ]
-          },
-          "Description": "AWS CDK resource provider framework - isComplete (test/ClientVpn/adConnectorProvider)",
-          "Environment": {
-            "Variables": {
               "USER_ON_EVENT_FUNCTION_ARN": {
                 "Fn::GetAtt": [
                   "ClientVpnOnPremiseADConnectoronEventHandler3B64B117",
                   "Arn"
                 ]
-              },
-              "USER_IS_COMPLETE_FUNCTION_ARN": {
-                "Fn::GetAtt": [
-                  "ClientVpnOnPremiseADConnectorisCompleteHandler843CC5F1",
-                  "Arn"
-                ]
               }
             }
           },
-          "Handler": "framework.isComplete",
+          "Handler": "framework.onTimeout",
+          "Role": {
+            "Fn::GetAtt": [
+              "ClientVpnadConnectorProviderframeworkonTimeoutServiceRoleAD836F6F",
+              "Arn"
+            ]
+          },
           "Runtime": "nodejs14.x",
           "Timeout": 900
         },
-        "DependsOn": [
-          "ClientVpnadConnectorProviderframeworkisCompleteServiceRoleDefaultPolicy37BFB1AC",
-          "ClientVpnadConnectorProviderframeworkisCompleteServiceRole2E920406"
-        ]
+        "Type": "AWS::Lambda::Function"
       },
       "ClientVpnadConnectorProviderframeworkonTimeoutServiceRoleAD836F6F": {
-        "Type": "AWS::IAM::Role",
         "Properties": {
           "AssumeRolePolicyDocument": {
             "Statement": [
@@ -729,10 +750,10 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
               ]
             }
           ]
-        }
+        },
+        "Type": "AWS::IAM::Role"
       },
       "ClientVpnadConnectorProviderframeworkonTimeoutServiceRoleDefaultPolicyA54A147E": {
-        "Type": "AWS::IAM::Policy",
         "Properties": {
           "PolicyDocument": {
             "Statement": [
@@ -765,83 +786,47 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
               "Ref": "ClientVpnadConnectorProviderframeworkonTimeoutServiceRoleAD836F6F"
             }
           ]
-        }
+        },
+        "Type": "AWS::IAM::Policy"
       },
-      "ClientVpnadConnectorProviderframeworkonTimeout19EC45EF": {
-        "Type": "AWS::Lambda::Function",
+      "ClientVpnadConnectorProviderwaiterstatemachine19CCE80E": {
+        "DependsOn": [
+          "ClientVpnadConnectorProviderwaiterstatemachineRoleDefaultPolicyDD8B5B32",
+          "ClientVpnadConnectorProviderwaiterstatemachineRoleA8FD17DC"
+        ],
         "Properties": {
-          "Code": {
-            "S3Bucket": {
-              "Ref": "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cS3BucketEAC9DD43"
-            },
-            "S3Key": {
-              "Fn::Join": [
-                "",
-                [
-                  {
-                    "Fn::Select": [
-                      0,
-                      {
-                        "Fn::Split": [
-                          "||",
-                          {
-                            "Ref": "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cS3VersionKeyDD9AE9E7"
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "Fn::Select": [
-                      1,
-                      {
-                        "Fn::Split": [
-                          "||",
-                          {
-                            "Ref": "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cS3VersionKeyDD9AE9E7"
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
+          "DefinitionString": {
+            "Fn::Join": [
+              "",
+              [
+                "{\"StartAt\":\"framework-isComplete-task\",\"States\":{\"framework-isComplete-task\":{\"End\":true,\"Retry\":[{\"ErrorEquals\":[\"States.ALL\"],\"IntervalSeconds\":5,\"MaxAttempts\":360,\"BackoffRate\":1}],\"Catch\":[{\"ErrorEquals\":[\"States.ALL\"],\"Next\":\"framework-onTimeout-task\"}],\"Type\":\"Task\",\"Resource\":\"",
+                {
+                  "Fn::GetAtt": [
+                    "ClientVpnadConnectorProviderframeworkisCompleteF325554D",
+                    "Arn"
+                  ]
+                },
+                "\"},\"framework-onTimeout-task\":{\"End\":true,\"Type\":\"Task\",\"Resource\":\"",
+                {
+                  "Fn::GetAtt": [
+                    "ClientVpnadConnectorProviderframeworkonTimeout19EC45EF",
+                    "Arn"
+                  ]
+                },
+                "\"}}}"
               ]
-            }
-          },
-          "Role": {
-            "Fn::GetAtt": [
-              "ClientVpnadConnectorProviderframeworkonTimeoutServiceRoleAD836F6F",
-              "Arn"
             ]
           },
-          "Description": "AWS CDK resource provider framework - onTimeout (test/ClientVpn/adConnectorProvider)",
-          "Environment": {
-            "Variables": {
-              "USER_ON_EVENT_FUNCTION_ARN": {
-                "Fn::GetAtt": [
-                  "ClientVpnOnPremiseADConnectoronEventHandler3B64B117",
-                  "Arn"
-                ]
-              },
-              "USER_IS_COMPLETE_FUNCTION_ARN": {
-                "Fn::GetAtt": [
-                  "ClientVpnOnPremiseADConnectorisCompleteHandler843CC5F1",
-                  "Arn"
-                ]
-              }
-            }
-          },
-          "Handler": "framework.onTimeout",
-          "Runtime": "nodejs14.x",
-          "Timeout": 900
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "ClientVpnadConnectorProviderwaiterstatemachineRoleA8FD17DC",
+              "Arn"
+            ]
+          }
         },
-        "DependsOn": [
-          "ClientVpnadConnectorProviderframeworkonTimeoutServiceRoleDefaultPolicyA54A147E",
-          "ClientVpnadConnectorProviderframeworkonTimeoutServiceRoleAD836F6F"
-        ]
+        "Type": "AWS::StepFunctions::StateMachine"
       },
       "ClientVpnadConnectorProviderwaiterstatemachineRoleA8FD17DC": {
-        "Type": "AWS::IAM::Role",
         "Properties": {
           "AssumeRolePolicyDocument": {
             "Statement": [
@@ -855,10 +840,10 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
             ],
             "Version": "2012-10-17"
           }
-        }
+        },
+        "Type": "AWS::IAM::Role"
       },
       "ClientVpnadConnectorProviderwaiterstatemachineRoleDefaultPolicyDD8B5B32": {
-        "Type": "AWS::IAM::Policy",
         "Properties": {
           "PolicyDocument": {
             "Statement": [
@@ -891,129 +876,15 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
               "Ref": "ClientVpnadConnectorProviderwaiterstatemachineRoleA8FD17DC"
             }
           ]
-        }
-      },
-      "ClientVpnadConnectorProviderwaiterstatemachine19CCE80E": {
-        "Type": "AWS::StepFunctions::StateMachine",
-        "Properties": {
-          "DefinitionString": {
-            "Fn::Join": [
-              "",
-              [
-                "{\"StartAt\":\"framework-isComplete-task\",\"States\":{\"framework-isComplete-task\":{\"End\":true,\"Retry\":[{\"ErrorEquals\":[\"States.ALL\"],\"IntervalSeconds\":5,\"MaxAttempts\":360,\"BackoffRate\":1}],\"Catch\":[{\"ErrorEquals\":[\"States.ALL\"],\"Next\":\"framework-onTimeout-task\"}],\"Type\":\"Task\",\"Resource\":\"",
-                {
-                  "Fn::GetAtt": [
-                    "ClientVpnadConnectorProviderframeworkisCompleteF325554D",
-                    "Arn"
-                  ]
-                },
-                "\"},\"framework-onTimeout-task\":{\"End\":true,\"Type\":\"Task\",\"Resource\":\"",
-                {
-                  "Fn::GetAtt": [
-                    "ClientVpnadConnectorProviderframeworkonTimeout19EC45EF",
-                    "Arn"
-                  ]
-                },
-                "\"}}}"
-              ]
-            ]
-          },
-          "RoleArn": {
-            "Fn::GetAtt": [
-              "ClientVpnadConnectorProviderwaiterstatemachineRoleA8FD17DC",
-              "Arn"
-            ]
-          }
         },
-        "DependsOn": [
-          "ClientVpnadConnectorProviderwaiterstatemachineRoleDefaultPolicyDD8B5B32",
-          "ClientVpnadConnectorProviderwaiterstatemachineRoleA8FD17DC"
-        ]
-      },
-      "ClientVpnADConnector398A194F": {
-        "Type": "Custom::ADConnector",
-        "Properties": {
-          "ServiceToken": {
-            "Fn::GetAtt": [
-              "ClientVpnadConnectorProviderframeworkonEvent0365ACCF",
-              "Arn"
-            ]
-          },
-          "dnsIps": [
-            "172.16.0.94",
-            "172.16.0.126"
-          ],
-          "domainName": "ilovemylocalfarmer.com",
-          "secretId": "arn:aws:secretsmanager:eu-west-1:053319678981:secret:DomainAdminPassword-qWxv2k",
-          "subnetIds": [
-            "p-12345",
-            "p-67890"
-          ],
-          "vpcId": "vpc-12345"
-        },
-        "UpdateReplacePolicy": "Delete",
-        "DeletionPolicy": "Delete"
-      },
-      "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB": {
-        "Type": "AWS::IAM::Role",
-        "Properties": {
-          "AssumeRolePolicyDocument": {
-            "Statement": [
-              {
-                "Action": "sts:AssumeRole",
-                "Effect": "Allow",
-                "Principal": {
-                  "Service": "lambda.amazonaws.com"
-                }
-              }
-            ],
-            "Version": "2012-10-17"
-          },
-          "ManagedPolicyArns": [
-            {
-              "Fn::Join": [
-                "",
-                [
-                  "arn:",
-                  {
-                    "Ref": "AWS::Partition"
-                  },
-                  ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-                ]
-              ]
-            }
-          ]
-        }
-      },
-      "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB": {
-        "Type": "AWS::IAM::Policy",
-        "Properties": {
-          "PolicyDocument": {
-            "Statement": [
-              {
-                "Action": [
-                  "logs:PutRetentionPolicy",
-                  "logs:DeleteRetentionPolicy"
-                ],
-                "Effect": "Allow",
-                "Resource": "*"
-              }
-            ],
-            "Version": "2012-10-17"
-          },
-          "PolicyName": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB",
-          "Roles": [
-            {
-              "Ref": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB"
-            }
-          ]
-        }
+        "Type": "AWS::IAM::Policy"
       },
       "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A": {
-        "Type": "AWS::Lambda::Function",
+        "DependsOn": [
+          "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB",
+          "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB"
+        ],
         "Properties": {
-          "Handler": "index.handler",
-          "Runtime": "nodejs12.x",
           "Code": {
             "S3Bucket": {
               "Ref": "AssetParameters67b7823b74bc135986aa72f889d6a8da058d0c4a20cbc2dfc6f78995fdd2fc24S3Bucket4D46ABB5"
@@ -1052,70 +923,199 @@ com.ilmlf.clientconnection.ClientConnectionTest.testStack=[
               ]
             }
           },
+          "Handler": "index.handler",
           "Role": {
             "Fn::GetAtt": [
               "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB",
               "Arn"
             ]
-          }
+          },
+          "Runtime": "nodejs12.x"
         },
-        "DependsOn": [
-          "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB",
-          "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB"
-        ]
-      }
-    },
-    "Outputs": {
-      "VpcVpnClientEndpointSelfServicePortalUrl42E6DE1B": {
-        "Value": {
-          "Fn::Join": [
-            "",
-            [
-              "https://self-service.clientvpn.amazonaws.com/endpoints/",
+        "Type": "AWS::Lambda::Function"
+      },
+      "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB": {
+        "Properties": {
+          "AssumeRolePolicyDocument": {
+            "Statement": [
               {
-                "Ref": "VpcVpnClientEndpointFF7CE2D1"
+                "Action": "sts:AssumeRole",
+                "Effect": "Allow",
+                "Principal": {
+                  "Service": "lambda.amazonaws.com"
+                }
               }
-            ]
+            ],
+            "Version": "2012-10-17"
+          },
+          "ManagedPolicyArns": [
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "arn:",
+                  {
+                    "Ref": "AWS::Partition"
+                  },
+                  ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                ]
+              ]
+            }
           ]
-        }
-      }
-    },
-    "Parameters": {
-      "AssetParametersc0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05S3Bucket1EC6DE48": {
-        "Type": "String",
-        "Description": "S3 bucket for asset \"c0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05\""
+        },
+        "Type": "AWS::IAM::Role"
       },
-      "AssetParametersc0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05S3VersionKeyB4F863B8": {
-        "Type": "String",
-        "Description": "S3 key for asset version \"c0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05\""
+      "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB": {
+        "Properties": {
+          "PolicyDocument": {
+            "Statement": [
+              {
+                "Action": [
+                  "logs:PutRetentionPolicy",
+                  "logs:DeleteRetentionPolicy"
+                ],
+                "Effect": "Allow",
+                "Resource": "*"
+              }
+            ],
+            "Version": "2012-10-17"
+          },
+          "PolicyName": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB",
+          "Roles": [
+            {
+              "Ref": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB"
+            }
+          ]
+        },
+        "Type": "AWS::IAM::Policy"
       },
-      "AssetParametersc0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05ArtifactHashC13F0208": {
-        "Type": "String",
-        "Description": "Artifact hash for asset \"c0482b1339405f0063e6710b2b42542579b00eccf95bea89b34544660f1c0a05\""
+      "VpcVpnClientEndpointAssociation06D0E5EB5": {
+        "Properties": {
+          "ClientVpnEndpointId": {
+            "Ref": "VpcVpnClientEndpointFF7CE2D1"
+          },
+          "SubnetId": "p-12345"
+        },
+        "Type": "AWS::EC2::ClientVpnTargetNetworkAssociation"
       },
-      "AssetParameters67b7823b74bc135986aa72f889d6a8da058d0c4a20cbc2dfc6f78995fdd2fc24S3Bucket4D46ABB5": {
-        "Type": "String",
-        "Description": "S3 bucket for asset \"67b7823b74bc135986aa72f889d6a8da058d0c4a20cbc2dfc6f78995fdd2fc24\""
+      "VpcVpnClientEndpointAssociation1C1885946": {
+        "Properties": {
+          "ClientVpnEndpointId": {
+            "Ref": "VpcVpnClientEndpointFF7CE2D1"
+          },
+          "SubnetId": "p-67890"
+        },
+        "Type": "AWS::EC2::ClientVpnTargetNetworkAssociation"
       },
-      "AssetParameters67b7823b74bc135986aa72f889d6a8da058d0c4a20cbc2dfc6f78995fdd2fc24S3VersionKeyB0F28861": {
-        "Type": "String",
-        "Description": "S3 key for asset version \"67b7823b74bc135986aa72f889d6a8da058d0c4a20cbc2dfc6f78995fdd2fc24\""
+      "VpcVpnClientEndpointAuthorizeAll6127D700": {
+        "Properties": {
+          "AuthorizeAllGroups": true,
+          "ClientVpnEndpointId": {
+            "Ref": "VpcVpnClientEndpointFF7CE2D1"
+          },
+          "TargetNetworkCidr": "1.2.3.4/5"
+        },
+        "Type": "AWS::EC2::ClientVpnAuthorizationRule"
       },
-      "AssetParameters67b7823b74bc135986aa72f889d6a8da058d0c4a20cbc2dfc6f78995fdd2fc24ArtifactHashBA91B77F": {
-        "Type": "String",
-        "Description": "Artifact hash for asset \"67b7823b74bc135986aa72f889d6a8da058d0c4a20cbc2dfc6f78995fdd2fc24\""
+      "VpcVpnClientEndpointFF7CE2D1": {
+        "Properties": {
+          "AuthenticationOptions": [
+            {
+              "ActiveDirectory": {
+                "DirectoryId": {
+                  "Fn::GetAtt": [
+                    "ClientVpnADConnector398A194F",
+                    "DirectoryId"
+                  ]
+                }
+              },
+              "Type": "directory-service-authentication"
+            }
+          ],
+          "ClientCidrBlock": "172.31.0.0/16",
+          "ConnectionLogOptions": {
+            "CloudwatchLogGroup": {
+              "Ref": "VpcVpnClientEndpointLogGroup57D91305"
+            },
+            "Enabled": true
+          },
+          "DnsServers": [
+            "172.16.0.94",
+            "172.16.0.126"
+          ],
+          "SecurityGroupIds": [
+            {
+              "Fn::GetAtt": [
+                "VpcVpnClientEndpointSecurityGroupFFE8B2CE",
+                "GroupId"
+              ]
+            }
+          ],
+          "ServerCertificateArn": "arn:aws:acm:eu-west-1:433621526002:certificate/f09c1fca-1ffd-4768-b4e6-7f424f2f7c61",
+          "SplitTunnel": true,
+          "VpcId": "vpc-12345"
+        },
+        "Type": "AWS::EC2::ClientVpnEndpoint"
       },
-      "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cS3BucketEAC9DD43": {
-        "Type": "String",
-        "Description": "S3 bucket for asset \"c691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49c\""
+      "VpcVpnClientEndpointLogGroup57D91305": {
+        "DeletionPolicy": "Retain",
+        "Properties": {
+          "RetentionInDays": 731
+        },
+        "Type": "AWS::Logs::LogGroup",
+        "UpdateReplacePolicy": "Retain"
       },
-      "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cS3VersionKeyDD9AE9E7": {
-        "Type": "String",
-        "Description": "S3 key for asset version \"c691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49c\""
+      "VpcVpnClientEndpointSecurityGroupFFE8B2CE": {
+        "Properties": {
+          "GroupDescription": "test/Vpc/VpnClientEndpoint/SecurityGroup",
+          "SecurityGroupEgress": [
+            {
+              "CidrIp": "0.0.0.0/0",
+              "Description": "Allow all outbound traffic by default",
+              "IpProtocol": "-1"
+            }
+          ],
+          "VpcId": "vpc-12345"
+        },
+        "Type": "AWS::EC2::SecurityGroup"
       },
-      "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cArtifactHash627DAAA7": {
-        "Type": "String",
-        "Description": "Artifact hash for asset \"c691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49c\""
+      "VpcVpnClientEndpointonPremise1CA94A06": {
+        "Properties": {
+          "AuthorizeAllGroups": true,
+          "ClientVpnEndpointId": {
+            "Ref": "VpcVpnClientEndpointFF7CE2D1"
+          },
+          "TargetNetworkCidr": "172.16.0.0/16"
+        },
+        "Type": "AWS::EC2::ClientVpnAuthorizationRule"
+      },
+      "VpcVpnClientEndpointonPremiseRoutep123456C529374": {
+        "DependsOn": [
+          "VpcVpnClientEndpointAssociation06D0E5EB5",
+          "VpcVpnClientEndpointAssociation1C1885946"
+        ],
+        "Properties": {
+          "ClientVpnEndpointId": {
+            "Ref": "VpcVpnClientEndpointFF7CE2D1"
+          },
+          "DestinationCidrBlock": "172.16.0.0/16",
+          "TargetVpcSubnetId": "p-12345"
+        },
+        "Type": "AWS::EC2::ClientVpnRoute"
+      },
+      "VpcVpnClientEndpointonPremiseRoutep678904A950966": {
+        "DependsOn": [
+          "VpcVpnClientEndpointAssociation06D0E5EB5",
+          "VpcVpnClientEndpointAssociation1C1885946"
+        ],
+        "Properties": {
+          "ClientVpnEndpointId": {
+            "Ref": "VpcVpnClientEndpointFF7CE2D1"
+          },
+          "DestinationCidrBlock": "172.16.0.0/16",
+          "TargetVpcSubnetId": "p-67890"
+        },
+        "Type": "AWS::EC2::ClientVpnRoute"
       }
     }
   }
