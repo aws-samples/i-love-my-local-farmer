@@ -107,8 +107,7 @@ public class AdConnectorConstruct extends Construct {
                     Code.fromAsset(
                         "./AdConnectorCustomResource",
                         AssetOptions.builder()
-                            .assetHashType(AssetHashType.CUSTOM)
-                            .assetHash("test")
+                            .assetHashType(AssetHashType.SOURCE)
                             .bundling(
                                 builderOptions
                                     // TODO: add capability to use local bundling (.local) instead
@@ -158,8 +157,7 @@ public class AdConnectorConstruct extends Construct {
                     Code.fromAsset(
                         "./AdConnectorCustomResource",
                         AssetOptions.builder()
-                            .assetHashType(AssetHashType.CUSTOM)
-                            .assetHash("test")
+                            .assetHashType(AssetHashType.SOURCE)
                             .bundling(
                                 builderOptions
                                     .command(adConnectorCustomResourcePackagingInstructions)
