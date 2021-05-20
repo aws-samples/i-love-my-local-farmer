@@ -25,6 +25,7 @@ import java.util.TreeMap;
 import lombok.Data;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import software.amazon.awscdk.core.AssetHashType;
 import software.amazon.awscdk.core.BundlingOptions;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.CustomResource;
@@ -125,6 +126,8 @@ public class AdConnectorConstruct extends Construct {
     Function onEventHandler = new Function(this, "onEventHandler", FunctionProps.builder()
         .runtime(Runtime.JAVA_11)
         .code(Code.fromAsset("./AdConnectorCustomResource", AssetOptions.builder()
+            .assetHashType(AssetHashType.CUSTOM)
+            .assetHash("codeHash")
             .bundling(builderOptions
                 // TODO: add capability to use local bundling (.local) instead of docker one
                 .command(adConnectorCustomResourcePackagingInstructions)
@@ -174,6 +177,8 @@ public class AdConnectorConstruct extends Construct {
                 .bundling(builderOptions
                     .command(adConnectorCustomResourcePackagingInstructions)
                     .build())
+                .assetHashType(AssetHashType.CUSTOM)
+                .assetHash("codeHash")
                 .build()))
         .handler("com.ilmlf.adconnector.customresource.IsCompleteHandler")
         .memorySize(1024)
