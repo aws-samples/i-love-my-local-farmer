@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.ilmlf</groupId>
-    <artifactId>clientconnection</artifactId>
+    <groupId>com.ilmlf.delivery</groupId>
+    <artifactId>db</artifactId>
     <version>0.1</version>
 
     <properties>
@@ -24,7 +25,7 @@
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>true</failsOnError>
                     <linkXRef>false</linkXRef>
-                    <configLocation>../../checkstyle.xml</configLocation>
+                    <configLocation>../../../checkstyle.xml</configLocation>
                 </configuration>
                 <executions>
                     <execution>
@@ -56,7 +57,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.0.0</version>
                 <configuration>
-                    <mainClass>com.ilmlf.clientconnection.ClientConnectionApp</mainClass>
+                    <mainClass>com.ilmlf.delivery.db.DbApp</mainClass>
                 </configuration>
             </plugin>
         </plugins>
@@ -78,15 +79,9 @@
         </dependency>
         <dependency>
             <groupId>software.amazon.awscdk</groupId>
-            <artifactId>lambda</artifactId>
+            <artifactId>rds</artifactId>
             <version>${cdk.version}</version>
         </dependency>
-        <dependency>
-            <groupId>software.amazon.awscdk</groupId>
-            <artifactId>cdk-customresources</artifactId>
-            <version>${cdk.version}</version>
-        </dependency>
-
 
         <dependency>
             <groupId>org.projectlombok</groupId>
