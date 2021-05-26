@@ -5,7 +5,7 @@ on:
     branches: [ main ]
     types: [opened, edited, synchronize, reopened]
     paths:
-      - 'Projects/Delivery/Db/**'
+      - 'Projects/Delivery/cdk/**'
 
 defaults:
   run:
