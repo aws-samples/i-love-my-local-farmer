@@ -9,7 +9,7 @@ on:
 
 defaults:
   run:
-    working-directory: ./Projects/Delivery/Db
+    working-directory: ./Projects/Delivery/cdk
 
 jobs:
   build:
