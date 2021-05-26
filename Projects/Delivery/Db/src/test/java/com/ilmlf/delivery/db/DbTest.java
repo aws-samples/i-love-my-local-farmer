@@ -1,8 +1,6 @@
 package com.ilmlf.delivery.db;
 
 import io.github.jsonSnapshot.SnapshotMatcher;
-import java.util.Arrays;
-import java.util.Map;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import software.amazon.awscdk.core.App;
@@ -10,12 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Test;
-import software.amazon.awscdk.core.AppProps;
-import software.amazon.awscdk.core.Environment;
-import software.amazon.awscdk.core.StackProps;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static org.assertj.core.api.Assertions.assertThat;

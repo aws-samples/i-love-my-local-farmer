@@ -1,0 +1,210 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Delivery Service API",
+    "description": "API spec for the ILMLF delivery service",
+    "version": "1.0"
+  },
+  "paths": {
+    "/farm/{farm-id}/slots": {
+      "get": {
+        "operationId": "GET HTTP",
+        "parameters": [
+          {
+            "name": "farm-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Slots"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "AWS_PROXY",
+          "httpMethod": "POST",
+          "uri":  "{{GetSlots}}",
+          "payloadFormatVersion": 1.0,
+          "credentials":  "{{ApiRole}}"
+        }
+      },
+      "post": {
+        "operationId": "Create Delivery Slot",
+        "parameters": [
+          {
+            "name": "farm-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSlot"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "AWS_PROXY",
+          "httpMethod": "POST",
+          "uri": "{{CreateSlots}}",
+          "payloadFormatVersion": 1.0,
+          "credentials":  "{{ApiRole}}"
+        }
+      }
+    },
+    "/farm/{farm-id}/slot/{slot-id}": {
+      "put": {
+        "operationId": "Book Delivery",
+        "parameters": [
+          {
+            "name": "farm-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slot-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeliveryBooking"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "AWS_PROXY",
+          "httpMethod": "POST",
+          "uri": "{{BookDelivery}}",
+          "payloadFormatVersion": 1.0,
+          "credentials":  "{{ApiRole}}"
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Slots": {
+        "type": "object",
+        "properties": {
+          "farmId": {
+            "type": "string"
+          },
+          "availableSlots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Slot"
+            }
+          }
+        }
+      },
+      "Slot": {
+        "type": "object",
+        "properties": {
+          "slotId": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          }
+        }
+      },
+      "DeliveryBooking": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateSlot": {
+        "type": "object",
+        "properties": {
+          "slots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NewSlot"
+            }
+          }
+        }
+      },
+      "NewSlot": {
+        "type": "object",
+        "properties": {
+          "numDeliveries": {
+            "type": "integer"
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

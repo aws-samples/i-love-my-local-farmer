@@ -1,4 +1,4 @@
-com.ilmlf.delivery.db.DbTest.testStack=[
+DbTest.testStack=[
   {
     "Outputs": {
       "configJsonContents": {
@@ -7,7 +7,39 @@ com.ilmlf.delivery.db.DbTest.testStack=[
           "Fn::Join": [
             "",
             [
-              "{DB_PROXY_ARN=",
+              "{DB_ADMIN_SECRET=",
+              {
+                "Fn::Select": [
+                  6,
+                  {
+                    "Fn::Split": [
+                      ":",
+                      {
+                        "Ref": "testFarmerDBSecretCBD37E0A3fdaad7efa858a3daf9490cf0a702aeb"
+                      }
+                    ]
+                  }
+                ]
+              },
+              ", DB_ADMIN_SECRET_ARN=",
+              {
+                "Ref": "FarmerDBSecretAttachment8D79E04A"
+              },
+              ", DB_ENDPOINT=",
+              {
+                "Fn::GetAtt": [
+                  "FarmerDBC89642C8",
+                  "Endpoint.Address"
+                ]
+              },
+              ":",
+              {
+                "Fn::GetAtt": [
+                  "FarmerDBC89642C8",
+                  "Endpoint.Port"
+                ]
+              },
+              ", DB_PROXY_ARN=",
               {
                 "Fn::GetAtt": [
                   "FarmerDbProxy7A9720C2",
@@ -25,11 +57,14 @@ com.ilmlf.delivery.db.DbTest.testStack=[
               {
                 "Ref": "AWS::Region"
               },
-              ", DB_SECRET_ARN=",
+              ", DB_SG_ID=",
               {
-                "Ref": "FarmerDBSecretAttachment8D79E04A"
+                "Fn::GetAtt": [
+                  "FarmerDeliverySGDA50C27C",
+                  "GroupId"
+                ]
               },
-              ", DB_SECRET_NAME=",
+              ", DB_USER=lambda_iam, DB_USER_SECRET=",
               {
                 "Fn::Select": [
                   6,
@@ -37,18 +72,15 @@ com.ilmlf.delivery.db.DbTest.testStack=[
                     "Fn::Split": [
                       ":",
                       {
-                        "Ref": "testFarmerDBSecretCBD37E0A3fdaad7efa858a3daf9490cf0a702aeb"
+                        "Ref": "DbUserSecret7350D430"
                       }
                     ]
                   }
                 ]
               },
-              ", DB_SG_ID=",
+              ", DB_USER_SECRET_ARN=",
               {
-                "Fn::GetAtt": [
-                  "FarmerDeliverySGDA50C27C",
-                  "GroupId"
-                ]
+                "Ref": "DbUserSecret7350D430"
               },
               ", DB_VPC_ID=",
               {
@@ -61,6 +93,19 @@ com.ilmlf.delivery.db.DbTest.testStack=[
       }
     },
     "Resources": {
+      "DbUserSecret7350D430": {
+        "Properties": {
+          "Description": "Db Username and password",
+          "GenerateSecretString": {
+            "ExcludePunctuation": true,
+            "GenerateStringKey": "password",
+            "PasswordLength": 16,
+            "SecretStringTemplate": "{\"username\": \"lambda_iam\"}"
+          },
+          "Name": "DbUserSecret"
+        },
+        "Type": "AWS::SecretsManager::Secret"
+      },
       "FarmerDBC89642C8": {
         "DeletionPolicy": "Snapshot",
         "Properties": {
@@ -138,9 +183,16 @@ com.ilmlf.delivery.db.DbTest.testStack=[
           "Auth": [
             {
               "AuthScheme": "SECRETS",
-              "IAMAuth": "DISABLED",
+              "IAMAuth": "REQUIRED",
               "SecretArn": {
                 "Ref": "FarmerDBSecretAttachment8D79E04A"
+              }
+            },
+            {
+              "AuthScheme": "SECRETS",
+              "IAMAuth": "REQUIRED",
+              "SecretArn": {
+                "Ref": "DbUserSecret7350D430"
               }
             }
           ],
@@ -149,7 +201,7 @@ com.ilmlf.delivery.db.DbTest.testStack=[
           "RequireTLS": true,
           "RoleArn": {
             "Fn::GetAtt": [
-              "FarmerDbProxyIAMRoleF72268A5",
+              "RdsProxyRole46223FF5",
               "Arn"
             ]
           },
@@ -171,49 +223,6 @@ com.ilmlf.delivery.db.DbTest.testStack=[
           ]
         },
         "Type": "AWS::RDS::DBProxy"
-      },
-      "FarmerDbProxyIAMRoleDefaultPolicy212445D5": {
-        "Properties": {
-          "PolicyDocument": {
-            "Statement": [
-              {
-                "Action": [
-                  "secretsmanager:GetSecretValue",
-                  "secretsmanager:DescribeSecret"
-                ],
-                "Effect": "Allow",
-                "Resource": {
-                  "Ref": "FarmerDBSecretAttachment8D79E04A"
-                }
-              }
-            ],
-            "Version": "2012-10-17"
-          },
-          "PolicyName": "FarmerDbProxyIAMRoleDefaultPolicy212445D5",
-          "Roles": [
-            {
-              "Ref": "FarmerDbProxyIAMRoleF72268A5"
-            }
-          ]
-        },
-        "Type": "AWS::IAM::Policy"
-      },
-      "FarmerDbProxyIAMRoleF72268A5": {
-        "Properties": {
-          "AssumeRolePolicyDocument": {
-            "Statement": [
-              {
-                "Action": "sts:AssumeRole",
-                "Effect": "Allow",
-                "Principal": {
-                  "Service": "rds.amazonaws.com"
-                }
-              }
-            ],
-            "Version": "2012-10-17"
-          }
-        },
-        "Type": "AWS::IAM::Role"
       },
       "FarmerDbProxyProxyTargetGroupEC553179": {
         "Properties": {
@@ -300,6 +309,66 @@ com.ilmlf.delivery.db.DbTest.testStack=[
           "ToPort": 3306
         },
         "Type": "AWS::EC2::SecurityGroupIngress"
+      },
+      "RdsProxyRole46223FF5": {
+        "Properties": {
+          "AssumeRolePolicyDocument": {
+            "Statement": [
+              {
+                "Action": "sts:AssumeRole",
+                "Effect": "Allow",
+                "Principal": {
+                  "Service": "rds.amazonaws.com"
+                }
+              }
+            ],
+            "Version": "2012-10-17"
+          }
+        },
+        "Type": "AWS::IAM::Role"
+      },
+      "RdsProxyRoleDefaultPolicy2AF84426": {
+        "Properties": {
+          "PolicyDocument": {
+            "Statement": [
+              {
+                "Action": "kms:Decrypt",
+                "Effect": "Allow",
+                "Resource": {
+                  "Ref": "DbUserSecret7350D430"
+                }
+              },
+              {
+                "Action": [
+                  "secretsmanager:GetSecretValue",
+                  "secretsmanager:DescribeSecret"
+                ],
+                "Effect": "Allow",
+                "Resource": {
+                  "Ref": "FarmerDBSecretAttachment8D79E04A"
+                }
+              },
+              {
+                "Action": [
+                  "secretsmanager:GetSecretValue",
+                  "secretsmanager:DescribeSecret"
+                ],
+                "Effect": "Allow",
+                "Resource": {
+                  "Ref": "DbUserSecret7350D430"
+                }
+              }
+            ],
+            "Version": "2012-10-17"
+          },
+          "PolicyName": "RdsProxyRoleDefaultPolicy2AF84426",
+          "Roles": [
+            {
+              "Ref": "RdsProxyRole46223FF5"
+            }
+          ]
+        },
+        "Type": "AWS::IAM::Policy"
       },
       "farmerVpc3E1EF418": {
         "Properties": {

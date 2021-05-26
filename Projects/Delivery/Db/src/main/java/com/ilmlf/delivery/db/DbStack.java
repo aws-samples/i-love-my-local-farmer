@@ -1,5 +1,6 @@
 package com.ilmlf.delivery.db;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -17,6 +18,12 @@ import software.amazon.awscdk.services.ec2.SecurityGroup;
 import software.amazon.awscdk.services.ec2.SecurityGroupProps;
 import software.amazon.awscdk.services.ec2.SubnetSelection;
 import software.amazon.awscdk.services.ec2.Vpc;
+import software.amazon.awscdk.services.iam.Effect;
+import software.amazon.awscdk.services.iam.PolicyStatement;
+import software.amazon.awscdk.services.iam.PolicyStatementProps;
+import software.amazon.awscdk.services.iam.Role;
+import software.amazon.awscdk.services.iam.RoleProps;
+import software.amazon.awscdk.services.iam.ServicePrincipal;
 import software.amazon.awscdk.services.rds.Credentials;
 import software.amazon.awscdk.services.rds.DatabaseInstance;
 import software.amazon.awscdk.services.rds.DatabaseInstanceEngine;
@@ -27,6 +34,9 @@ import software.amazon.awscdk.services.rds.MySqlInstanceEngineProps;
 import software.amazon.awscdk.services.rds.MysqlEngineVersion;
 import software.amazon.awscdk.services.rds.ProxyTarget;
 import software.amazon.awscdk.services.rds.StorageType;
+import software.amazon.awscdk.services.secretsmanager.Secret;
+import software.amazon.awscdk.services.secretsmanager.SecretProps;
+import software.amazon.awscdk.services.secretsmanager.SecretStringGenerator;
 
 public class DbStack extends Stack {
   public DbStack(final Construct scope, final String id) {
@@ -55,6 +65,8 @@ public class DbStack extends Stack {
         Port.tcp(3306));
 
     String dbName = "FarmerDB";
+    String dbUser = "lambda_iam";
+    
     DatabaseInstance farmerDb =
         new DatabaseInstance(
             this,
@@ -82,7 +94,33 @@ public class DbStack extends Stack {
                 .port(3306)
                 .build());
 
+    Secret dbUserSecret = new Secret(this, "DbUserSecret",
+        SecretProps.builder()
+            .description("Db Username and password")
+            .secretName("DbUserSecret")
+            .generateSecretString(
+                SecretStringGenerator.builder()
+                    .secretStringTemplate("{\"username\": \"" + dbUser + "\"}")
+                    .generateStringKey("password")
+                    .passwordLength(16)
+                    .excludePunctuation(true)
+                    .build()
+            )
+            .build()
+    );
+    
     // RDS Proxy
+
+    Role rdsProxyRole = new Role(this, "RdsProxyRole",
+        RoleProps.builder().assumedBy(new ServicePrincipal("rds.amazonaws.com")).build());
+
+    rdsProxyRole.addToPolicy(new PolicyStatement(PolicyStatementProps.builder()
+        .effect(Effect.ALLOW)
+        .actions(Collections.singletonList("kms:Decrypt"))
+        .resources(Collections.singletonList(dbUserSecret.getSecretArn()))
+        .build()));
+
+
     DatabaseProxy dbProxy =
         new DatabaseProxy(
             this,
@@ -90,21 +128,29 @@ public class DbStack extends Stack {
             DatabaseProxyProps.builder()
                 .borrowTimeout(Duration.seconds(30))
                 .maxConnectionsPercent(50)
-                .secrets(List.of(farmerDb.getSecret()))
+                .secrets(List.of(farmerDb.getSecret(), dbUserSecret))
+                .role(rdsProxyRole)
                 .proxyTarget(ProxyTarget.fromInstance(farmerDb))
                 .vpc(vpc)
                 .securityGroups(List.of(farmerDbSG))
+                .iamAuth(true)
+                .requireTls(true)
                 .build());
 
     TreeMap<String, String> configJsonContents = new TreeMap<>();
     configJsonContents.put("DB_REGION", region);
     configJsonContents.put("DB_PROXY_ENDPOINT", dbProxy.getEndpoint() + ":3306/" + dbName);
+    configJsonContents.put("DB_ENDPOINT", farmerDb.getDbInstanceEndpointAddress() + ":" + farmerDb.getDbInstanceEndpointPort());
     configJsonContents.put("DB_VPC_ID", vpc.getVpcId());
     configJsonContents.put("DB_SG_ID", farmerDbSG.getSecurityGroupId());
-    configJsonContents.put("DB_SECRET_NAME", farmerDb.getSecret().getSecretName());
-    configJsonContents.put("DB_SECRET_ARN", farmerDb.getSecret().getSecretArn());
+    configJsonContents.put("DB_USER", dbUser);
+    configJsonContents.put("DB_USER_SECRET", dbUserSecret.getSecretName());
+    configJsonContents.put("DB_USER_SECRET_ARN", dbUserSecret.getSecretArn());
+    configJsonContents.put("DB_ADMIN_SECRET", farmerDb.getSecret().getSecretName());
+    configJsonContents.put("DB_ADMIN_SECRET_ARN", farmerDb.getSecret().getSecretArn());
     configJsonContents.put("DB_PROXY_ARN", dbProxy.getDbProxyArn());
 
+    // TODO: Fix to Json with ordering using GSON ? https://stackoverflow.com/a/29491895/1331590
     new CfnOutput(
         this,
         "configJsonContents",
