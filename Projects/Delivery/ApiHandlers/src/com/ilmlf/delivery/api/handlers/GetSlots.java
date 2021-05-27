@@ -13,14 +13,14 @@ limitations under the License.
 
 package com.ilmlf.delivery.api.handlers;
 
-import com.ilmlf.delivery.api.handlers.service.SlotService;
-import com.ilmlf.delivery.api.handlers.util.ApiUtil;
 import java.sql.SQLException;
 import java.time.Period;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 
+import com.ilmlf.delivery.api.handlers.service.SlotService;
+import com.ilmlf.delivery.api.handlers.util.ApiUtil;
 import org.json.JSONArray;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;

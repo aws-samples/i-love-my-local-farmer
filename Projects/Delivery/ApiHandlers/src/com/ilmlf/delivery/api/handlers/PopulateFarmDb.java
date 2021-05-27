@@ -16,7 +16,6 @@ package com.ilmlf.delivery.api.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
 import com.ilmlf.delivery.api.handlers.util.DbUtil;
 import com.ilmlf.delivery.api.handlers.util.SecretsUtil;
 import java.io.BufferedReader;
@@ -30,14 +29,14 @@ import org.json.JSONObject;
 /**
  * Seeds the database.
  */
-public class PopulateFarmDb implements RequestHandler<CloudFormationCustomResourceEvent, String> {
+public class PopulateFarmDb implements RequestHandler<Object, String> {
   static String DB_ENDPOINT = System.getenv("DB_ENDPOINT");
   static String DB_REGION = System.getenv("DB_REGION");
   static JSONObject DB_ADMIN_SECRET = SecretsUtil.getSecret(DB_REGION, System.getenv("DB_ADMIN_SECRET"));
   static String DB_ADMIN_USER = (String) DB_ADMIN_SECRET.get("username");
   static String DB_ADMIN_PWD = (String) DB_ADMIN_SECRET.get("password");
   static JSONObject DB_USER_SECRET = SecretsUtil.getSecret(DB_REGION, System.getenv("DB_USER_SECRET"));
-  static Connection con;
+  static Connection con = null;
 
   static {
     try {
@@ -49,9 +48,9 @@ public class PopulateFarmDb implements RequestHandler<CloudFormationCustomResour
   }
 
   @Override
-  public String handleRequest(CloudFormationCustomResourceEvent event, Context context) {
+  public String handleRequest(Object event, Context context) {
     try {
-      String script = "com/ilmlf/delivery/api/handlers/db/dbinit.sql";
+      String script = "./com/ilmlf/db/dbinit.sql";
       FileReader fr = new FileReader(script);
       BufferedReader br = new BufferedReader(fr);
       StringBuilder sb = new StringBuilder();
@@ -65,7 +64,7 @@ public class PopulateFarmDb implements RequestHandler<CloudFormationCustomResour
         }
         
         sb.append(line);
-        if (line.indexOf(";") >= 0) {
+        if (line.contains(";")) {
           String query = sb.toString();
           try {
             stmt.execute(query);

@@ -10,20 +10,20 @@ plugins {
     // Apply the java-library plugin for API and implementation separation.
     id 'java-library'
     id "nebula.lint" version "16.9.0"
-//    id 'checkstyle'
+    id 'checkstyle'
 }
 
-//checkstyle {
-//    // We use default checkstyle from Github checkstyle project.
-//    // https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml
-//    // Gradle has to use the same version of checkstyle or some rules might not be available yet
-//    // Make sure that you use the same tool version if you update the checkstyle.xml at
-//    // See https://github.com/checkstyle/checkstyle/releases
-//    toolVersion = '8.42'
-//    configFile = file('config/checkstyle/checkstyle.xml')
-//    // Allow some warnings before putting checkstyle in place. These warning will be gradually removed.
-//    maxWarnings = 120
-//}
+checkstyle {
+    // We use default checkstyle from Github checkstyle project. 
+    // https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/google_checks.xml 
+    // Gradle has to use the same version of checkstyle or some rules might not be available yet
+    // Make sure that you use the same tool version if you update the checkstyle.xml at 
+    // See https://github.com/checkstyle/checkstyle/releases
+    toolVersion = '8.42'
+    configFile = file('config/checkstyle/checkstyle.xml')
+    // Allow some warnings before putting checkstyle in place. These warning will be gradually removed.
+    maxWarnings = 120
+}
 
 //gradleLint {
 //    rules=['unused-dependency']
@@ -46,7 +46,7 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
 
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.1'
-    implementation 'com.amazonaws:aws-lambda-java-events:3.8.0'
+    implementation 'com.amazonaws:aws-lambda-java-events:2.2.9'
     runtimeOnly 'mysql:mysql-connector-java:8.0.15'
     implementation 'org.json:json:20210307'
 

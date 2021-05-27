@@ -56,11 +56,11 @@ public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, 
    * Handle create-slots POST via Api Gateway
    * pathParameters expected: {farm-id=Integer}
    * POST Body expected: {
-      "slots": [
+      slots: [
           {
-              "numDeliveries": 2,
-              "from": "2020-01-01T10:00:00",
-              "to": "2020-01-01T10:00:00"
+              numDeliveries: "2",
+              from: "2020-01-01T10:00:00",
+              to: "2020-01-01T10:00:00"
           }
       ]}
 
@@ -131,9 +131,8 @@ public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, 
    * (in order for the function to be called via a lambda)
    * 
    * @param slotJson the Json format slot data
-   * 
    * @param farmIdStr the farmId as a String
-   * 
+   *
    * @return the Slot object
    */
   public Slot parseAndCreateSlot(JSONObject slotJson, String farmIdStr) {

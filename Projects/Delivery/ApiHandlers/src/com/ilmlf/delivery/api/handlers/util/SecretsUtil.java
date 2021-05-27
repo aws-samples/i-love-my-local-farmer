@@ -35,7 +35,6 @@ public abstract class SecretsUtil {
               .secretId(dbSecretName)
               .build();
 
-
       GetSecretValueResponse valueResponse = secretsClient.getSecretValue(valueRequest);
       String secret = valueResponse.secretString();
       JSONObject jo = new JSONObject(secret);

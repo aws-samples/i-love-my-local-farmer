@@ -1,3 +1,13 @@
+package com.ilmlf.delivery.api.handlers.service;
+
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 /*
 Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 Licensed under the Apache License, Version 2.0 (the "License").
@@ -11,21 +21,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.ilmlf.delivery.api.handlers.service;
-
-import com.ilmlf.delivery.api.handlers.Delivery;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ilmlf.delivery.api.handlers.Delivery;
 import com.ilmlf.delivery.api.handlers.Slot;
 import com.ilmlf.delivery.api.handlers.util.DbUtil;
 
