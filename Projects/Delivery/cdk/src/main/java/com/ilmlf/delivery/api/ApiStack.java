@@ -1,3 +1,16 @@
+/*
+Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+Licensed under the Apache License, Version 2.0 (the "License").
+You may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package com.ilmlf.delivery.api;
 
 import static software.amazon.awscdk.core.BundlingOutput.ARCHIVED;
@@ -15,6 +28,7 @@ import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.Data;
@@ -219,18 +233,17 @@ public class ApiStack extends Stack {
             this,
             "ILMLFDeliveryAccess",
             LogGroupProps.builder().retention(RetentionDays.TWO_MONTHS).build());
-    Map logFormat =
-        Map.of(
-            "requestId", "$context.requestId",
-            "ip", "$context.identity.sourceIp",
-            "requestTime", "$context.requestTime",
-            "httpMethod", "$context.httpMethod",
-            "resourcePath", "$context.resourcePath",
-            "status", "$context.status",
-            "protocol", "$context.protocol",
-            "responseLength", "$context.responseLength",
-            "profile", "$context.authorizer.claims.profile",
-            "username", "$context.authorizer.claims['cognito:username']");
+    Map logFormat = new LinkedHashMap();
+    logFormat.put("status", "$context.status");
+    logFormat.put("profile", "$context.authorizer.claims.profile");
+    logFormat.put("ip", "$context.identity.sourceIp");
+    logFormat.put("requestId", "$context.requestId");
+    logFormat.put("responseLength", "$context.responseLength");
+    logFormat.put("httpMethod", "$context.httpMethod");
+    logFormat.put("protocol", "$context.protocol");
+    logFormat.put("resourcePath", "$context.resourcePath");
+    logFormat.put("requestTime", "$context.requestTime");
+    logFormat.put("username", "$context.authorizer.claims['cognito:username']");
 
     Function createSlotsHandler =
         this.DefaultLambdaRdsProxy("CreateSlots", props, this.lambdaRdsProxyRoleWithIam);
@@ -270,17 +283,17 @@ public class ApiStack extends Stack {
         "CreateSlots",
         String.format(
             "arn:aws:apigateway:%s:lambda:path/2015-03-31/functions/%s/invocations",
-            props.getEnv().getRegion(), createSlotsHandler.getFunctionArn()));
+            Stack.of(this).getRegion(), createSlotsHandler.getFunctionArn()));
     variables.put(
         "GetSlots",
         String.format(
             "arn:aws:apigateway:%s:lambda:path/2015-03-31/functions/%s/invocations",
-            props.getEnv().getRegion(), getSlotsHandler.getFunctionArn()));
+            Stack.of(this).getRegion(), getSlotsHandler.getFunctionArn()));
     variables.put(
         "BookDelivery",
         String.format(
             "arn:aws:apigateway:%s:lambda:path/2015-03-31/functions/%s/invocations",
-            props.getEnv().getRegion(), bookDeliveryHandler.getFunctionArn()));
+            Stack.of(this).getRegion(), bookDeliveryHandler.getFunctionArn()));
     variables.put("ApiRole", apiRole.getRoleArn());
 
     Writer writer = new StringWriter();
@@ -346,7 +359,7 @@ public class ApiStack extends Stack {
                   + outputPath);
       Process p = pb.start(); // Start the process.
       p.waitFor(); // Wait for the process to finish.
-      if(p.exitValue() == 0) {
+      if (p.exitValue() == 0) {
         System.out.println("Script executed successfully");
         return true;
       } else {
