@@ -31,7 +31,7 @@ public final class ClientConnectionApp {
   public static void main(final String[] args) throws IOException {
     App app = new App();
 
-    new ClientConnectionStack(app, "ClientConnBaseInfra", StackProps.builder()
+    new ClientConnectionStack(app, "ClientConnectionStack", StackProps.builder()
         .env(Environment.builder()
             .account("433621526002")
             .region("eu-west-1")

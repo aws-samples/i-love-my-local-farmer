@@ -23,7 +23,7 @@ public class SiteToSiteConnectionApp {
 
     new SiteToSiteConnectionStack(
         app,
-        "SiteToSiteBaseInfra",
+        "SiteToSiteConnectionStack",
         StackProps.builder()
             .env(Environment.builder().account("433621526002").region("eu-west-1").build())
             .description("Site to Site Base infra Stack (uksb-1rsq7leb5)")
