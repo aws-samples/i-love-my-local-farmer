@@ -4,10 +4,11 @@ When a company has majority of its employees switch to working from home, the nu
 
 This README.md contains only architecture and installation steps. For more details, please check the blog series [part 1](https://medium.com/i-love-my-local-farmer-engineering-blog/working-from-home-1-2-748d9acc3fb8), [part 2](https://medium.com/i-love-my-local-farmer-engineering-blog/working-from-home-2-2-53142394620b) 
 
-## Prerequisite
-1. **AWS CDK (v 1.102.0)**: This solutions use AWS CDK for deployment. If you aren't familiar with CDK, please follow this [Java CDK workshop](https://cdkworkshop.com/50-java.html) first. 
-2. **JDK 8 or later**: If you haven't used installed this version before, you can use [Amazon Corretto 8 distribution](https://aws.amazon.com/corretto/)
-3. **Maven**: For building the CDK code into assets for deployment. 
+## Prerequisites
+1. **NodeJS (v. 12+)** This repository is written in Java. But NodeJS is required for running and installing AWS CDK. You can download it [here](https://nodejs.org/en/download/).
+1. **AWS CDK (v. 1.102.0)**: This solution uses AWS CDK for deployment. If you aren't familiar with CDK, please install its [prerequisites](https://cdkworkshop.com/15-prerequisites.html) and follow the  [Java workshop](https://cdkworkshop.com/50-java.html) first.   
+1. **JDK 8 or later**: If you haven't used installed this version before, you can use [Amazon Corretto 8 distribution](https://aws.amazon.com/corretto/)
+1. **Maven**: For building the CDK code into assets for deployment. 
 
 ## Architecture
 To understand what this solution will deploy, we will start from the original architecture.
