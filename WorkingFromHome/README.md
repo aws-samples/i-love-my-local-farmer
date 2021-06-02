@@ -23,32 +23,32 @@ The solution uses AWS Client VPN to handle connections from employees' laptops. 
 ## Components 
 
 The main components of these solutions are in separate folders:
-1. `SiteToSiteVpnSetup` will set up AWS Site-to-Site VPN and an AWS VPC that we'll deploy AWS client VPN.  
-1. `ClientVpnSetup` will set up AWS Client VPN alongs with AD Connector.
-1. `CustomResourceUtils` contains reusable code for creating a custom resource. This is used by `ClientVpnSetup` for AD setup.
+1. `SiteToSiteConnection` will set up AWS Site-to-Site VPN and an AWS VPC that we'll deploy AWS client VPN.  
+1. `ClientConnection` will set up AWS Client VPN alongs with AD Connector.
+1. `CustomResourceUtils` contains reusable code for creating a custom resource. This is used by `ClientConnection` for AD setup.
 
 ## Installation steps
-1. `SiteToSiteVpnSetup` component
-    1. Modify `SiteToSiteVpnSetup`'s [cdk.context.json](WorkingFromHome/SiteToSiteConnection/cdk.context.json) with your on-prem IP address, CIDR range, and AWS region/availability zones.
+1. `SiteToSiteConnection` component
+    1. Modify `SiteToSiteConnection`'s [cdk.context.json](WorkingFromHome/SiteToSiteConnection/cdk.context.json) with your on-prem IP address, CIDR range, and AWS region/availability zones.
     1. Change the account an region in the file [SiteToSiteConnectionApp.java](WorkingFromHome/SiteToSiteConnection/src/main/java/com/ilmlf/sitetositeconnection/SiteToSiteConnectionApp.java)
     1. Deploy with
     ```
-    cd SiteToSiteVpnSetup
+    cd SiteToSiteConnection
     mvn package
     cdk deploy 
     ```
 1. Manually create a secret in Secret Manager with name `DomainAdminPassword` and put AD admin password in it. Create a [resource-based policy](https://docs.aws.amazon.com/secretsmanager/latest/userguide/auth-and-access_resource-based-policies.html) to limit the access on who could read the value.
-1. Deploy `ClientVpnSetup` component 
-    1. Modify the following fields in `ClientVpnSetup`'s [cdk.context.json](WorkingFromHome/ClientVpnSetup/cdk.context.json) 
+1. Deploy `ClientConnection` component 
+    1. Modify the following fields in `ClientConnection`'s [cdk.context.json](WorkingFromHome/ClientConnection/cdk.context.json) 
         * `onPremCidr`: Same as the last stack
         * `domain` and `dns`: Switch to your domain name and DNS IP Address.
         * `clientVpnCidr`
         * `clientVpnCertificate`
         * `DomainAdminSecretArn`
-        * `vpc-provider:account...`: Change the AWS account number, VPC ID, region, subnet, and AZs to match the resource deployed from the previous step. These information is from the  `SiteToSiteVpnSetup` stack
+        * `vpc-provider:account...`: Change the AWS account number, VPC ID, region, subnet, and AZs to match the resource deployed from the previous step. These information is from the  `SiteToSiteConnection` stack
     1. Deploy with
     ```
-    cd ClientVpnSetup
+    cd ClientConnection
     mvn package
     cdk deploy 
     ```
