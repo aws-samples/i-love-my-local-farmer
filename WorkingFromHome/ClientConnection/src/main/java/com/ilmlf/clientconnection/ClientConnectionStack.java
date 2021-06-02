@@ -34,16 +34,29 @@ public class ClientConnectionStack extends Stack {
       throws IOException {
     super(scope, id, props);
 
+    /*
+      Fetch values from the cdk.context.json (found at the root of ClientConnection folder)
+      - vpcId is the identifier of the AWS VPC in which to create the Client VPN and AD Connector
+      - domain is the domain name for the Active Directory
+      - dnsIps is the list of IP addresses of DNS hosts of our on-premise infrastructure
+    */
     String vpcId = this.getNode().tryGetContext("vpcId").toString();
     String domainName = this.getNode().tryGetContext("domain").toString();
     Object dnsIps = this.getNode().tryGetContext("dns");
 
+    /*
+      We initialise a VPC object using the passed-in VPC identifier.
+      This will allow us to perform CDK operations on it easier in the next steps.
+    */
     VpcLookupOptions vpcLookupOptions = new VpcLookupOptions.Builder()
         .vpcId(vpcId)
         .build();
-
     IVpc vpc = Vpc.fromLookup(this, "Vpc", vpcLookupOptions);
 
+    /*
+      Create a Client VPN setup using our own defined CDK construct (defined in ./ClientVpnConstruct.java)
+      We pass as props the values we fetched from cdk.context.json previously.
+    */
     new ClientVpnConstruct(this, "ClientVpn", ClientVpnConstruct.ClientVpnProps.builder()
         .vpc(vpc)
         .domainName(domainName)

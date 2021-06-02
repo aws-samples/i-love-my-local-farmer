@@ -17,16 +17,27 @@ import software.amazon.awscdk.core.App;
 import software.amazon.awscdk.core.Environment;
 import software.amazon.awscdk.core.StackProps;
 
-public class SiteToSiteConnectionApp {
+public final class SiteToSiteConnectionApp {
+  private SiteToSiteConnectionApp() {
+    throw new IllegalStateException("Entrypoint class");
+  }
+
+  /**
+   * CDK Entrypoint.
+   * @param args for cdk
+   */
   public static void main(final String[] args) {
     App app = new App();
 
+    /*
+      Create the Site-to-Site VPN stack in our specified account and region
+    */
     new SiteToSiteConnectionStack(
         app,
         "SiteToSiteConnectionStack",
         StackProps.builder()
             .env(Environment.builder().account("433621526002").region("eu-west-1").build())
-            .description("Site to Site Base infra Stack (uksb-1rsq7leb5)")
+            .description("Site-to-Site VPN infrastructure Stack")
             .build());
     app.synth();
   }

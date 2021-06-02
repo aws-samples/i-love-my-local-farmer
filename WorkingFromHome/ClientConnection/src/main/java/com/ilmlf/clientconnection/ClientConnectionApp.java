@@ -31,12 +31,15 @@ public final class ClientConnectionApp {
   public static void main(final String[] args) throws IOException {
     App app = new App();
 
+    /*
+      Create the Client VPN stack in our specified account and region
+    */
     new ClientConnectionStack(app, "ClientConnectionStack", StackProps.builder()
         .env(Environment.builder()
             .account("433621526002")
             .region("eu-west-1")
             .build())
-        .description("VPN Clients Connection Stack (uksb-1rsq7ledl)")
+        .description("Client VPN Connection infrastructure Stack")
         .build());
 
     app.synth();

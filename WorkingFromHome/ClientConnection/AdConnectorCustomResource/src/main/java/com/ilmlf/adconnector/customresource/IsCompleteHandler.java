@@ -37,6 +37,11 @@ public class IsCompleteHandler implements RequestHandler<CloudFormationCustomRes
 
     HashMap<String, Object> response = new HashMap();
 
+    /*
+      Check for the completion of OnEventHandler actions requires that we
+        check the currently listed directories in the Directory Service,
+        hence fetch them here.
+    */
     String physicalResourceId = event.getPhysicalResourceId();
     List<DirectoryDescription> directoryDescriptions =
         DirectoryClient.builder()
@@ -49,8 +54,16 @@ public class IsCompleteHandler implements RequestHandler<CloudFormationCustomRes
     Map<String, String> data = Map.of("DirectoryId", physicalResourceId);
 
     Boolean isComplete;
+
+    /*
+      For deletion requests, check that the list of returned directories is empty.
+    */
     if (event.getRequestType().equals("Delete")) {
       isComplete = directoryDescriptions.isEmpty();
+    /*
+      For "Create" requests, check that the first (and only) directory in the list
+      has stage 'Active', i.e. it is an Active Directory directory.
+    */
     } else {
       isComplete = directoryDescriptions.get(0).stage().equals(DirectoryStage.ACTIVE);
     }
