@@ -5,11 +5,11 @@ on:
     branches: [ main ]
     types: [opened, edited, synchronize, reopened]
     paths:
-      - 'BackOffice/ClientConnection/**'
+      - 'WorkingFromHome/ClientConnection/**'
 
 defaults:
   run:
-    working-directory: ./BackOffice/ClientConnection
+    working-directory: ./WorkingFromHome/ClientConnection
 
 jobs:
   build:

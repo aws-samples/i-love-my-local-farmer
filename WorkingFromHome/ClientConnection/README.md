@@ -1,8 +1,8 @@
 # ClientConnection CDK App
 
-Here is our CDK deployment of our client VPN connection components. This is all the stuff that we deploy into the VPC that was deployed as part of the BaseInfra stack.
+Here is our CDK deployment of our client VPN connection components. This is all the stuff that we deploy into the VPC that was deployed as part of the SiteToSiteConnection stack.
 
-This app deploys the AD Connector, and the Client VPN service. It requires that the BaseInfra stack is already deployed.
+This app deploys the AD Connector, and the Client VPN service. It requires that the SiteToSiteConnection stack is already deployed.
 
 ## Using CDK
 

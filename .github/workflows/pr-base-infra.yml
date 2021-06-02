@@ -5,11 +5,11 @@ on:
     branches: [ main ]
     types: [opened, edited, synchronize, reopened]
     paths:
-      - 'BackOffice/BaseInfra/**'
+      - 'WorkingFromHome/SiteToSiteConnection/**'
 
 defaults:
   run:
-    working-directory: ./BackOffice/BaseInfra
+    working-directory: ./WorkingFromHome/SiteToSiteConnection
 
 jobs:
   build:
