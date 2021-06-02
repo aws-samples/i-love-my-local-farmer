@@ -29,8 +29,8 @@ The main components of these solutions are in separate folders:
 
 ## Installation steps
 1. `SiteToSiteConnection` component
-    1. Modify `SiteToSiteConnection`'s [cdk.context.json](WorkingFromHome/SiteToSiteConnection/cdk.context.json) with your on-prem IP address, CIDR range, and AWS region/availability zones.
-    1. Change the account an region in the file [SiteToSiteConnectionApp.java](WorkingFromHome/SiteToSiteConnection/src/main/java/com/ilmlf/sitetositeconnection/SiteToSiteConnectionApp.java)
+    1. Modify `SiteToSiteConnection`'s [cdk.context.json](SiteToSiteConnection/cdk.context.json) with your on-prem IP address, CIDR range, and AWS region/availability zones.
+    1. Change the account an region in the file [SiteToSiteConnectionApp.java](SiteToSiteConnection/src/main/java/com/ilmlf/sitetositeconnection/SiteToSiteConnectionApp.java)
     1. Deploy with
     ```
     cd SiteToSiteConnection
@@ -39,7 +39,7 @@ The main components of these solutions are in separate folders:
     ```
 1. Manually create a secret in Secret Manager with name `DomainAdminPassword` and put AD admin password in it. Create a [resource-based policy](https://docs.aws.amazon.com/secretsmanager/latest/userguide/auth-and-access_resource-based-policies.html) to limit the access on who could read the value.
 1. Deploy `ClientConnection` component 
-    1. Modify the following fields in `ClientConnection`'s [cdk.context.json](WorkingFromHome/ClientConnection/cdk.context.json) 
+    1. Modify the following fields in `ClientConnection`'s [cdk.context.json](ClientConnection/cdk.context.json) 
         * `onPremCidr`: Same as the last stack
         * `domain` and `dns`: Switch to your domain name and DNS IP Address.
         * `clientVpnCidr`
