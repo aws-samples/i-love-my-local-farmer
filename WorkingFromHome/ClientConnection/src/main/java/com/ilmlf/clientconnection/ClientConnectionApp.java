@@ -39,7 +39,7 @@ public final class ClientConnectionApp {
             .account("433621526002")
             .region("eu-west-1")
             .build())
-        .description("Client VPN Connection infrastructure Stack")
+        .description("Client VPN Connection infrastructure Stack (uksb-1rsq7ledl)")
         .build());
 
     app.synth();

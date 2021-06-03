@@ -37,7 +37,7 @@ public final class SiteToSiteConnectionApp {
         "SiteToSiteConnectionStack",
         StackProps.builder()
             .env(Environment.builder().account("433621526002").region("eu-west-1").build())
-            .description("Site-to-Site VPN infrastructure Stack")
+            .description("Site-to-Site VPN infrastructure Stack (uksb-1rsq7leb5)")
             .build());
     app.synth();
   }
