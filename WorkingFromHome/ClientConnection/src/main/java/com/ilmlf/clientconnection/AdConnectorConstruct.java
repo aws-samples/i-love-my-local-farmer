@@ -81,6 +81,10 @@ public class AdConnectorConstruct extends Construct {
       throws IOException {
     super(scope, id);
 
+    /*
+      Java CDK custom resources need to be packaged for use
+      Packaging instructions are provided here
+    */
     List<String> adConnectorCustomResourcePackagingInstructions =
         Arrays.asList(
             "/bin/sh",
@@ -88,6 +92,11 @@ public class AdConnectorConstruct extends Construct {
             "mvn clean install "
                 + "&& cp /asset-input/target/AdConnectorCustomResource.jar /asset-output/");
 
+    /*
+      The package builder is configured...
+      - using our previous packaging instructions
+      - to use a Java 11 run time
+    */
     BundlingOptions.Builder builderOptions =
         BundlingOptions.builder()
             .command(adConnectorCustomResourcePackagingInstructions)
@@ -95,6 +104,14 @@ public class AdConnectorConstruct extends Construct {
             .user("root")
             .outputType(ARCHIVED);
 
+    /*
+      The onEventHandler function makes API calls to create AWS resources
+      Here we specify:
+      - that our OnEventHandler.java is defined in the ./AdConnectorCustomResource directory
+      - that the resulting AWS Lambda function should:
+        - have a memory size of 1024 MB
+        - time out after 10 seconds
+    */
     Function onEventHandler =
         new Function(
             this,
@@ -109,8 +126,6 @@ public class AdConnectorConstruct extends Construct {
                             .assetHash(hashDirectory("./AdConnectorCustomResource/src", false))
                             .bundling(
                                 builderOptions
-                                    // TODO: add capability to use local bundling (.local) instead
-                                    // of docker one
                                     .command(adConnectorCustomResourcePackagingInstructions)
                                     .build())
                             .build()))
@@ -120,6 +135,10 @@ public class AdConnectorConstruct extends Construct {
                 .logRetention(RetentionDays.ONE_WEEK)
                 .build());
 
+    /*
+      Our OnEventHandler needs to access our DomainAdminPassword secret.
+      Hence, we grant the GetSecretValue permission to the lambda function.
+    */
     onEventHandler.addToRolePolicy(
         new PolicyStatement(
             PolicyStatementProps.builder()
@@ -127,6 +146,11 @@ public class AdConnectorConstruct extends Construct {
                 .resources(Collections.singletonList(props.secretId))
                 .build()));
 
+    /*
+      Our OnEventHandler also needs to make various VPC API calls.
+      The VPC service is located under EC2, and hence most of the
+      permissions we grant are of the form ec2:*
+    */
     onEventHandler.addToRolePolicy(
         new PolicyStatement(
             PolicyStatementProps.builder()
@@ -146,6 +170,11 @@ public class AdConnectorConstruct extends Construct {
                 .resources(Collections.singletonList("*"))
                 .build()));
 
+    /*
+      The isCompleteHandler is a function that is periodically called to check
+      if the resource creation processes initiated in onEventHandler have completed.
+      Here we are defining it in a similar way to how we defined the OnEventHandler component.
+    */
     Function isCompleteHandler =
         new Function(
             this,
@@ -169,6 +198,11 @@ public class AdConnectorConstruct extends Construct {
                 .logRetention(RetentionDays.ONE_WEEK)
                 .build());
 
+    /*
+      The IsCompleteHandler checks if the Active Directory connection has
+      completed by checking if any Active Directories are listed in the Directory Service.
+      Hence we must grant the Directory Service's 'DescribeDirectories' permission.
+    */
     isCompleteHandler.addToRolePolicy(
         new PolicyStatement(
             PolicyStatementProps.builder()
@@ -176,6 +210,9 @@ public class AdConnectorConstruct extends Construct {
                 .resources(Collections.singletonList("*"))
                 .build()));
 
+    /*
+      The Provider associates the onEvent and isComplete handlers to the custom resource.
+    */
     Provider provider =
         new Provider(
             scope,
@@ -185,6 +222,14 @@ public class AdConnectorConstruct extends Construct {
                 .isCompleteHandler(isCompleteHandler)
                 .build());
 
+    /*
+      Define the properties that will be passed to our lambda handler functions.
+      - vpcId is the identifier of the VPC in which to create the AD Connector
+      - domainName is the Active Directory Domain Name
+      - dnsIps is a list of IP addresses for the DNS hosts of the on-premise infrastructure
+      - subnetIds are the identifiers of the subnets in which to place the AD connector
+      - secretId is the ID of the Secrets Manager 'DomainAdminPassword' secret
+    */
     TreeMap resourceProperties = new TreeMap();
     resourceProperties.put("vpcId", props.vpcId);
     resourceProperties.put("domainName", props.domainName);
@@ -192,6 +237,9 @@ public class AdConnectorConstruct extends Construct {
     resourceProperties.put("subnetIds", props.subnetIds);
     resourceProperties.put("secretId", props.secretId);
 
+    /*
+      Finally, create the CDK Custom Resource using all the previous parts we defined.
+    */
     CustomResource resource =
         new CustomResource(
             scope,

@@ -54,11 +54,23 @@ public class ClientVpnConstruct extends Construct {
       throws IOException {
     super(scope, id);
 
+    /*
+      Fetch values from the cdk.context.json (found at the root of ClientConnection folder)
+      - clientVpnCertificate is the Amazon Resource Name (ARN) of the Amazon Certificate Manager
+        certificate that is used to authenticate connections to the Client VPN.
+      - clientVpnCidr is the VPC CIDR range that can be reached through the Client VPN
+      - onPremiseCidr is the CIDR range of the on-premise resources
+      - DomainAdminSecretArn is the ARN of the Secrets Manager 'DomainAdminPassword' secret
+    */
     String serverCertificateArn = this.getNode().tryGetContext("clientVpnCertificate").toString();
     String cidr = this.getNode().tryGetContext("clientVpnCidr").toString();
     String onPremiseCidr = this.getNode().tryGetContext("onPremiseCidr").toString();
     String secretId = this.getNode().tryGetContext("DomainAdminSecretArn").toString();
 
+    /*
+      Create the AD Connector using our own CDK Custom Resource.
+      This requires that we pass in property values that we have already fetched.
+    */
     AdConnectorConstruct adConnector =
         new AdConnectorConstruct(
             this,
@@ -74,6 +86,11 @@ public class ClientVpnConstruct extends Construct {
                 .secretId(secretId)
                 .build());
 
+    /*
+      The Client VPN is created using a method on the VPC object that we passed in as a property.
+      We specify the authentication certificate, and that users must authenticate through the
+      active directory connection that we created with the AD Connector Construct.
+    */
     ClientVpnEndpoint clientVpn =
         props.vpc.addClientVpnEndpoint(
             "VpnClientEndpoint",
@@ -86,8 +103,10 @@ public class ClientVpnConstruct extends Construct {
                 .splitTunnel(true)
                 .build());
 
-    props
-        .vpc
+    /*
+      For each of the private subnets in the VPC, we must add a route between it and the Client VPN.
+    */
+    props.vpc
         .getPrivateSubnets()
         .forEach(
             (subnet) ->

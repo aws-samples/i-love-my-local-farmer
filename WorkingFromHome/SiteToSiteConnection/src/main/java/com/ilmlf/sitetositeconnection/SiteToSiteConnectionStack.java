@@ -31,18 +31,36 @@ public class SiteToSiteConnectionStack extends Stack {
   public SiteToSiteConnectionStack(final Construct scope, final String id, final StackProps props) {
     super(scope, id, props);
 
-    String cidr = this.getNode().tryGetContext("vpcCidr").toString();
-    String ip = this.getNode().tryGetContext("customerGatewayDeviceIP").toString();
+    /*
+      Fetch values from the cdk.context.json (found at the root of SiteToSiteConnection folder)
+      - vpcCidr is the CIDR range for our AWS VPC that we will create as part of this stack
+      - customerGatewayDeviceIP  is the IP address of our on-premise VPN device
+      - onPremiseCidr is the CIDR range for our on-premise network
+    */
+    String vpcCidr = this.getNode().tryGetContext("vpcCidr").toString();
+    String customerGatewayDeviceIP = this.getNode().tryGetContext("customerGatewayDeviceIP").toString();
     String onPremiseCidr = this.getNode().tryGetContext("onPremiseCidr").toString();
 
+    /*
+      Specify the options for our Site To Site VPN connection:
+      - the IP of the on-premise VPN device
+      - static routing between the AWS VPC and the on-premise network
+    */
     VpnConnectionOptions vpcConnectionOption = new VpnConnectionOptions.Builder()
-        .ip(ip)
+        .ip(customerGatewayDeviceIP)
         .staticRoutes(Collections.singletonList(onPremiseCidr))
         .build();
 
+    /*
+      Create the AWS VPC that the Site-to-Site VPN will be associated with
+      Requires the specification of:
+      - the CIDR range for the VPC
+      - the number of availabilty zones
+      - the static VPN connection, using the options we specified previously
+    */
     new Vpc(this, "VPC", VpcProps
         .builder()
-        .cidr(cidr)
+        .cidr(vpcCidr)
         .maxAzs(2)
         .vpnConnections(Collections.singletonMap("static", vpcConnectionOption))
         .build()

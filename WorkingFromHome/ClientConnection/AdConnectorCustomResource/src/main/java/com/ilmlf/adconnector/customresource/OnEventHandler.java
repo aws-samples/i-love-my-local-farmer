@@ -44,6 +44,10 @@ public class OnEventHandler implements RequestHandler<CloudFormationCustomResour
     System.out.println("action:" + event.getRequestType() + " AD Connector");
     String requestType = event.getRequestType();
     switch (requestType) {
+      /*
+        For create requests, attempt to connect to the on-premise Active Directory
+          using the AWS Directory Service.
+      */
       case "Create":
         directoryId =
             directoryClient
@@ -64,6 +68,10 @@ public class OnEventHandler implements RequestHandler<CloudFormationCustomResour
         break;
       case "Update":
         break;
+      /*
+        For delete requests, remove the connection to the on-premise Active Directory within the
+          AWS Directory service
+      */
       case "Delete":
         directoryClient.deleteDirectory(
             DeleteDirectoryRequest.builder().directoryId(directoryId).build());
