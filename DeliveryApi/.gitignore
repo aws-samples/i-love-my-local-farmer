@@ -1,0 +1,24 @@
+# IDE & OS files
+.classpath.txt
+target
+.classpath
+.project
+.idea
+.settings
+.vscode
+*.iml
+**/.DS_Store
+
+# SAM
+# environment variables for running Lambda locally
+lambda-env.json
+
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+
+# Exclude cdk.context.json as it contains account information.
+# Consider including it in your (private) repo to make the build deterministic.
+# See https://github.com/aws/aws-cdk/issues/6929#issuecomment-615104322 for more details.
+cdk/cdk.context.json
