@@ -110,7 +110,7 @@ public class ApiStack extends Stack {
     super(scope, id, props);
 
     // Role for Lambda to connect to RDS Proxy via IAM authentication
-    lambdaRdsProxyRoleWithIam = createLambdaRdsProxyRoleWithIam(props.getDbUser());
+    this.lambdaRdsProxyRoleWithIam = createLambdaRdsProxyRoleWithIam(props.getDbUser());
 
     // Role for Lambda to connect to RDS database via user/pwd authentication
     Role lambdaRdsProxyRoleWithPw = createLambdaRdsRoleWithPw(props.dbAdminSecretArn, props.dbUserSecretArn);
@@ -328,7 +328,7 @@ public class ApiStack extends Stack {
 
     Object openapiSpecAsObject;
     try (Reader reader =
-        new InputStreamReader(getClass().getClassLoader().getResourceAsStream("apiSchema.json"))) {
+             new InputStreamReader(getClass().getClassLoader().getResourceAsStream("apiSchema.json"))) {
       Mustache mustache = mf.compile(reader, "OAS");
       mustache.execute(writer, variables);
       writer.flush();
@@ -478,9 +478,9 @@ public class ApiStack extends Stack {
                 .environment(
                     Map.of(
                         "DB_ENDPOINT",
-                            functionName.equals("PopulateFarmDb")
-                                ? props.getDbEndpoint()
-                                : props.getDbProxyEndpoint(),
+                        functionName.equals("PopulateFarmDb")
+                            ? props.getDbEndpoint()
+                            : props.getDbProxyEndpoint(),
                         "DB_REGION", props.getDbRegion(),
                         "DB_USER", props.getDbUser(),
                         "DB_ADMIN_SECRET", props.getDbAdminSecretName(),

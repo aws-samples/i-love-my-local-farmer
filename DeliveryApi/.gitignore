@@ -8,6 +8,12 @@ target
 .vscode
 *.iml
 **/.DS_Store
+.attach_pid*
+hs_err_pid*
+
+# Binary
+cdk/bin/*
+ApiHandlers/bin/*
 
 # SAM
 # environment variables for running Lambda locally
@@ -22,3 +28,4 @@ cdk.out
 # Consider including it in your (private) repo to make the build deterministic.
 # See https://github.com/aws/aws-cdk/issues/6929#issuecomment-615104322 for more details.
 cdk/cdk.context.json
+

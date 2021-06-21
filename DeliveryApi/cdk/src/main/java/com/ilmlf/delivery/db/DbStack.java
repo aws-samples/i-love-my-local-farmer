@@ -105,8 +105,8 @@ public class DbStack extends Stack {
   public DbStack(final Construct scope, final String id, final StackProps props) {
     super(scope, id, props);
 
-    this.user = "lambda_iam";
-    String region = Stack.of(this).getRegion();
+    String dbUsername = (String) scope.getNode().tryGetContext("dbUsername");
+    this.user = (dbUsername == null ? "lambda_iam" : dbUsername);
 
     /**
      * #################
@@ -158,6 +158,8 @@ public class DbStack extends Stack {
         vpc.getPublicSubnets() :
         vpc.getPrivateSubnets();
 
+    String dbPortStr = (String) scope.getNode().tryGetContext("dbPort");
+    Integer dbPort = (dbPortStr == null? 3306: Integer.valueOf(dbPortStr));
     DatabaseInstance farmerDb =
         new DatabaseInstance(
             this,
@@ -185,7 +187,7 @@ public class DbStack extends Stack {
                 // be stored in a Secret Manager store.
                 .credentials(Credentials.fromGeneratedSecret(dbName + "admin"))
                 .databaseName(dbName)
-                .port(3306)
+                .port(dbPort)
                 .build());
 
     /**

@@ -41,25 +41,27 @@ public abstract class SecretsUtil {
    */
   public static JSONObject getSecret(@NonNull String region, @NonNull String dbSecretStoreName) {
     SecretsManagerClient secretsClient = SecretsManagerClient.builder()
-            .region(Region.of(region))
-            .httpClientBuilder(UrlConnectionHttpClient.builder())
-            .build();
+        .region(Region.of(region))
+        .httpClientBuilder(UrlConnectionHttpClient.builder())
+        .build();
 
     try {
       GetSecretValueRequest valueRequest = GetSecretValueRequest.builder()
-              .secretId(dbSecretStoreName)
-              .build();
+          .secretId(dbSecretStoreName)
+          .build();
 
       GetSecretValueResponse valueResponse = secretsClient.getSecretValue(valueRequest);
       String secret = valueResponse.secretString();
       JSONObject jo = new JSONObject(secret);
-      secretsClient.close();
 
       return jo;
 
     } catch (SecretsManagerException e) {
       logger.error(e.awsErrorDetails().errorMessage());
       throw new RuntimeException(e);
+
+    } finally {
+      secretsClient.close();
     }
   }
 }

@@ -77,6 +77,22 @@ Example:
 ```
 npx cdk deploy --all --profile <PROFILE_NAME> --c subnetType=public
 ```
+## CORS
+Please note that in our code we have a development setup for allowing CORS requests from '*'.
+```
+CfnApi apiGw =
+    new CfnApi(
+        ...
+        .cors(
+            // In production, limit this to only your domain name
+            CfnApi.CorsConfigurationProperty.builder()
+                .allowOrigin("'*'")
+                .allowHeaders("'*'")
+                .allowMethods("'*'")
+                .build())
+```
+
+You should change the settings according to your business needs, but at a bare minimum you should limit the Origin to your domain in your Production environment.
 
 ## Using local AWS CDK CLI
 Notice that the example commands use `npx cdk [command]`. 
@@ -146,4 +162,3 @@ curl --location --request PUT 'https://{{API_GATEWAY_ENDPOINT}}.execute-api.{{RE
     "userId": 22222
 }'
 ```
-

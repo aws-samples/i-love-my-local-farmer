@@ -97,13 +97,13 @@ public class PopulateFarmDb implements RequestHandler<Object, String> {
    */
   @Override
   public String handleRequest(Object event, Context context) {
-    try {
-      String script = "./com/ilmlf/db/dbinit.sql";
-      FileReader fr = new FileReader(script);
-      BufferedReader br = new BufferedReader(fr);
+    String script = "./com/ilmlf/db/dbinit.sql";
+    try (FileReader fr = new FileReader(script);
+         BufferedReader br = new BufferedReader(fr);
+         Statement stmt = con.createStatement()){
+
       StringBuilder sb = new StringBuilder();
       String line;
-      Statement stmt = con.createStatement();
 
       while ((line = br.readLine()) != null) {
         if (line.contains("{{username}}") || line.contains("{{password}}")) {
@@ -117,8 +117,6 @@ public class PopulateFarmDb implements RequestHandler<Object, String> {
           sb = new StringBuilder(); // reinitialize, otherwise will keep appending
         }
       }
-      stmt.close();
-      br.close();
 
       return "Db Init script executed successfully";
 
