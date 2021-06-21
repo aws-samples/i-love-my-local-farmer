@@ -82,10 +82,6 @@ test {
     // report is always generated after tests run
     finalizedBy jacocoTestReport
 
-    jacoco {
-        enabled = true
-    }
-
 }
 
 jacocoTestReport {
