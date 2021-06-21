@@ -44,12 +44,14 @@ public class DeliveryApp {
     App app = new App();
 
     DbStack db = new DbStack(app, "DeliveryProject-Db", StackProps.builder()
+        .description("MySQL database, RDS proxy, secrets, and network components of Delivery project (uksb-1rsq7leeu)")
         .build());
 
     new ApiStack(
         app,
         "DeliveryProject-Api",
         ApiStack.ApiStackProps.builder()
+            .description("API of Delivery project (uksb-1rsq7ledu)")
             .dbEndpoint(db.getInstanceEndpoint())
             .dbProxyEndpoint(db.getProxyEndpoint())
             .dbProxyArn(db.getProxyArn())
