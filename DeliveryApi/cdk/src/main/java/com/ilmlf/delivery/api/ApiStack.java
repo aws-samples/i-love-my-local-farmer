@@ -85,6 +85,7 @@ public class ApiStack extends Stack {
   @lombok.Builder
   @Data
   public static class ApiStackProps implements StackProps {
+    private String description;
     private String dbProxyEndpoint;
     private String dbProxyArn;
     private String dbEndpoint;
