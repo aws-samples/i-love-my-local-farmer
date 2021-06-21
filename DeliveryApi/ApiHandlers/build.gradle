@@ -11,6 +11,7 @@ plugins {
     id 'java-library'
     id "nebula.lint" version "16.9.0"
     id 'checkstyle'
+    id 'jacoco'
 }
 
 checkstyle {
@@ -23,6 +24,10 @@ checkstyle {
     configFile = file('config/checkstyle/checkstyle.xml')
     // Allow some warnings before putting checkstyle in place. These warning will be gradually removed.
     maxWarnings = 26
+}
+
+jacoco {
+    toolVersion = "0.8.7"
 }
 
 //gradleLint {
@@ -73,6 +78,18 @@ test {
     useJUnitPlatform()
     // Use this flag to show output from running the test
     // testLogging.showStandardStreams = true
+
+    // report is always generated after tests run
+    finalizedBy jacocoTestReport
+
+    jacoco {
+        enabled = true
+    }
+
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
 }
 
 sourceSets {
