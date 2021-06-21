@@ -7,6 +7,7 @@ The top-level folders contain working example code for each blog series. Each fo
 | Folder name   | Blog series description|  Link(s) to blog series |
 |----------|:-------------:|------:|
 | [WorkingFromHome](WorkingFromHome) |  Scaling VPN capacity to support more VPN connections from work-from-home employees  | [part 1](https://medium.com/i-love-my-local-farmer-engineering-blog/working-from-home-1-2-748d9acc3fb8), [part 2](https://medium.com/i-love-my-local-farmer-engineering-blog/working-from-home-2-2-53142394620b) |
+| [DeliveryApi](DeliveryApi) |  Create a Serverless API for Home Delivery project using AWS CDK and Java  | [part 1](https://medium.com/i-love-my-local-farmer-engineering-blog/the-strawberrys-journey-from-your-local-farm-to-your-table-70e80b5a4f51), [part 2](https://medium.com/i-love-my-local-farmer-engineering-blog/a-serverless-java-solution-for-deliveries-2a29497ca272) |
 
 ## What is "I Love My Local Farmer"?
 
