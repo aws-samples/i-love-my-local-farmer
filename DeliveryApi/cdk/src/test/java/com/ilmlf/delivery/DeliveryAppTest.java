@@ -80,11 +80,13 @@ public class DeliveryAppTest {
 
     app = new App();
 
-    db = new DbStack(app, "DeliveryProject-Db", StackProps.builder()
+    db = new DbStack(app, "DeliveryProject-Db", DbStack.DbStackProps.builder()
         .env(Environment.builder()
             .account(AWS_ACCOUNT_ID)
             .region(AWS_REGION)
             .build())
+        .dbUsername("lambda_iam")
+        .dbPort(3306)
         .build());
 
     api = new ApiStack(
@@ -100,7 +102,7 @@ public class DeliveryAppTest {
             .dbProxyArn(db.getProxyArn())
             .dbPort(db.getDbPort())
             .dbRegion(db.getRegion())
-            .dbUser(db.getUser())
+            .dbUser(db.getDbUsername())
             .dbUserSecretName(db.getUserSecret().getSecretName())
             .dbUserSecretArn(db.getUserSecret().getSecretArn())
             .dbAdminSecretName(db.getAdminSecret().getSecretName())

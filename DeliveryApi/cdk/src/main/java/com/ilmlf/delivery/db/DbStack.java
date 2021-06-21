@@ -13,15 +13,9 @@ limitations under the License.
 
 package com.ilmlf.delivery.db;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.TreeMap;
-
 import lombok.Data;
 import lombok.Getter;
-import lombok.Builder;
-import software.amazon.awscdk.core.CfnOutput;
-import software.amazon.awscdk.core.CfnOutputProps;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Duration;
 import software.amazon.awscdk.core.Environment;
@@ -34,11 +28,7 @@ import software.amazon.awscdk.services.ec2.InstanceType;
 import software.amazon.awscdk.services.ec2.SecurityGroup;
 import software.amazon.awscdk.services.ec2.SecurityGroupProps;
 import software.amazon.awscdk.services.ec2.SubnetSelection;
-import software.amazon.awscdk.services.ec2.SubnetType;
 import software.amazon.awscdk.services.ec2.Vpc;
-import software.amazon.awscdk.services.iam.Effect;
-import software.amazon.awscdk.services.iam.PolicyStatement;
-import software.amazon.awscdk.services.iam.PolicyStatementProps;
 import software.amazon.awscdk.services.iam.Role;
 import software.amazon.awscdk.services.iam.RoleProps;
 import software.amazon.awscdk.services.iam.ServicePrincipal;
@@ -57,6 +47,7 @@ import software.amazon.awscdk.services.secretsmanager.Secret;
 import software.amazon.awscdk.services.secretsmanager.SecretProps;
 import software.amazon.awscdk.services.secretsmanager.SecretStringGenerator;
 
+
 /**
  * Database stack contains the followings.
  * 1. Network resources (VPC, subnets, and Security Group)
@@ -69,7 +60,7 @@ public class DbStack extends Stack {
   /**
    * Database username for DB Proxy connection (via IAM Authorization).
    */
-  private final String user;
+  private final String dbUsername;
   private final String instanceEndpoint;
   private final String proxyEndpoint;
   private final Integer dbPort;
@@ -96,6 +87,15 @@ public class DbStack extends Stack {
    */
   private final Secret userSecret;
 
+  @lombok.Builder
+  @Data
+  public static class DbStackProps implements StackProps {
+    private String description;
+    private String dbUsername;
+    private Integer dbPort;
+    private Environment env;
+  }
+
   /**
    * Create a Database stack.
    *
@@ -103,11 +103,11 @@ public class DbStack extends Stack {
    * @param id used by superclass.
    * @param props used by superclass.
    */
-  public DbStack(final Construct scope, final String id, final StackProps props) {
+  public DbStack(final Construct scope, final String id, final DbStackProps props) {
     super(scope, id, props);
 
-    String dbUsername = (String) scope.getNode().tryGetContext("dbUsername");
-    this.user = (dbUsername == null ? "lambda_iam" : dbUsername);
+    this.dbUsername = props.getDbUsername();
+    this.dbPort = props.getDbPort();
 
     /**
      * #################
@@ -159,8 +159,6 @@ public class DbStack extends Stack {
         vpc.getPublicSubnets() :
         vpc.getPrivateSubnets();
 
-    String dbPortStr = (String) scope.getNode().tryGetContext("dbPort");
-    this.dbPort = (dbPortStr == null? 3306: Integer.valueOf(dbPortStr));
     DatabaseInstance farmerDb =
         new DatabaseInstance(
             this,
@@ -202,7 +200,7 @@ public class DbStack extends Stack {
             .description("Db Username and password")
             .generateSecretString(
                 SecretStringGenerator.builder()
-                    .secretStringTemplate("{\"username\": \"" + this.user + "\"}")
+                    .secretStringTemplate("{\"username\": \"" + this.dbUsername + "\"}")
                     .generateStringKey("password")
                     .passwordLength(16)
                     .excludePunctuation(true)

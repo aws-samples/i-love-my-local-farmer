@@ -17,8 +17,6 @@ import com.ilmlf.delivery.api.ApiStack;
 import com.ilmlf.delivery.db.DbStack;
 import java.io.IOException;
 import software.amazon.awscdk.core.App;
-import software.amazon.awscdk.core.StackProps;
-import software.amazon.awscdk.services.ec2.SubnetType;
 
 /**
  * The entry point of CDK application. This class creates a CDK App with two stacks
@@ -43,8 +41,16 @@ public class DeliveryApp {
   public static void main(final String[] args) throws IOException {
     App app = new App();
 
-    DbStack db = new DbStack(app, "DeliveryProject-Db", StackProps.builder()
+    String dbUsername = (String) app.getNode().tryGetContext("dbUsername");
+    dbUsername = (dbUsername == null ? "lambda_iam" : dbUsername);
+
+    String dbPortStr = (String) app.getNode().tryGetContext("dbPort");
+    Integer dbPort = (dbPortStr == null ? 3306: Integer.valueOf(dbPortStr));
+
+    DbStack db = new DbStack(app, "DeliveryProject-Db", DbStack.DbStackProps.builder()
         .description("MySQL database, RDS proxy, secrets, and network components of Delivery project (uksb-1rsq7leeu)")
+        .dbUsername(dbUsername)
+        .dbPort(dbPort)
         .build());
 
     new ApiStack(
@@ -57,7 +63,7 @@ public class DeliveryApp {
             .dbPort(db.getDbPort())
             .dbProxyArn(db.getProxyArn())
             .dbRegion(db.getRegion())
-            .dbUser(db.getUser())
+            .dbUser(db.getDbUsername())
             .dbUserSecretName(db.getUserSecret().getSecretName())
             .dbUserSecretArn(db.getUserSecret().getSecretArn())
             .dbAdminSecretName(db.getAdminSecret().getSecretName())
