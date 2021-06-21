@@ -87,6 +87,7 @@ public class ApiStack extends Stack {
   public static class ApiStackProps implements StackProps {
     private String description;
     private String dbProxyEndpoint;
+    private Integer dbPort;
     private String dbProxyArn;
     private String dbEndpoint;
     private String dbAdminSecretName;
@@ -481,6 +482,7 @@ public class ApiStack extends Stack {
                         functionName.equals("PopulateFarmDb")
                             ? props.getDbEndpoint()
                             : props.getDbProxyEndpoint(),
+                        "DB_PORT", props.getDbPort().toString(),
                         "DB_REGION", props.getDbRegion(),
                         "DB_USER", props.getDbUser(),
                         "DB_ADMIN_SECRET", props.getDbAdminSecretName(),

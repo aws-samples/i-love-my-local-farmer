@@ -98,6 +98,7 @@ public class DeliveryAppTest {
             .dbEndpoint(db.getInstanceEndpoint())
             .dbProxyEndpoint(db.getProxyEndpoint())
             .dbProxyArn(db.getProxyArn())
+            .dbPort(db.getDbPort())
             .dbRegion(db.getRegion())
             .dbUser(db.getUser())
             .dbUserSecretName(db.getUserSecret().getSecretName())

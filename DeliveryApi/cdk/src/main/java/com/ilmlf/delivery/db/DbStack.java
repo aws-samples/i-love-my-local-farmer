@@ -72,6 +72,7 @@ public class DbStack extends Stack {
   private final String user;
   private final String instanceEndpoint;
   private final String proxyEndpoint;
+  private final Integer dbPort;
   private final Vpc vpc;
   private final SecurityGroup securityGroup;
   private final String proxyArn;
@@ -82,7 +83,7 @@ public class DbStack extends Stack {
    * - username (admin username)
    * - password (admin password)
    * - engine (mysql
-   * - port (3306)
+   * - port (port for connection)
    * - dbname (FarmerDB)
    * - host (used for connection)
    */
@@ -159,7 +160,7 @@ public class DbStack extends Stack {
         vpc.getPrivateSubnets();
 
     String dbPortStr = (String) scope.getNode().tryGetContext("dbPort");
-    Integer dbPort = (dbPortStr == null? 3306: Integer.valueOf(dbPortStr));
+    this.dbPort = (dbPortStr == null? 3306: Integer.valueOf(dbPortStr));
     DatabaseInstance farmerDb =
         new DatabaseInstance(
             this,
@@ -187,7 +188,7 @@ public class DbStack extends Stack {
                 // be stored in a Secret Manager store.
                 .credentials(Credentials.fromGeneratedSecret(dbName + "admin"))
                 .databaseName(dbName)
-                .port(dbPort)
+                .port(this.dbPort)
                 .build());
 
     /**

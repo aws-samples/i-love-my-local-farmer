@@ -23,7 +23,7 @@ public class SlotServiceTest {
 
   @Test
   public void connectionRetryWorks() {
-    Mockito.when(this.dbUtilMock.createConnectionViaIamAuth(Mockito.any(), Mockito.any(), Mockito.any()))
+    Mockito.when(this.dbUtilMock.createConnectionViaIamAuth(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
         .thenReturn(null, this.connectionMock);
 
     this.slotService = new SlotService(this.dbUtilMock);

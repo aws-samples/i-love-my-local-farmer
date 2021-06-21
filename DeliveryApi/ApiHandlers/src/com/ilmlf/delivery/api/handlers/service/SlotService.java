@@ -23,21 +23,27 @@ import org.apache.logging.log4j.Logger;
  */
 @Data
 public class SlotService {
+  private static final Logger logger = LogManager.getLogger(SlotService.class);
+
   private static final String DB_ENDPOINT = System.getenv("DB_ENDPOINT");
+  private static final Integer DB_PORT;
   private static final String DB_REGION = System.getenv("DB_REGION");
   private static final String DB_USER = System.getenv("DB_USER");
   private static final long BACKOFF_TIME_MILLI = 1000; // One second
 
+  static {
+    DB_PORT = retrievePort("DB_PORT", 3306);
+  }
+
   private Connection con;
   private DbUtil dbUtil;
-  private static final Logger logger = LogManager.getLogger(SlotService.class);
 
   /**
    * Constructor used in actual environment (inside Lambda handler).
    */
   public SlotService() {
     this.dbUtil = new DbUtil();
-    this.con = dbUtil.createConnectionViaIamAuth(DB_USER, DB_ENDPOINT, DB_REGION);;
+    this.con = dbUtil.createConnectionViaIamAuth(DB_USER, DB_ENDPOINT, DB_REGION, DB_PORT);;
     logger.info("SlotService Empty constructor, reading from env vars");
   }
 
@@ -48,7 +54,7 @@ public class SlotService {
    */
   public SlotService(DbUtil dbUtil) {
     this.dbUtil = dbUtil;
-    this.con = this.dbUtil.createConnectionViaIamAuth(DB_USER, DB_ENDPOINT, DB_REGION);
+    this.con = this.dbUtil.createConnectionViaIamAuth(DB_USER, DB_ENDPOINT, DB_REGION, DB_PORT);
   }
 
   /**
@@ -248,7 +254,7 @@ public class SlotService {
         logger.info("Retrying database connection");
         try {
           Thread.sleep(BACKOFF_TIME_MILLI);
-          connection = this.dbUtil.createConnectionViaIamAuth(DB_USER, DB_ENDPOINT, DB_REGION);
+          connection = this.dbUtil.createConnectionViaIamAuth(DB_USER, DB_ENDPOINT, DB_REGION, DB_PORT);
         } catch (InterruptedException e) {
           logger.error(e.getMessage(), e);
           throw new RuntimeException("There was a problem sleeping the thread while creating a connection to the DB");
@@ -261,5 +267,16 @@ public class SlotService {
     }
 
     return connection;
+  }
+
+  private static Integer retrievePort(String envVarName, Integer defaultPort) {
+    Integer port = defaultPort;
+    try {
+      port = Integer.valueOf(System.getenv(envVarName));
+    } catch (NumberFormatException nfe) {
+      logger.warn("DB_PORT is not in environment variables or not an integer");
+      port = defaultPort;
+    }
+    return port;
   }
 }

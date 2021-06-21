@@ -54,6 +54,7 @@ public class DeliveryApp {
             .description("API of Delivery project (uksb-1rsq7ledu)")
             .dbEndpoint(db.getInstanceEndpoint())
             .dbProxyEndpoint(db.getProxyEndpoint())
+            .dbPort(db.getDbPort())
             .dbProxyArn(db.getProxyArn())
             .dbRegion(db.getRegion())
             .dbUser(db.getUser())

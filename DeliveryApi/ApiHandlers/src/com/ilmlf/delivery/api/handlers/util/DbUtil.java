@@ -46,13 +46,19 @@ public class DbUtil {
    * @param username username that the Lambda has access in IAM permission (e.g lambda_iam)
    * @param dbEndpoint RDS proxy endpoint
    * @param region RDS region
+   * @param port RDS endpoint port
    * @return a connection using IAM authentication
    */
-  public Connection createConnectionViaIamAuth(@NonNull String username, @NonNull String dbEndpoint, @NonNull String region) {
+  public Connection createConnectionViaIamAuth(@NonNull String username,
+                                               @NonNull String dbEndpoint,
+                                               @NonNull String region,
+                                               Integer port) {
     Connection connection;
     try {
       setSslProperties();
-      connection = DriverManager.getConnection(JDBC_PREFIX + dbEndpoint, setMySqlConnectionProperties(username, dbEndpoint, region));
+      connection = DriverManager.getConnection(
+          JDBC_PREFIX + dbEndpoint,
+          setMySqlConnectionProperties(username, dbEndpoint, region, port));
       return connection;
 
     } catch (Exception e) {
@@ -60,6 +66,17 @@ public class DbUtil {
       logger.error(e.getMessage(), e);
     }
     return null;
+  }
+  /**
+   * Creates a database connection via IAM Authentication with MySQL default port (3306).
+   *
+   * @param username username that the Lambda has access in IAM permission (e.g lambda_iam)
+   * @param dbEndpoint RDS proxy endpoint
+   * @param region RDS region
+   * @return a connection using IAM authentication
+   */
+  public Connection createConnectionViaIamAuth(@NonNull String username, @NonNull String dbEndpoint, @NonNull String region) {
+    return this.createConnectionViaIamAuth(username, dbEndpoint, region, 3306);
   }
 
   /**
@@ -93,7 +110,7 @@ public class DbUtil {
    *
    * @return the authentication token
    */
-  private static String generateAuthToken(String username, String dbEndpoint, String region) {
+  private static String generateAuthToken(String username, String dbEndpoint, String region, Integer port) {
     RdsUtilities utilities = RdsUtilities.builder()
         .credentialsProvider(DefaultCredentialsProvider.create())
         .region(Region.of(region))
@@ -102,7 +119,7 @@ public class DbUtil {
     GenerateAuthenticationTokenRequest authTokenRequest = GenerateAuthenticationTokenRequest.builder()
         .username(username)
         .hostname(dbEndpoint)
-        .port(3306)
+        .port(port)
         .build();
 
     String authenticationToken = utilities.generateAuthenticationToken(authTokenRequest);
@@ -114,13 +131,20 @@ public class DbUtil {
    * This method sets the mysql connection properties, which includes the IAM Database Authentication token
    * as the password. It also specifies that SSL verification is required.
    *
+   * @param username Username
+   * @param dbEndpoint Database endpoint
+   * @param region AWS Region of the database
+   * @param port Port for connecting to the endpoint
    * @return MySQL connection property
    */
-  private static Properties setMySqlConnectionProperties(String username, String dbEndpoint, String region) {
+  private static Properties setMySqlConnectionProperties(String username,
+                                                         String dbEndpoint,
+                                                         String region,
+                                                         Integer port) {
     Properties mysqlConnectionProperties = new Properties();
     mysqlConnectionProperties.setProperty("useSSL", "true");
     mysqlConnectionProperties.setProperty("user", username);
-    mysqlConnectionProperties.setProperty("password", generateAuthToken(username, dbEndpoint, region));
+    mysqlConnectionProperties.setProperty("password", generateAuthToken(username, dbEndpoint, region, port));
 
     return mysqlConnectionProperties;
   }
