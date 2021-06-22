@@ -129,7 +129,7 @@ public class ApiStack extends Stack {
   /**
    * Create a custom resource to populate tables in the database when it's first deployed.
    *
-   * A Custom resource is a CloudFormation feature for execute=ing user provided code to create/update/delete resources.
+   * A Custom resource is a CloudFormation feature for executing user provided code to create/update/delete resources.
    * For resources that aren't available in CloudFormation, we can write custom code to manage their life cycle and let
    * custom resource manage the resource when the stack is created, updated or deleted.
    *
