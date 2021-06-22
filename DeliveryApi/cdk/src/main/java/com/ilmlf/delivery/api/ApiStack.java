@@ -154,7 +154,7 @@ public class ApiStack extends Stack {
     // we will pass in the contents of the SQL File, so that any changes in the file
     // trigger an 'Update' and executes the Populator lambda (which executes the sql statement)
     String scriptFile = "../ApiHandlers/scripts/com/ilmlf/db/dbinit.sql";
-    String sqlScript = new String (Files.readAllBytes( Paths.get(scriptFile)));
+    String sqlScript = new String(Files.readAllBytes(Paths.get(scriptFile)));
     
     new CustomResource(
         this,
