@@ -202,22 +202,6 @@ public class ApiStack extends Stack {
                 .resources(List.of(dbAdminSecretArn, dbUserSecretArn))
                 .build()));
 
-
-    // Allow Lambda to decrypt secret used to connect to the RDS database
-    lambdaRdsRoleWithPw.addToPolicy(
-        new PolicyStatement(
-            PolicyStatementProps.builder()
-                .effect(Effect.ALLOW)
-                .actions(List.of("kms:Decrypt")) // needed for lambda to connect to RDS Proxy
-                .resources(
-                    List.of(
-                        "arn:aws:kms:"
-                            + Stack.of(this).getRegion()
-                            + ":"
-                            + Stack.of(this).getAccount()
-                            + ":key/*"))
-                .build()));
-
     return lambdaRdsRoleWithPw;
   }
 
