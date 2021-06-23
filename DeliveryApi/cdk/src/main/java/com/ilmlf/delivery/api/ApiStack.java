@@ -25,6 +25,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -125,11 +127,11 @@ public class ApiStack extends Stack {
   }
 
   /**
-   * Creates a custom resource to populate tables in the database when it's first deployed.
+   * Create a custom resource to populate tables in the database when it's first deployed.
    *
-   * A Custom Resource is CloudFormation's feature to execute user provided code to create/update/delete resources.
-   * For a resource that isn't available in CloudFormation, we can write custom code to manage its life cycle and let
-   * the custom resource run the code when the stack is created, updated or deleted.
+   * A Custom resource is a CloudFormation feature for executing user provided code to create/update/delete resources.
+   * For resources that aren't available in CloudFormation, we can write custom code to manage their life cycle and let
+   * custom resource manage the resource when the stack is created, updated or deleted.
    *
    * In this case, the custom resource will run the Lambda function handler ("PopulateFarmDb") which contains
    * code to initialize the tables.
@@ -137,7 +139,7 @@ public class ApiStack extends Stack {
    * See https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources.html for details about custom resource
    */
   private void createCustomResourceToPopulateDb(ApiStackProps props, Role lambdaRdsProxyRoleWithPw) throws IOException {
-    // See https://docs.aws.amazon.com/cdk/api/latest/docs/custom-resources-readme.html for details on writing a Lambda function
+    // See https://docs.aws.amazon.com/cdk/api/latest/java/software/amazon/awscdk/customresources/package-summary.html for details on writing a Lambda function
     // and providers
     Function dbPopulatorHandler =
         DefaultLambdaRdsProxy("PopulateFarmDb", props, lambdaRdsProxyRoleWithPw);
@@ -149,12 +151,18 @@ public class ApiStack extends Stack {
             "InvokePopulateDataProvider",
             ProviderProps.builder().onEventHandler(dbPopulatorHandler).build());
 
+    // we will pass in the contents of the SQL File, so that any changes in the file
+    // trigger an 'Update' and executes the Populator lambda (which executes the sql statement)
+    String scriptFile = "../ApiHandlers/scripts/com/ilmlf/db/dbinit.sql";
+    String sqlScript = new String(Files.readAllBytes(Paths.get(scriptFile)));
+    
     new CustomResource(
         this,
-        "PopulateDataProviderv21",
+        "PopulateDataProviderv22",
         CustomResourceProps.builder()
             .serviceToken(dbPopulatorProvider.getServiceToken())
             .resourceType("Custom::PopulateDataProvider")
+            .properties(Map.of("SqlScript",sqlScript))
             .build());
   }
 

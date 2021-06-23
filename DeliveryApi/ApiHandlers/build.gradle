@@ -51,7 +51,7 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
 
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.1'
-    implementation 'com.amazonaws:aws-lambda-java-events:2.2.9'
+    implementation 'com.amazonaws:aws-lambda-java-events:3.9.0'
     runtimeOnly 'mysql:mysql-connector-java:8.0.15'
     implementation 'org.json:json:20210307'
 

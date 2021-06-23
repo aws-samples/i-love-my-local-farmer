@@ -12,19 +12,19 @@ limitations under the License.
 */
 
 package com.ilmlf.delivery.api.handlers;
-
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
 import com.ilmlf.delivery.api.handlers.util.DbUtil;
 import com.ilmlf.delivery.api.handlers.util.SecretsUtil;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.SQLSyntaxErrorException;
 import java.sql.Statement;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
@@ -53,7 +53,7 @@ import org.json.JSONObject;
  * the DB instance.
  * </p>
  */
-public class PopulateFarmDb implements RequestHandler<Object, String> {
+public class PopulateFarmDb implements RequestHandler<CloudFormationCustomResourceEvent, String> {
   /**
    * Database connection info.
    */
@@ -88,47 +88,76 @@ public class PopulateFarmDb implements RequestHandler<Object, String> {
   }
 
   /**
-   * Entry point for Custom Resource call. This function executes dbinit.sql and
-   * creates a user with the username and password from DB_SECRET.
+   * Entry point for Custom Resource call. This function executes dbinit.sql, which 
+   * creates a db user with username and password from DB_SECRET.
+   * 
+   * The Sql script will only execute on CREATE/UPDATE requestTypes 
+   * See https://docs.aws.amazon.com/cdk/api/latest/java/software/amazon/awscdk/customresources/package-summary.html 
    *
    * @param event Event object from CloudFormation Custom Resource
    * @param context Context object
    * @return Result to Custom Resource
    */
-  @Override
-  public String handleRequest(Object event, Context context) {
-    String script = "./com/ilmlf/db/dbinit.sql";
-    try (FileReader fr = new FileReader(script);
-         BufferedReader br = new BufferedReader(fr);
-         Statement stmt = con.createStatement()){
-
-      StringBuilder sb = new StringBuilder();
-      String line;
-
-      while ((line = br.readLine()) != null) {
-        if (line.contains("{{username}}") || line.contains("{{password}}")) {
-          line = replaceUserDbProxyCredentials(line);
-        }
-
-        sb.append(line);
-        if (line.contains(";")) {
-          String query = sb.toString();
-          stmt.execute(query);
-          sb = new StringBuilder(); // reinitialize, otherwise will keep appending
-        }
+  //@Override
+  public String handleRequest(CloudFormationCustomResourceEvent customResourceEvent , Context context) {
+    boolean runScript = false;
+    String requestType = customResourceEvent.getRequestType();
+    JSONObject retJson = new JSONObject();
+    retJson.append("RequestType", requestType);
+    
+    if (null != requestType) {
+      if ("Update".equals(requestType) || "Create".equals(requestType)) {
+        // Updates and Creates will execute the sql script
+        runScript = true;
       }
-
-      return "Db Init script executed successfully";
-
-      // Rethrow the checked exception as a runtime exception as
-      // the overridden method signature doesn't throw any exceptions
-    } catch (SQLException e) {
-      logger.error(e.getMessage(), e);
-      throw new RuntimeException(e);
-    } catch (IOException e) {
-      logger.error(e.getMessage(), e);
-      throw new RuntimeException(e);
+      if ("Update".equals(requestType) || "Delete".equals(requestType)) {
+        // Updates and Deletes need to return the same Physical Id they had
+        retJson.append("PhysicalResourceId", customResourceEvent.getPhysicalResourceId());
+      }
+      
+    } else {
+      // also run script in the case the Lambda was manually invoked instead 
+      // of thru CDK Custom Resource (e.g. via testing in AWS Console)
+      runScript = true;
+      
     }
+    
+    if (runScript) {
+      logger.info("Running SQL script");
+      String script = "./com/ilmlf/db/dbinit.sql";
+      try (FileReader fr = new FileReader(script);
+          BufferedReader br = new BufferedReader(fr);
+          Statement stmt = con.createStatement()){
+
+        StringBuilder sb = new StringBuilder();
+        String line;
+  
+        while ((line = br.readLine()) != null) {
+          if (line.contains("{{username}}") || line.contains("{{password}}")) {
+            line = replaceUserDbProxyCredentials(line);
+          }
+  
+          sb.append(line);
+          if (line.contains(";")) {
+            String query = sb.toString();
+            stmt.execute(query);
+            sb = new StringBuilder(); // reinitialize, otherwise will keep appending
+          }
+        }
+  
+      // Rethrow checked exceptions as a runtime exception as
+      // the overridden method signature doesn't throw any exceptions
+      } catch (SQLException e) {
+        logger.error(e.getMessage(), e);
+        throw new RuntimeException(e);
+      } catch (IOException e) {
+        logger.error(e.getMessage(), e);
+        throw new RuntimeException(e);
+      }
+    }
+
+    retJson.append("scriptRun", String.valueOf(runScript));
+    return retJson.toString();
   }
 
   /**
