@@ -6,8 +6,8 @@ This README.md contains only architecture, installation steps, and technical not
  
  * [Part 1](https://medium.com/i-love-my-local-farmer-engineering-blog/the-strawberrys-journey-from-your-local-farm-to-your-table-70e80b5a4f51) explains business requirements and the context of the project
  * [Part 2](https://medium.com/i-love-my-local-farmer-engineering-blog/a-serverless-java-solution-for-deliveries-2a29497ca272) discusses architecture and the trade-off decisions we made when choosing to use certain AWS services and frameworks
- * Part 3 discusses writing CDK code in Java
-                             
+ * [Part 3](https://medium.com/i-love-my-local-farmer-engineering-blog/writing-your-cdk-in-java-685a380d8e4e) discusses using CDK in Java to set up the AWS resources used in this project, with tips and gotchas on the experience of using Java for CDK.
+
 
 # Pre-requisites
 1. **AWS CLI v2:** with AWS credentials configured (See steps [here](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html#getting_started_prerequisites))
