@@ -65,7 +65,7 @@ public class GetSlots implements RequestHandler<APIGatewayProxyRequestEvent, API
     String returnVal = "";
     Integer httpStatus = 200;
     LocalDate availableSlotsBeginDate = LocalDate.now(ZoneId.of("UTC"));
-    LocalDate availableSlotsEndDate = availableSlotsBeginDate.plus(Period.ofDays(14)); // Only retrieve slots for the next two weeks
+    LocalDate availableSlotsEndDate = availableSlotsBeginDate.plus(Period.ofDays(14)); // Only retrieve next two weeks
     Integer farmId;
     ArrayList<Slot> slotArray;
 

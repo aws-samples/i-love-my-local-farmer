@@ -13,6 +13,9 @@ limitations under the License.
 
 package com.ilmlf.delivery.api.handlers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
@@ -23,20 +26,16 @@ import com.google.gson.JsonDeserializer;
 import com.ilmlf.delivery.api.handlers.GetSlots;
 import com.ilmlf.delivery.api.handlers.Slot;
 import com.ilmlf.delivery.api.handlers.service.SlotService;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 /**
  * Unit tests for GetSlots handler.
@@ -48,16 +47,24 @@ public class GetSlotsTest {
   private SlotService slotService;
   private static Gson GSON;
 
+  /**
+   * Before all tests are run, configure Gson.
+   */
   @BeforeAll
   public static void createGson() {
     GSON = new GsonBuilder()
         .registerTypeAdapter(LocalDate.class,
-            (JsonDeserializer<LocalDate>) (json, type, jsonDeserializationContext) -> LocalDate.parse(json.getAsString()))
+            (JsonDeserializer<LocalDate>) (json, type, jsonDeserializationContext)
+                -> LocalDate.parse(json.getAsString()))
         .registerTypeAdapter(LocalDateTime.class,
-            (JsonDeserializer<LocalDateTime>) (json, type, jsonDeserializationContext) -> LocalDateTime.parse(json.getAsString()))
+            (JsonDeserializer<LocalDateTime>) (json, type, jsonDeserializationContext)
+                -> LocalDateTime.parse(json.getAsString()))
         .create();
   }
 
+  /**
+   * Before each test is run, setup mocked objects.
+   */
   @BeforeEach
   public void setup() {
     this.slotService = Mockito.mock(SlotService.class);

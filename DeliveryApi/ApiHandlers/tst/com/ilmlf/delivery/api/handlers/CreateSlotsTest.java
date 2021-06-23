@@ -1,33 +1,30 @@
 package com.ilmlf.delivery.api.handlers;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-
-import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-
-import com.ilmlf.delivery.api.handlers.service.SlotService;
-import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.Mockito;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.ilmlf.delivery.api.handlers.service.SlotService;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import org.json.JSONObject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 /**
  * Unit tests for CreateSlots handler.
  * It injects a mocked SlotService to the handler class and
  * checks that the handler returns correct responses for both success and failure scenarios.
- *
  * It also checks that parsing and creating slots is performed correctly within the helper methods in CreateSlots
  */
 @ExtendWith(MockitoExtension.class)
@@ -60,7 +57,8 @@ class CreateSlotsTest {
   @Test
   public void testParseAndCreateSlotListInvalid() {
     assertThrows(Exception.class, () -> cs.parseAndCreateSlotList("", "2"));
-    assertThrows(Exception.class, () -> cs.parseAndCreateSlotList(jsonWrapperStart + "badjson" + singleSlotStr + jsonWrapperEnd, "2"));
+    assertThrows(Exception.class,
+          () -> cs.parseAndCreateSlotList(jsonWrapperStart + "badjson" + singleSlotStr + jsonWrapperEnd, "2"));
   }
 
   @Test

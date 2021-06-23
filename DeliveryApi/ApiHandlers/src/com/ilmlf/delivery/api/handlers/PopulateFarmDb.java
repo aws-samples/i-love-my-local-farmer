@@ -12,19 +12,18 @@ limitations under the License.
 */
 
 package com.ilmlf.delivery.api.handlers;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
 import com.ilmlf.delivery.api.handlers.util.DbUtil;
 import com.ilmlf.delivery.api.handlers.util.SecretsUtil;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
@@ -90,16 +89,15 @@ public class PopulateFarmDb implements RequestHandler<CloudFormationCustomResour
   /**
    * Entry point for Custom Resource call. This function executes dbinit.sql, which 
    * creates a db user with username and password from DB_SECRET.
-   * 
    * The Sql script will only execute on CREATE/UPDATE requestTypes 
    * See https://docs.aws.amazon.com/cdk/api/latest/java/software/amazon/awscdk/customresources/package-summary.html 
    *
-   * @param event Event object from CloudFormation Custom Resource
+   * @param customResourceEvent Event object from CloudFormation Custom Resource
    * @param context Context object
    * @return Result to Custom Resource
    */
   //@Override
-  public String handleRequest(CloudFormationCustomResourceEvent customResourceEvent , Context context) {
+  public String handleRequest(CloudFormationCustomResourceEvent customResourceEvent, Context context) {
     boolean runScript = false;
     String requestType = customResourceEvent.getRequestType();
     JSONObject retJson = new JSONObject();
@@ -127,7 +125,7 @@ public class PopulateFarmDb implements RequestHandler<CloudFormationCustomResour
       String script = "./com/ilmlf/db/dbinit.sql";
       try (FileReader fr = new FileReader(script);
           BufferedReader br = new BufferedReader(fr);
-          Statement stmt = con.createStatement()){
+          Statement stmt = con.createStatement()) {
 
         StringBuilder sb = new StringBuilder();
         String line;

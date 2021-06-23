@@ -123,11 +123,11 @@ public class SlotService {
   /**
    * Gets Slots from given farm id within the given time range.
    *
-   * @param farmId Farm to retrieve slots.
-   * @param availableSlotsBeginDate Begin date.
-   * @param availableSlotsEndDate End date.
-   * @return
-   * @throws SQLException
+   * @param farmId Farm to retrieve slots
+   * @param availableSlotsBeginDate Begin date
+   * @param availableSlotsEndDate End date
+   * @return an ArrayList of Slot objects
+   * @throws SQLException if an error occurs during preparing the statement
    */
   public ArrayList<Slot> getSlots(Integer farmId, LocalDate availableSlotsBeginDate,
                                   LocalDate availableSlotsEndDate) throws SQLException {
@@ -263,7 +263,8 @@ public class SlotService {
 
     } catch (SQLException e) {
       logger.error(e.getMessage(), e);
-      throw new RuntimeException("There was a problem refreshing the database connection due to an error while checking validity");
+      throw new RuntimeException("There was a problem refreshing the database connection "
+        + "due to an error while checking validity");
     }
 
     return connection;

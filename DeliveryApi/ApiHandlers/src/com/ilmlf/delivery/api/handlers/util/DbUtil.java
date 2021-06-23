@@ -67,6 +67,7 @@ public class DbUtil {
     }
     return null;
   }
+
   /**
    * Creates a database connection via IAM Authentication with MySQL default port (3306).
    *
@@ -75,7 +76,8 @@ public class DbUtil {
    * @param region RDS region
    * @return a connection using IAM authentication
    */
-  public Connection createConnectionViaIamAuth(@NonNull String username, @NonNull String dbEndpoint, @NonNull String region) {
+  public Connection createConnectionViaIamAuth(
+      @NonNull String username, @NonNull String dbEndpoint, @NonNull String region) {
     return this.createConnectionViaIamAuth(username, dbEndpoint, region, 3306);
   }
 
@@ -87,7 +89,8 @@ public class DbUtil {
    * @param dbEndpoint DB Instance (or proxy) endpoint
    * @return a Connection object
    */
-  public static Connection createConnectionViaUserPwd(@NonNull String username, @NonNull String pwd, @NonNull String dbEndpoint) {
+  public static Connection createConnectionViaUserPwd(
+      @NonNull String username, @NonNull String pwd, @NonNull String dbEndpoint) {
     Connection connection;
 
     try {
@@ -180,14 +183,15 @@ public class DbUtil {
 
   /**
    * This method creates the Key Store File needed for the SSL verification <br/>
-   * during the IAM Database Authentication to the db instance
+   * during the IAM Database Authentication to the db instance.
    *
    * @param rootX509Certificate - the SSL certificate to be stored in the KeyStore
-   * @return
+   * @return the keystore file
    * @throws GeneralSecurityException when creating the key in key store fails
    * @throws IOException when creating temp file or reading a keystore file fails
    */
-  private static File createKeyStoreFile(X509Certificate rootX509Certificate) throws GeneralSecurityException, IOException {
+  private static File createKeyStoreFile(X509Certificate rootX509Certificate)
+      throws GeneralSecurityException, IOException {
     File keyStoreFile = File.createTempFile(KEY_STORE_FILE_PREFIX, KEY_STORE_FILE_SUFFIX);
 
     try (FileOutputStream fos = new FileOutputStream(keyStoreFile.getPath())) {
