@@ -1,15 +1,16 @@
 package com.ilmlf.delivery.api.handlers.service;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.ilmlf.delivery.api.handlers.util.DbUtil;
+import java.sql.Connection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.sql.Connection;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
+/**
+ * Unit tests for the SlotService class.
+ */
 public class SlotServiceTest {
   private SlotService slotService;
   private DbUtil dbUtilMock;
