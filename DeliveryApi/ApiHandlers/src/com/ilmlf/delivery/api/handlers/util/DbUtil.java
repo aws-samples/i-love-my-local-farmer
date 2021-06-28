@@ -30,7 +30,7 @@ import software.amazon.awssdk.services.rds.model.GenerateAuthenticationTokenRequ
  * a Secret Store.
  */
 public class DbUtil {
-  private static final String SSL_CERTIFICATE = "rds-ca-2019-root.pem";
+  public static final String SSL_CERTIFICATE = "rds-ca-2019-root.pem";
   private static final String KEY_STORE_TYPE = "JKS";
   private static final String KEY_STORE_PROVIDER = "SUN";
   private static final String KEY_STORE_FILE_PREFIX = "sys-connect-via-ssl-test-cacerts";
@@ -113,7 +113,7 @@ public class DbUtil {
    *
    * @return the authentication token
    */
-  private static String generateAuthToken(String username, String dbEndpoint, String region, Integer port) {
+  public static String generateAuthToken(String username, String dbEndpoint, String region, Integer port) {
     RdsUtilities utilities = RdsUtilities.builder()
         .credentialsProvider(DefaultCredentialsProvider.create())
         .region(Region.of(region))
@@ -159,7 +159,7 @@ public class DbUtil {
    * @throws IOException when creating a temp file or reading a keystore file fails
    */
   private static void setSslProperties() throws GeneralSecurityException, IOException {
-    File keyStoreFile = createKeyStoreFile(createCertificate());
+    File keyStoreFile = createKeyStoreFile(createCertificate(SSL_CERTIFICATE));
     System.setProperty("javax.net.ssl.trustStore", keyStoreFile.getPath());
     System.setProperty("javax.net.ssl.trustStoreType", KEY_STORE_TYPE);
     System.setProperty("javax.net.ssl.trustStorePassword", DEFAULT_KEY_STORE_PASSWORD);
@@ -172,9 +172,9 @@ public class DbUtil {
    * @throws GeneralSecurityException when creating the key in the key store fails
    * @throws IOException when creating a temp file or reading a keystore file fails
    */
-  private static X509Certificate createCertificate() throws  GeneralSecurityException, IOException {
+  public static X509Certificate createCertificate(String certFile) throws  GeneralSecurityException, IOException {
     CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
-    URL url = new File(SSL_CERTIFICATE).toURI().toURL();
+    URL url = new File(certFile).toURI().toURL();
 
     try (InputStream certInputStream = url.openStream()) {
       return (X509Certificate) certFactory.generateCertificate(certInputStream);
