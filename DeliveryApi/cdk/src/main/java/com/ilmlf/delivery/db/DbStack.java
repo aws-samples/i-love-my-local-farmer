@@ -94,6 +94,7 @@ public class DbStack extends Stack {
     private String dbUsername;
     private Integer dbPort;
     private Environment env;
+    private boolean isPublicSubnetDb;
   }
 
   /**
@@ -154,10 +155,13 @@ public class DbStack extends Stack {
      * See https://docs.aws.amazon.com/cdk/api/latest/docs/aws-rds-readme.html for details.
      */
     String dbName = "FarmerDB";
+    List<ISubnet> subnets;
 
-    List<ISubnet> subnets = "public".equals(this.getNode().tryGetContext("subnetType")) ?
-        vpc.getPublicSubnets() :
-        vpc.getPrivateSubnets();
+    if (props.isPublicSubnetDb) {
+       subnets = vpc.getPublicSubnets();
+    } else {
+      subnets = vpc.getPrivateSubnets();
+    }
 
     DatabaseInstance farmerDb =
         new DatabaseInstance(

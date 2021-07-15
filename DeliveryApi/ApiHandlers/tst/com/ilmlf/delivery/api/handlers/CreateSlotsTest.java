@@ -14,12 +14,15 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+
+import com.ilmlf.delivery.api.handlers.util.SlotParser;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 
 /**
  * Unit tests for CreateSlots handler.
@@ -36,36 +39,41 @@ class CreateSlotsTest {
 
   private CreateSlots cs;
   private SlotService slotService;
+  private MetricsLogger metricsLogger;
+  private SlotParser slotParser;
 
   @BeforeEach
   public void setUp() {
     slotService = Mockito.mock(SlotService.class);
-    cs = new CreateSlots(slotService);
+    this.metricsLogger = Mockito.mock(MetricsLogger.class);
+    this.slotParser = new SlotParser();
+
+    cs = new CreateSlots(slotService, this.metricsLogger, this.slotParser);
   }
 
   @Test
   public void testParseAndCreateSlotListGood() {
-    List<Slot> slots = cs.parseAndCreateSlotList(jsonWrapperStart + singleSlotStr + jsonWrapperEnd, "2");
+    List<Slot> slots = slotParser.parseAndCreateSlotList(jsonWrapperStart + singleSlotStr + jsonWrapperEnd, "2");
     assertNotNull(slots);
     assertEquals(slots.size(), 1);
 
-    slots = cs.parseAndCreateSlotList(jsonWrapperStart + singleSlotStr + "," + singleSlotStr + jsonWrapperEnd, "2");
+    slots = slotParser.parseAndCreateSlotList(jsonWrapperStart + singleSlotStr + "," + singleSlotStr + jsonWrapperEnd, "2");
     assertNotNull(slots);
     assertEquals(slots.size(), 2);
   }
 
   @Test
   public void testParseAndCreateSlotListInvalid() {
-    assertThrows(Exception.class, () -> cs.parseAndCreateSlotList("", "2"));
+    assertThrows(Exception.class, () -> slotParser.parseAndCreateSlotList("", "2"));
     assertThrows(Exception.class,
-          () -> cs.parseAndCreateSlotList(jsonWrapperStart + "badjson" + singleSlotStr + jsonWrapperEnd, "2"));
+          () -> slotParser.parseAndCreateSlotList(jsonWrapperStart + "badjson" + singleSlotStr + jsonWrapperEnd, "2"));
   }
 
   @Test
   public void testParseAndCreateSlotGood() {
     try {
       JSONObject slotJson = constructSlotJson(2, defaultDate, defaultDate);
-      Slot slot = cs.parseAndCreateSlot(slotJson, "2");
+      Slot slot = SlotParser.parseAndCreateSlot(slotJson, "2");
       assertNotNull(slot);
       assertEquals(slot.getAvailDeliveries(), 2);
       assertEquals(slot.getBookedDeliveries(), 0);
@@ -85,19 +93,19 @@ class CreateSlotsTest {
   public void testParseAndCreateSlotMissingArgs() {
     try {
       assertThrows(RuntimeException.class, () ->
-          cs.parseAndCreateSlot(constructSlotJson(null, defaultDate, defaultDate), "2"));
+          SlotParser.parseAndCreateSlot(constructSlotJson(null, defaultDate, defaultDate), "2"));
 
       assertThrows(RuntimeException.class, () ->
-          cs.parseAndCreateSlot(constructSlotJson(2, null, defaultDate), "2"));
+          SlotParser.parseAndCreateSlot(constructSlotJson(2, null, defaultDate), "2"));
 
       assertThrows(RuntimeException.class, () ->
-          cs.parseAndCreateSlot(constructSlotJson(2, defaultDate, null), "2"));
+          SlotParser.parseAndCreateSlot(constructSlotJson(2, defaultDate, null), "2"));
 
       assertThrows(RuntimeException.class, () ->
-          cs.parseAndCreateSlot(constructSlotJson(2, defaultDate, defaultDate), ""));
+          SlotParser.parseAndCreateSlot(constructSlotJson(2, defaultDate, defaultDate), ""));
 
       assertThrows(RuntimeException.class, () ->
-          cs.parseAndCreateSlot(constructSlotJson(2, defaultDate, defaultDate), null));
+          SlotParser.parseAndCreateSlot(constructSlotJson(2, defaultDate, defaultDate), null));
 
     } catch (Exception e) {
       fail(e);
@@ -109,49 +117,49 @@ class CreateSlotsTest {
     try {
       // nothing json to parse
       assertThrows(RuntimeException.class, () ->
-          cs.parseAndCreateSlot(new JSONObject(), "2"));
+          SlotParser.parseAndCreateSlot(new JSONObject(), "2"));
 
       // null inputs
       assertThrows(RuntimeException.class, () ->
-          cs.parseAndCreateSlot(constructSlotJson(null, defaultDate, defaultDate), "2"));
+          SlotParser.parseAndCreateSlot(constructSlotJson(null, defaultDate, defaultDate), "2"));
 
       assertThrows(RuntimeException.class, () ->
-          cs.parseAndCreateSlot(constructSlotJson(2, null, defaultDate), "2"));
+          SlotParser.parseAndCreateSlot(constructSlotJson(2, null, defaultDate), "2"));
 
       assertThrows(RuntimeException.class, () ->
-          cs.parseAndCreateSlot(constructSlotJson(2, defaultDate, null), "2"));
+          SlotParser.parseAndCreateSlot(constructSlotJson(2, defaultDate, null), "2"));
 
       assertThrows(RuntimeException.class, () ->
-          cs.parseAndCreateSlot(constructSlotJson(2, defaultDate, defaultDate), null));
+          SlotParser.parseAndCreateSlot(constructSlotJson(2, defaultDate, defaultDate), null));
 
       // empty string inputs
       assertThrows(RuntimeException.class, () ->
-          cs.parseAndCreateSlot(constructSlotJson("", defaultDate, defaultDate), "2"));
+          SlotParser.parseAndCreateSlot(constructSlotJson("", defaultDate, defaultDate), "2"));
 
       assertThrows(RuntimeException.class, () ->
-          cs.parseAndCreateSlot(constructSlotJson(2, "", defaultDate), "2"));
+          SlotParser.parseAndCreateSlot(constructSlotJson(2, "", defaultDate), "2"));
 
       assertThrows(RuntimeException.class, () ->
-          cs.parseAndCreateSlot(constructSlotJson(2, defaultDate, ""), "2"));
+          SlotParser.parseAndCreateSlot(constructSlotJson(2, defaultDate, ""), "2"));
 
       assertThrows(RuntimeException.class, () ->
-          cs.parseAndCreateSlot(constructSlotJson(2, defaultDate, ""), "2"));
+          SlotParser.parseAndCreateSlot(constructSlotJson(2, defaultDate, ""), "2"));
 
       assertThrows(RuntimeException.class, () ->
-          cs.parseAndCreateSlot(constructSlotJson(2, defaultDate, defaultDate), ""));
+          SlotParser.parseAndCreateSlot(constructSlotJson(2, defaultDate, defaultDate), ""));
 
       // invalid data-type input
       assertThrows(RuntimeException.class, () ->
-          cs.parseAndCreateSlot(constructSlotJson("s", defaultDate, defaultDate), "2"));
+          SlotParser.parseAndCreateSlot(constructSlotJson("s", defaultDate, defaultDate), "2"));
 
       assertThrows(RuntimeException.class, () ->
-          cs.parseAndCreateSlot(constructSlotJson(2, "s", defaultDate), "2"));
+          SlotParser.parseAndCreateSlot(constructSlotJson(2, "s", defaultDate), "2"));
 
       assertThrows(RuntimeException.class, () ->
-          cs.parseAndCreateSlot(constructSlotJson(2, defaultDate, "s"), "2"));
+          SlotParser.parseAndCreateSlot(constructSlotJson(2, defaultDate, "s"), "2"));
 
       assertThrows(RuntimeException.class, () ->
-          cs.parseAndCreateSlot(constructSlotJson(2, defaultDate, defaultDate), "s"));
+          SlotParser.parseAndCreateSlot(constructSlotJson(2, defaultDate, defaultDate), "s"));
 
     } catch (Exception e) {
       fail(e);
@@ -160,6 +168,9 @@ class CreateSlotsTest {
 
   @Test
   public void testHandlerMissingArguments() {
+    this.metricsLogger = MockProvider.getMockMetricsLogger();
+    this.cs = new CreateSlots(this.slotService, this.metricsLogger, this.slotParser);
+
     APIGatewayProxyRequestEvent request = new APIGatewayProxyRequestEvent();
     APIGatewayProxyResponseEvent response = this.cs.handleRequest(request, Mockito.mock(Context.class));
 
@@ -168,11 +179,12 @@ class CreateSlotsTest {
 
   @Test
   public void testHandlerBadParsing() throws NullPointerException {
-    CreateSlots mockCs = Mockito.mock(CreateSlots.class);
-    Mockito.when(mockCs.parseAndCreateSlotList(Mockito.any(), Mockito.any()))
+    this.slotParser = Mockito.mock(SlotParser.class);
+    this.metricsLogger = MockProvider.getMockMetricsLogger();
+    this.cs = new CreateSlots(this.slotService, this.metricsLogger, this.slotParser);
+
+    Mockito.when(this.slotParser.parseAndCreateSlotList(Mockito.any(), Mockito.any()))
         .thenThrow(new NullPointerException());
-    Mockito.when(mockCs.handleRequest(Mockito.any(), Mockito.any()))
-        .thenCallRealMethod();
 
     APIGatewayProxyRequestEvent request = new APIGatewayProxyRequestEvent()
         .withPathParameters(Map.of(
@@ -180,13 +192,15 @@ class CreateSlotsTest {
         ))
         .withBody("anyinvalidbody");
 
-    APIGatewayProxyResponseEvent response = mockCs.handleRequest(request, Mockito.mock(Context.class));
+    APIGatewayProxyResponseEvent response = cs.handleRequest(request, Mockito.mock(Context.class));
 
     assertEquals(400, response.getStatusCode());
   }
 
   @Test
   public void testHandlerSqlProblem() throws SQLException {
+    this.metricsLogger = MockProvider.getMockMetricsLogger();
+    this.cs = new CreateSlots(this.slotService, this.metricsLogger, this.slotParser);
     Mockito.when(this.slotService.insertSlotList(Mockito.any()))
         .thenThrow(new SQLException());
 
@@ -203,6 +217,8 @@ class CreateSlotsTest {
 
   @Test
   public void testHandlerSuccess() throws SQLException {
+    this.metricsLogger = MockProvider.getMockMetricsLogger();
+    this.cs = new CreateSlots(this.slotService, this.metricsLogger, this.slotParser);
     Mockito.when(this.slotService.insertSlotList(Mockito.any())).thenReturn(1);
 
     APIGatewayProxyRequestEvent request = new APIGatewayProxyRequestEvent()

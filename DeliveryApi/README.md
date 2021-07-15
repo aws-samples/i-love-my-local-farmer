@@ -77,6 +77,18 @@ Example:
 ```
 npx cdk deploy --all --profile <PROFILE_NAME> --c subnetType=public
 ```
+
+## Add email subscription to alarm topics
+
+This solution will create alarms and dashboards for the Lambda functions that are integrated with API Gateway. In order
+to get email notifications when the alarms go into their alarming state, you must specify an email to be subscribed to 
+the notifications. This is done with a command-line property, similar to how the database subnet type can be specified
+above.
+
+Examples:
+```
+npx cdk deploy --all --profile <PROFILE_NAME> --c email=<email to be subscribed>
+```
 ## CORS
 Please note that in our code we have a development setup for allowing CORS requests from '*'.
 ```

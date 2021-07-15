@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
+import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 
 /**
  * Unit tests for BookDelivery handler.
@@ -39,6 +40,7 @@ import org.mockito.Mockito;
 public class BookDeliveryTest {
   private BookDelivery bookDelivery;
   private SlotService slotService;
+  private MetricsLogger metricsLogger;
   private static Gson GSON;    
 
   /**
@@ -52,7 +54,10 @@ public class BookDeliveryTest {
   @BeforeEach
   public void setup() {
     this.slotService = Mockito.mock(SlotService.class);
-    this.bookDelivery = new BookDelivery(this.slotService);
+
+    this.metricsLogger = MockProvider.getMockMetricsLogger();
+
+    this.bookDelivery = new BookDelivery(this.slotService, this.metricsLogger);
   }
 
   @Test

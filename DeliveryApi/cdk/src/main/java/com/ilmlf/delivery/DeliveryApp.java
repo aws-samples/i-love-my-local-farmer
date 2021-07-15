@@ -16,7 +16,10 @@ package com.ilmlf.delivery;
 import com.ilmlf.delivery.api.ApiStack;
 import com.ilmlf.delivery.db.DbStack;
 import java.io.IOException;
+import java.util.List;
+
 import software.amazon.awscdk.core.App;
+import software.amazon.awscdk.services.ec2.ISubnet;
 
 /**
  * The entry point of CDK application. This class creates a CDK App with two stacks
@@ -47,11 +50,16 @@ public class DeliveryApp {
     String dbPortStr = (String) app.getNode().tryGetContext("dbPort");
     Integer dbPort = (dbPortStr == null ? 3306: Integer.valueOf(dbPortStr));
 
+    boolean isPublicSubnetDb = "public".equals(app.getNode().tryGetContext("subnetType"));
+
     DbStack db = new DbStack(app, "DeliveryProject-Db", DbStack.DbStackProps.builder()
         .description("MySQL database, RDS proxy, secrets, and network components of Delivery project (uksb-1rsq7leeu)")
         .dbUsername(dbUsername)
         .dbPort(dbPort)
+        .isPublicSubnetDb(isPublicSubnetDb)
         .build());
+
+    String email = (String) app.getNode().tryGetContext("email");
 
     new ApiStack(
         app,
@@ -70,6 +78,7 @@ public class DeliveryApp {
             .dbAdminSecretArn(db.getAdminSecret().getSecretArn())
             .dbSg(db.getSecurityGroup())
             .dbVpc(db.getVpc())
+            .alertEmail(email)
             .build());
 
     app.synth();

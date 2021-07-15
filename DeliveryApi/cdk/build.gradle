@@ -24,11 +24,13 @@ application {
 }
 
 dependencies {
-    implementation 'software.amazon.awscdk:core:1.102.0'
-    implementation 'software.amazon.awscdk:ec2:1.102.0'
-    implementation 'software.amazon.awscdk:apigateway:1.102.0'
-    implementation 'software.amazon.awscdk:lambda:1.102.0'
-    implementation 'software.amazon.awscdk:rds:1.102.0'
+    implementation 'software.amazon.awscdk:core:1.114.0'
+    implementation 'software.amazon.awscdk:ec2:1.114.0'
+    implementation 'software.amazon.awscdk:apigateway:1.114.0'
+    implementation 'software.amazon.awscdk:lambda:1.114.0'
+    implementation 'software.amazon.awscdk:rds:1.114.0'
+    implementation 'software.amazon.awscdk:sns-subscriptions:1.114.0'
+    implementation 'software.amazon.awscdk:cloudwatch-actions:1.114.0'
     implementation 'com.github.spullara.mustache.java:compiler:0.9.7'
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     implementation 'io.github.json-snapshot:json-snapshot:1.0.17'
@@ -37,6 +39,8 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
     testImplementation 'org.assertj:assertj-core:3.18.1'
+
+
     compileOnly 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok:1.18.20'
 }
