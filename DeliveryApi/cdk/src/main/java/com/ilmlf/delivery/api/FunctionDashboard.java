@@ -74,7 +74,7 @@ public class FunctionDashboard extends Dashboard {
         .dimensionsMap(dimensions)
         .period(Duration.minutes(5))
         .statistic("SUM")
-        .label("GetSlots When Farm Has No Slots")
+        .label("GetSlots Number of Slots Returned")
         .build());
 
     Metric sqlExceptionMetric = new Metric(MetricProps.builder()

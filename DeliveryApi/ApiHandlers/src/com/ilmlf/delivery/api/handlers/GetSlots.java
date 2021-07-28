@@ -46,6 +46,7 @@ public class GetSlots implements RequestHandler<APIGatewayProxyRequestEvent, API
   public GetSlots() {
     this.slotService = new SlotService();
     this.metricsLogger = new MetricsLogger();
+    this.metricsLogger.putDimensions(DimensionSet.of("FunctionName", "GetSlots"));
   }
 
   /**
@@ -55,7 +56,6 @@ public class GetSlots implements RequestHandler<APIGatewayProxyRequestEvent, API
    */
   public GetSlots(SlotService slotService, MetricsLogger metricsLogger) {
     this.slotService = slotService;
-//    this.cloudwatch = cloudWatchClient;
     this.metricsLogger = metricsLogger;
   }
 
@@ -76,8 +76,6 @@ public class GetSlots implements RequestHandler<APIGatewayProxyRequestEvent, API
     LocalDate availableSlotsEndDate = availableSlotsBeginDate.plus(Period.ofDays(14)); // Only retrieve next two weeks
     Integer farmId;
     ArrayList<Slot> slotArray;
-
-    metricsLogger.putDimensions(DimensionSet.of("FunctionName", "GetSlots"));
 
     try {
       farmId = Integer.parseInt(input.getPathParameters().get("farm-id"));

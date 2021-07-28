@@ -43,6 +43,7 @@ public class BookDelivery implements RequestHandler<APIGatewayProxyRequestEvent,
   public BookDelivery() {
     this.slotService = new SlotService();
     this.metricsLogger = new MetricsLogger();
+    metricsLogger.putDimensions(DimensionSet.of("FunctionName", "BookDelivery"));
   }
 
   /**
@@ -74,8 +75,6 @@ public class BookDelivery implements RequestHandler<APIGatewayProxyRequestEvent,
     Integer slotId;
     Integer userId;
     JSONObject jsonObjDelivery;
-
-    metricsLogger.putDimensions(DimensionSet.of("FunctionName", "BookDelivery"));
 
     try {
       farmId = Integer.parseInt(event.getPathParameters().get("farm-id"));

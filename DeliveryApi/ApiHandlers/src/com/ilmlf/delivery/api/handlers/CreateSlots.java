@@ -19,18 +19,12 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.ilmlf.delivery.api.handlers.service.SlotService;
 import com.ilmlf.delivery.api.handlers.util.ApiUtil;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import com.ilmlf.delivery.api.handlers.util.SlotParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
@@ -51,6 +45,7 @@ public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, 
     this.slotService = new SlotService();
     this.metricsLogger = new MetricsLogger();
     this.slotParser = new SlotParser();
+    metricsLogger.putDimensions(DimensionSet.of("FunctionName", "CreateSlots"));
     logger.info("CreateSlots empty constructor, called by AWS Lambda");
   }
 
@@ -90,8 +85,6 @@ public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, 
     String returnVal = "";
     Integer httpStatus = 200;
     List<Slot> slotList = new ArrayList<>();
-
-    metricsLogger.putDimensions(DimensionSet.of("FunctionName", "CreateSlots"));
 
     try {
       String farmIdStr = input.getPathParameters().get("farm-id");
