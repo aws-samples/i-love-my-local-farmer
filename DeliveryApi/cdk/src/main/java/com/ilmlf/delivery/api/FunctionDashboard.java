@@ -25,7 +25,7 @@ import software.amazon.awscdk.services.sns.Topic;
  */
 public class FunctionDashboard extends Dashboard {
   private static String LAMBDA_NAMESPACE = "AWS/Lambda";
-  private static String EMF_NAMESPACE = "aws-embedded-metrics";
+  private static String DELIVERY_NAMESPACE = "DeliveryApi";
   private static String DIMENSION_FUNCTION_NAME = "FunctionName";
   private static String DIMENSION_SERVICE_NAME = "ServiceName";
   private static String DIMENSION_LOG_GROUP = "LogGroup";
@@ -61,7 +61,7 @@ public class FunctionDashboard extends Dashboard {
 
     Metric noSlotsFoundMetric = new Metric(MetricProps.builder()
         .metricName("NoSlotsFound")
-        .namespace(EMF_NAMESPACE)
+        .namespace(DELIVERY_NAMESPACE)
         .dimensionsMap(dimensions)
         .period(Duration.minutes(5))
         .statistic("SUM")
@@ -70,7 +70,7 @@ public class FunctionDashboard extends Dashboard {
 
     Metric slotsReturnedMetric = new Metric(MetricProps.builder()
         .metricName("SlotsReturned")
-        .namespace(EMF_NAMESPACE)
+        .namespace(DELIVERY_NAMESPACE)
         .dimensionsMap(dimensions)
         .period(Duration.minutes(5))
         .statistic("SUM")
@@ -79,7 +79,7 @@ public class FunctionDashboard extends Dashboard {
 
     Metric sqlExceptionMetric = new Metric(MetricProps.builder()
         .metricName("SqlException")
-        .namespace(EMF_NAMESPACE)
+        .namespace(DELIVERY_NAMESPACE)
         .dimensionsMap(dimensions)
         .period(Duration.minutes(5))
         .statistic("SUM")
@@ -131,7 +131,7 @@ public class FunctionDashboard extends Dashboard {
 
     Metric invalidSlotListMetric = new Metric(MetricProps.builder()
         .metricName("InvalidSlotList")
-        .namespace(EMF_NAMESPACE)
+        .namespace(DELIVERY_NAMESPACE)
         .dimensionsMap(dimensions)
         .period(Duration.minutes(5))
         .statistic("SUM")
@@ -140,7 +140,7 @@ public class FunctionDashboard extends Dashboard {
 
     Metric failedToSaveSlotsMetric = new Metric(MetricProps.builder()
         .metricName("FailedToSaveSlots")
-        .namespace(EMF_NAMESPACE)
+        .namespace(DELIVERY_NAMESPACE)
         .dimensionsMap(dimensions)
         .period(Duration.minutes(5))
         .statistic("SUM")
@@ -149,7 +149,7 @@ public class FunctionDashboard extends Dashboard {
 
     Metric exceptionMetric = new Metric(MetricProps.builder()
         .metricName("CreateSlotsException")
-        .namespace(EMF_NAMESPACE)
+        .namespace(DELIVERY_NAMESPACE)
         .dimensionsMap(dimensions)
         .period(Duration.minutes(5))
         .statistic("SUM")
@@ -210,7 +210,7 @@ public class FunctionDashboard extends Dashboard {
 
     Metric invalidUserIdMetric = new Metric(MetricProps.builder()
         .metricName("InvalidUserId")
-        .namespace(EMF_NAMESPACE)
+        .namespace(DELIVERY_NAMESPACE)
         .dimensionsMap(dimensions)
         .period(Duration.minutes(5))
         .statistic("SUM")
@@ -219,7 +219,7 @@ public class FunctionDashboard extends Dashboard {
 
     Metric deliveryBookedMetric = new Metric(MetricProps.builder()
         .metricName("DeliveryBooked")
-        .namespace(EMF_NAMESPACE)
+        .namespace(DELIVERY_NAMESPACE)
         .dimensionsMap(dimensions)
         .period(Duration.minutes(5))
         .statistic("SUM")
@@ -228,7 +228,7 @@ public class FunctionDashboard extends Dashboard {
 
     Metric farmAndSlotInvalidMetric = new Metric(MetricProps.builder()
         .metricName("FarmAndSlotInvalid")
-        .namespace(EMF_NAMESPACE)
+        .namespace(DELIVERY_NAMESPACE)
         .dimensionsMap(dimensions)
         .period(Duration.minutes(5))
         .statistic("SUM")
@@ -237,7 +237,7 @@ public class FunctionDashboard extends Dashboard {
 
     Metric sqlExceptionMetric = new Metric(MetricProps.builder()
         .metricName("SqlException")
-        .namespace(EMF_NAMESPACE)
+        .namespace(DELIVERY_NAMESPACE)
         .dimensionsMap(dimensions)
         .period(Duration.minutes(5))
         .statistic("SUM")
@@ -246,7 +246,7 @@ public class FunctionDashboard extends Dashboard {
 
     Metric noAvailableDeliveryMetric = new Metric(MetricProps.builder()
         .metricName("NoAvailableDelivery")
-        .namespace(EMF_NAMESPACE)
+        .namespace(DELIVERY_NAMESPACE)
         .dimensionsMap(dimensions)
         .period(Duration.minutes(5))
         .statistic("SUM")

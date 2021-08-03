@@ -46,6 +46,7 @@ public class GetSlots implements RequestHandler<APIGatewayProxyRequestEvent, API
   public GetSlots() {
     this.slotService = new SlotService();
     this.metricsLogger = new MetricsLogger();
+    this.metricsLogger.setNamespace("DeliveryApi");
     this.metricsLogger.putDimensions(DimensionSet.of("FunctionName", "GetSlots"));
   }
 

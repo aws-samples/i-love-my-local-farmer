@@ -45,6 +45,7 @@ public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, 
     this.slotService = new SlotService();
     this.metricsLogger = new MetricsLogger();
     this.slotParser = new SlotParser();
+    this.metricsLogger.setNamespace("DeliveryApi");
     metricsLogger.putDimensions(DimensionSet.of("FunctionName", "CreateSlots"));
     logger.info("CreateSlots empty constructor, called by AWS Lambda");
   }

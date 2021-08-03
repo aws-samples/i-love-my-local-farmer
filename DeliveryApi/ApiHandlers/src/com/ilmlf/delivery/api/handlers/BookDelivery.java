@@ -43,6 +43,7 @@ public class BookDelivery implements RequestHandler<APIGatewayProxyRequestEvent,
   public BookDelivery() {
     this.slotService = new SlotService();
     this.metricsLogger = new MetricsLogger();
+    this.metricsLogger.setNamespace("DeliveryApi");
     metricsLogger.putDimensions(DimensionSet.of("FunctionName", "BookDelivery"));
   }
 
