@@ -19,22 +19,23 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.ilmlf.delivery.api.handlers.service.SlotService;
 import com.ilmlf.delivery.api.handlers.util.ApiUtil;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+
+import com.ilmlf.delivery.api.handlers.util.SlotParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
+import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
+import software.amazon.cloudwatchlogs.emf.model.Unit;
 
 /**
  * A Lambda handler for CreateSlot API Call.
  */
 public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
   private SlotService slotService;
+  private MetricsLogger metricsLogger;
+  private SlotParser slotParser;
   private static final Logger logger = LogManager.getLogger(CreateSlots.class);
 
   /**
@@ -42,6 +43,10 @@ public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, 
    */
   public CreateSlots() {
     this.slotService = new SlotService();
+    this.metricsLogger = new MetricsLogger();
+    this.slotParser = new SlotParser();
+    this.metricsLogger.setNamespace("DeliveryApi");
+    metricsLogger.putDimensions(DimensionSet.of("FunctionName", "CreateSlots"));
     logger.info("CreateSlots empty constructor, called by AWS Lambda");
   }
 
@@ -50,8 +55,10 @@ public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, 
    *
    * @param slotService the mocked SlotService instance
    */
-  public CreateSlots(SlotService slotService) {
+  public CreateSlots(SlotService slotService, MetricsLogger metricsLogger, SlotParser slotParser) {
     this.slotService = slotService;
+    this.metricsLogger = metricsLogger;
+    this.slotParser = slotParser;
     logger.info("CreateSlots constructor for unit testing, allowing injection of mock SlotService");
   }
 
@@ -83,12 +90,14 @@ public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, 
     try {
       String farmIdStr = input.getPathParameters().get("farm-id");
       String body = input.getBody();
-      slotList = parseAndCreateSlotList(body, farmIdStr);
+      slotList = slotParser.parseAndCreateSlotList(body, farmIdStr);
 
     } catch (Exception e) {
       returnVal = "The data received is incomplete or invalid";
       httpStatus = 400;
       logger.error(e.getMessage(), e);
+
+      metricsLogger.putMetric("InvalidSlotList", 1, Unit.COUNT);
     }
 
     if (!slotList.isEmpty()) {
@@ -98,61 +107,24 @@ public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, 
         if (rowsUpdated == 0) {
           returnVal = "There was an error and the data could not be saved";
           httpStatus = 500;
+
+          metricsLogger.putMetric("FailedToSaveSlots", 1, Unit.COUNT);
         } else {
           returnVal = "Slot data (" + rowsUpdated + ") was saved successfully";
         }
 
+        metricsLogger.putMetric("SlotsCreated", rowsUpdated, Unit.COUNT);
       } catch (Exception e) {
         returnVal = "Error encountered while inserting the slot list";
         httpStatus = 500;
         logger.error(e.getMessage(), e);
+
+        metricsLogger.putMetric("CreateSlotsException", 1, Unit.COUNT);
       }
     }
+
+    metricsLogger.flush();
+
     return ApiUtil.generateReturnData(httpStatus, returnVal);
-  }
-
-  /**
-   * Parses the POST body and creates a list of Slot objects from it.
-   *
-   * @param body the Json formatted body of the request
-   * @param farmIdStr the farmId as a String
-   *
-   * @return the List of Slot objects
-   */
-  public List<Slot> parseAndCreateSlotList(String body, String farmIdStr) {
-    JSONObject bodyJson = new JSONObject(body);
-    JSONArray slots = bodyJson.getJSONArray("slots");
-    Stream<Object> slotsStream = StreamSupport.stream(slots.spliterator(), false);
-
-    List<Slot> slotList = slotsStream
-        .map(slot -> (Slot) parseAndCreateSlot((JSONObject) slot, farmIdStr))
-        .collect(Collectors.toList());
-
-    return slotList;
-  }
-
-  /**
-   * Parses Json data and appends farmId to create a Slot object. <br/>
-   * If any errors/exceptions encountered, will throw a RuntimeException
-   *
-   * @param slotJson the Json format slot data
-   * @param farmIdStr the farmId as a String
-   *
-   * @return the Slot object
-   */
-  public Slot parseAndCreateSlot(JSONObject slotJson, String farmIdStr) {
-    String fromStr = slotJson.getString("from");
-    LocalDateTime slotFrom = Slot.getLocalDateTimeFromIso(fromStr);
-
-    Slot slot = Slot.builder()
-        .farmId(Integer.parseInt(farmIdStr))
-        .from(slotFrom)
-        .to(Slot.getLocalDateTimeFromIso(slotJson.getString("to")))
-        .availDeliveries(slotJson.getInt("numDeliveries"))
-        .bookedDeliveries(0)
-        .deliveryDate(slotFrom.toLocalDate())
-        .build();
-
-    return slot;
   }
 }

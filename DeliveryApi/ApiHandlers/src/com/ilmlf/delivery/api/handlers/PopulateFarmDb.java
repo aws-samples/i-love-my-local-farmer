@@ -93,6 +93,7 @@ public class PopulateFarmDb implements RequestHandler<CloudFormationCustomResour
     JSONObject dbUserSecret = SecretsUtil.getSecret(DB_REGION, System.getenv("DB_USER_SECRET"));
     this.dbRdsProxyUser = (String) dbUserSecret.get("username");
     this.dbRdsProxyUserPwd = (String) dbUserSecret.get("password");
+
     try {
       this.con = DbUtil.createConnectionViaUserPwd(dbAdminUser, dbAdminPwd, DB_ENDPOINT);
 
@@ -100,6 +101,7 @@ public class PopulateFarmDb implements RequestHandler<CloudFormationCustomResour
       logger.info("INIT connection FAILED");
       logger.error(e.getMessage(), e);
     }
+
     logger.info("PopulateFarmDb empty constructor, called by AWS Lambda");
   }
 
@@ -129,7 +131,6 @@ public class PopulateFarmDb implements RequestHandler<CloudFormationCustomResour
     
     if (runScript) {
       logger.info("Running SQL script");
-      
       
       List<String> stmts = extractSqlStatementsFromFile(SCRIPT_FILE);
       stmts = replaceCredentialsArray(stmts, this.dbRdsProxyUser, this.dbRdsProxyUserPwd);

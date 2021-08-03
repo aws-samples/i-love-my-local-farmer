@@ -17,6 +17,18 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
       }
     },
     "Parameters": {
+      "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7ArtifactHashB1419344": {
+        "Description": "Artifact hash for asset \"3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7\"",
+        "Type": "String"
+      },
+      "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3Bucket02B988B5": {
+        "Description": "S3 bucket for asset \"3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7\"",
+        "Type": "String"
+      },
+      "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3VersionKeyD6F9D922": {
+        "Description": "S3 key for asset version \"3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7\"",
+        "Type": "String"
+      },
       "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cArtifactHash627DAAA7": {
         "Description": "Artifact hash for asset \"c691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49c\"",
         "Type": "String"
@@ -27,18 +39,6 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
       },
       "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cS3VersionKeyDD9AE9E7": {
         "Description": "S3 key for asset version \"c691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49c\"",
-        "Type": "String"
-      },
-      "AssetParameterse5370bee12775210cf268b40ac4de5b7dc50e89fc16368504dd8762c111f65e2ArtifactHash68F28621": {
-        "Description": "Artifact hash for asset \"e5370bee12775210cf268b40ac4de5b7dc50e89fc16368504dd8762c111f65e2\"",
-        "Type": "String"
-      },
-      "AssetParameterse5370bee12775210cf268b40ac4de5b7dc50e89fc16368504dd8762c111f65e2S3BucketDA9DEDEE": {
-        "Description": "S3 bucket for asset \"e5370bee12775210cf268b40ac4de5b7dc50e89fc16368504dd8762c111f65e2\"",
-        "Type": "String"
-      },
-      "AssetParameterse5370bee12775210cf268b40ac4de5b7dc50e89fc16368504dd8762c111f65e2S3VersionKey1B91D4A7": {
-        "Description": "S3 key for asset version \"e5370bee12775210cf268b40ac4de5b7dc50e89fc16368504dd8762c111f65e2\"",
         "Type": "String"
       }
     },
@@ -96,7 +96,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
         "Properties": {
           "Code": {
             "S3Bucket": {
-              "Ref": "AssetParameterse5370bee12775210cf268b40ac4de5b7dc50e89fc16368504dd8762c111f65e2S3BucketDA9DEDEE"
+              "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3Bucket02B988B5"
             },
             "S3Key": {
               "Fn::Join": [
@@ -109,7 +109,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParameterse5370bee12775210cf268b40ac4de5b7dc50e89fc16368504dd8762c111f65e2S3VersionKey1B91D4A7"
+                            "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3VersionKeyD6F9D922"
                           }
                         ]
                       }
@@ -122,7 +122,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParameterse5370bee12775210cf268b40ac4de5b7dc50e89fc16368504dd8762c111f65e2S3VersionKey1B91D4A7"
+                            "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3VersionKeyD6F9D922"
                           }
                         ]
                       }
@@ -208,7 +208,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
         "Properties": {
           "Code": {
             "S3Bucket": {
-              "Ref": "AssetParameterse5370bee12775210cf268b40ac4de5b7dc50e89fc16368504dd8762c111f65e2S3BucketDA9DEDEE"
+              "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3Bucket02B988B5"
             },
             "S3Key": {
               "Fn::Join": [
@@ -221,7 +221,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParameterse5370bee12775210cf268b40ac4de5b7dc50e89fc16368504dd8762c111f65e2S3VersionKey1B91D4A7"
+                            "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3VersionKeyD6F9D922"
                           }
                         ]
                       }
@@ -234,7 +234,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParameterse5370bee12775210cf268b40ac4de5b7dc50e89fc16368504dd8762c111f65e2S3VersionKey1B91D4A7"
+                            "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3VersionKeyD6F9D922"
                           }
                         ]
                       }
@@ -312,6 +312,12 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
         },
         "Type": "AWS::Lambda::Function"
       },
+      "ErrorAlarmTopicB94BACEE": {
+        "Properties": {
+          "TopicName": "ErrorAlarmTopic"
+        },
+        "Type": "AWS::SNS::Topic"
+      },
       "FarmLambdaRdsProxyRoleWithIam7B69CDEF": {
         "Properties": {
           "AssumeRolePolicyDocument": {
@@ -382,11 +388,6 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                     "Fn::ImportValue": "DeliveryProject-Db:ExportsOutputRefDbUserSecret7350D430EDA80404"
                   }
                 ]
-              },
-              {
-                "Action": "kms:Decrypt",
-                "Effect": "Allow",
-                "Resource": "arn:aws:kms:eu-west-1:123456789012:key/*"
               }
             ],
             "Version": "2012-10-17"
@@ -431,6 +432,590 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
         },
         "Type": "AWS::IAM::Role"
       },
+      "FunctionDashboardA7FF982A": {
+        "Properties": {
+          "DashboardBody": {
+            "Fn::Join": [
+              "",
+              [
+                "{\"widgets\":[{\"type\":\"metric\",\"width\":12,\"height\":6,\"x\":0,\"y\":0,\"properties\":{\"view\":\"timeSeries\",\"title\":\"GetSlots-Invocations\",\"region\":\"",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\",\"metrics\":[[\"AWS/Lambda\",\"Invocations\",\"FunctionName\",\"",
+                {
+                  "Ref": "GetSlots6224F85D"
+                },
+                "\",{\"label\":\"Number of Invocations\",\"period\":60,\"stat\":\"Sum\"}]],\"yAxis\":{}}},{\"type\":\"metric\",\"width\":12,\"height\":6,\"x\":12,\"y\":0,\"properties\":{\"view\":\"timeSeries\",\"title\":\"GetSlots-Errors\",\"region\":\"",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\",\"annotations\":{\"alarms\":[\"",
+                {
+                  "Fn::GetAtt": [
+                    "FunctionDashboardGetSlotsErrorsAlarmF97BC1E3",
+                    "Arn"
+                  ]
+                },
+                "\"]},\"yAxis\":{}}},{\"type\":\"metric\",\"width\":12,\"height\":6,\"x\":0,\"y\":6,\"properties\":{\"view\":\"timeSeries\",\"title\":\"GetSlots-NoSlotsFound\",\"region\":\"",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\",\"metrics\":[[\"aws-embedded-metrics\",\"NoSlotsFound\",\"FunctionName\",\"GetSlots\",\"LogGroup\",\"",
+                {
+                  "Ref": "GetSlots6224F85D"
+                },
+                "\",\"ServiceName\",\"",
+                {
+                  "Ref": "GetSlots6224F85D"
+                },
+                "\",\"ServiceType\",\"AWS::Lambda::Function\",{\"label\":\"GetSlots When Farm Has No Slots\",\"stat\":\"Sum\"}]],\"yAxis\":{}}},{\"type\":\"metric\",\"width\":12,\"height\":6,\"x\":12,\"y\":6,\"properties\":{\"view\":\"timeSeries\",\"title\":\"GetSlots-SlotsReturned\",\"region\":\"",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\",\"metrics\":[[\"aws-embedded-metrics\",\"SlotsReturned\",\"FunctionName\",\"GetSlots\",\"LogGroup\",\"",
+                {
+                  "Ref": "GetSlots6224F85D"
+                },
+                "\",\"ServiceName\",\"",
+                {
+                  "Ref": "GetSlots6224F85D"
+                },
+                "\",\"ServiceType\",\"AWS::Lambda::Function\",{\"label\":\"GetSlots Number of Slots Returned\",\"stat\":\"Sum\"}]],\"yAxis\":{}}},{\"type\":\"metric\",\"width\":24,\"height\":6,\"x\":0,\"y\":12,\"properties\":{\"view\":\"timeSeries\",\"title\":\"GetSlots-SqlExceptions\",\"region\":\"",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\",\"annotations\":{\"alarms\":[\"",
+                {
+                  "Fn::GetAtt": [
+                    "FunctionDashboardGetSlotsSqlExceptionAlarmCA42D836",
+                    "Arn"
+                  ]
+                },
+                "\"]},\"yAxis\":{}}},{\"type\":\"metric\",\"width\":12,\"height\":6,\"x\":0,\"y\":18,\"properties\":{\"view\":\"timeSeries\",\"title\":\"CreateSlots-Invocations\",\"region\":\"",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\",\"metrics\":[[\"AWS/Lambda\",\"Invocations\",\"FunctionName\",\"",
+                {
+                  "Ref": "CreateSlots2FADEA09"
+                },
+                "\",{\"label\":\"Number of Invocations\",\"period\":60,\"stat\":\"Sum\"}]],\"yAxis\":{}}},{\"type\":\"metric\",\"width\":12,\"height\":6,\"x\":12,\"y\":18,\"properties\":{\"view\":\"timeSeries\",\"title\":\"CreateSlots-Errors\",\"region\":\"",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\",\"annotations\":{\"alarms\":[\"",
+                {
+                  "Fn::GetAtt": [
+                    "FunctionDashboardCreateSlotsErrorsAlarm3E026505",
+                    "Arn"
+                  ]
+                },
+                "\"]},\"yAxis\":{}}},{\"type\":\"metric\",\"width\":12,\"height\":6,\"x\":0,\"y\":24,\"properties\":{\"view\":\"timeSeries\",\"title\":\"CreateSlots-FailedToSaveSlots\",\"region\":\"",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\",\"annotations\":{\"alarms\":[\"",
+                {
+                  "Fn::GetAtt": [
+                    "FunctionDashboardCreateSlotsFailedToSaveSlotsAlarm84E86969",
+                    "Arn"
+                  ]
+                },
+                "\"]},\"yAxis\":{}}},{\"type\":\"metric\",\"width\":12,\"height\":6,\"x\":12,\"y\":24,\"properties\":{\"view\":\"timeSeries\",\"title\":\"CreateSlots-Exceptions\",\"region\":\"",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\",\"annotations\":{\"alarms\":[\"",
+                {
+                  "Fn::GetAtt": [
+                    "FunctionDashboardCreateSlotsExceptionAlarm1FCF137E",
+                    "Arn"
+                  ]
+                },
+                "\"]},\"yAxis\":{}}},{\"type\":\"metric\",\"width\":12,\"height\":6,\"x\":0,\"y\":30,\"properties\":{\"view\":\"timeSeries\",\"title\":\"CreateSlots-InvalidSlotList\",\"region\":\"",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\",\"metrics\":[[\"aws-embedded-metrics\",\"InvalidSlotList\",\"FunctionName\",\"CreateSlots\",\"LogGroup\",\"",
+                {
+                  "Ref": "CreateSlots2FADEA09"
+                },
+                "\",\"ServiceName\",\"",
+                {
+                  "Ref": "CreateSlots2FADEA09"
+                },
+                "\",\"ServiceType\",\"AWS::Lambda::Function\",{\"label\":\"CreateSlots Received Invalid Slot List\",\"stat\":\"Sum\"}]],\"yAxis\":{}}},{\"type\":\"metric\",\"width\":12,\"height\":6,\"x\":0,\"y\":36,\"properties\":{\"view\":\"timeSeries\",\"title\":\"BookDelivery-Invocations\",\"region\":\"",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\",\"metrics\":[[\"AWS/Lambda\",\"Invocations\",\"FunctionName\",\"",
+                {
+                  "Ref": "BookDelivery402AFA0C"
+                },
+                "\",{\"label\":\"Number of Invocations\",\"period\":60,\"stat\":\"Sum\"}]],\"yAxis\":{}}},{\"type\":\"metric\",\"width\":12,\"height\":6,\"x\":12,\"y\":36,\"properties\":{\"view\":\"timeSeries\",\"title\":\"BookDelivery-Errors\",\"region\":\"",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\",\"annotations\":{\"alarms\":[\"",
+                {
+                  "Fn::GetAtt": [
+                    "FunctionDashboardBookDeliveryErrorsAlarm85BA0395",
+                    "Arn"
+                  ]
+                },
+                "\"]},\"yAxis\":{}}},{\"type\":\"metric\",\"width\":6,\"height\":6,\"x\":0,\"y\":42,\"properties\":{\"view\":\"timeSeries\",\"title\":\"BookDelivery-InvalidUserId\",\"region\":\"",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\",\"metrics\":[[\"aws-embedded-metrics\",\"InvalidUserId\",\"FunctionName\",\"BookDelivery\",\"LogGroup\",\"",
+                {
+                  "Ref": "BookDelivery402AFA0C"
+                },
+                "\",\"ServiceName\",\"",
+                {
+                  "Ref": "BookDelivery402AFA0C"
+                },
+                "\",\"ServiceType\",\"AWS::Lambda::Function\",{\"label\":\"BookDelivery Received Invalid User Id\",\"stat\":\"Sum\"}]],\"yAxis\":{}}},{\"type\":\"metric\",\"width\":6,\"height\":6,\"x\":6,\"y\":42,\"properties\":{\"view\":\"timeSeries\",\"title\":\"BookDelivery-DeliveryBooked\",\"region\":\"",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\",\"metrics\":[[\"aws-embedded-metrics\",\"DeliveryBooked\",\"FunctionName\",\"BookDelivery\",\"LogGroup\",\"",
+                {
+                  "Ref": "BookDelivery402AFA0C"
+                },
+                "\",\"ServiceName\",\"",
+                {
+                  "Ref": "BookDelivery402AFA0C"
+                },
+                "\",\"ServiceType\",\"AWS::Lambda::Function\",{\"label\":\"DeliveryBooked\",\"stat\":\"Sum\"}]],\"yAxis\":{}}},{\"type\":\"metric\",\"width\":6,\"height\":6,\"x\":12,\"y\":42,\"properties\":{\"view\":\"timeSeries\",\"title\":\"BookDelivery-FarmAndSlotInvalid\",\"region\":\"",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\",\"metrics\":[[\"aws-embedded-metrics\",\"FarmAndSlotInvalid\",\"FunctionName\",\"BookDelivery\",\"LogGroup\",\"",
+                {
+                  "Ref": "BookDelivery402AFA0C"
+                },
+                "\",\"ServiceName\",\"",
+                {
+                  "Ref": "BookDelivery402AFA0C"
+                },
+                "\",\"ServiceType\",\"AWS::Lambda::Function\",{\"label\":\"BookDelivery Farm and Slot Invalid\",\"stat\":\"Sum\"}]],\"yAxis\":{}}},{\"type\":\"metric\",\"width\":6,\"height\":6,\"x\":18,\"y\":42,\"properties\":{\"view\":\"timeSeries\",\"title\":\"BookDelivery-NoAvailableDelivery\",\"region\":\"",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\",\"metrics\":[[\"aws-embedded-metrics\",\"NoAvailableDelivery\",\"FunctionName\",\"BookDelivery\",\"LogGroup\",\"",
+                {
+                  "Ref": "BookDelivery402AFA0C"
+                },
+                "\",\"ServiceName\",\"",
+                {
+                  "Ref": "BookDelivery402AFA0C"
+                },
+                "\",\"ServiceType\",\"AWS::Lambda::Function\",{\"label\":\"BookDelivery No Available Delivery\",\"stat\":\"Sum\"}]],\"yAxis\":{}}},{\"type\":\"metric\",\"width\":24,\"height\":6,\"x\":0,\"y\":48,\"properties\":{\"view\":\"timeSeries\",\"title\":\"BookDelivery-SqlExceptions\",\"region\":\"",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\",\"annotations\":{\"alarms\":[\"",
+                {
+                  "Fn::GetAtt": [
+                    "FunctionDashboardBookDeliverySqlExceptionAlarmC621DB45",
+                    "Arn"
+                  ]
+                },
+                "\"]},\"yAxis\":{}}}]}"
+              ]
+            ]
+          },
+          "DashboardName": "FunctionDashboard"
+        },
+        "Type": "AWS::CloudWatch::Dashboard"
+      },
+      "FunctionDashboardBookDeliveryErrorsAlarm85BA0395": {
+        "Properties": {
+          "AlarmActions": [
+            {
+              "Ref": "ErrorAlarmTopicB94BACEE"
+            }
+          ],
+          "AlarmName": {
+            "Fn::Join": [
+              "",
+              [
+                {
+                  "Ref": "BookDelivery402AFA0C"
+                },
+                "-ErrorsAlarm"
+              ]
+            ]
+          },
+          "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+          "EvaluationPeriods": 1,
+          "Metrics": [
+            {
+              "Id": "m1",
+              "Label": "Number of Errors",
+              "MetricStat": {
+                "Metric": {
+                  "Dimensions": [
+                    {
+                      "Name": "FunctionName",
+                      "Value": {
+                        "Ref": "BookDelivery402AFA0C"
+                      }
+                    }
+                  ],
+                  "MetricName": "Errors",
+                  "Namespace": "AWS/Lambda"
+                },
+                "Period": 300,
+                "Stat": "Sum"
+              },
+              "ReturnData": true
+            }
+          ],
+          "Threshold": 2
+        },
+        "Type": "AWS::CloudWatch::Alarm"
+      },
+      "FunctionDashboardBookDeliverySqlExceptionAlarmC621DB45": {
+        "Properties": {
+          "AlarmActions": [
+            {
+              "Ref": "ErrorAlarmTopicB94BACEE"
+            }
+          ],
+          "AlarmName": {
+            "Fn::Join": [
+              "",
+              [
+                {
+                  "Ref": "BookDelivery402AFA0C"
+                },
+                "-SqlExceptionAlarm"
+              ]
+            ]
+          },
+          "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+          "EvaluationPeriods": 1,
+          "Metrics": [
+            {
+              "Id": "m1",
+              "Label": "BookDelivery Sql Exception",
+              "MetricStat": {
+                "Metric": {
+                  "Dimensions": [
+                    {
+                      "Name": "FunctionName",
+                      "Value": "BookDelivery"
+                    },
+                    {
+                      "Name": "LogGroup",
+                      "Value": {
+                        "Ref": "BookDelivery402AFA0C"
+                      }
+                    },
+                    {
+                      "Name": "ServiceName",
+                      "Value": {
+                        "Ref": "BookDelivery402AFA0C"
+                      }
+                    },
+                    {
+                      "Name": "ServiceType",
+                      "Value": "AWS::Lambda::Function"
+                    }
+                  ],
+                  "MetricName": "SqlException",
+                  "Namespace": "aws-embedded-metrics"
+                },
+                "Period": 300,
+                "Stat": "Sum"
+              },
+              "ReturnData": true
+            }
+          ],
+          "Threshold": 1
+        },
+        "Type": "AWS::CloudWatch::Alarm"
+      },
+      "FunctionDashboardCreateSlotsErrorsAlarm3E026505": {
+        "Properties": {
+          "AlarmActions": [
+            {
+              "Ref": "ErrorAlarmTopicB94BACEE"
+            }
+          ],
+          "AlarmName": {
+            "Fn::Join": [
+              "",
+              [
+                {
+                  "Ref": "CreateSlots2FADEA09"
+                },
+                "-ErrorsAlarm"
+              ]
+            ]
+          },
+          "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+          "EvaluationPeriods": 1,
+          "Metrics": [
+            {
+              "Id": "m1",
+              "Label": "Number of Errors",
+              "MetricStat": {
+                "Metric": {
+                  "Dimensions": [
+                    {
+                      "Name": "FunctionName",
+                      "Value": {
+                        "Ref": "CreateSlots2FADEA09"
+                      }
+                    }
+                  ],
+                  "MetricName": "Errors",
+                  "Namespace": "AWS/Lambda"
+                },
+                "Period": 300,
+                "Stat": "Sum"
+              },
+              "ReturnData": true
+            }
+          ],
+          "Threshold": 2
+        },
+        "Type": "AWS::CloudWatch::Alarm"
+      },
+      "FunctionDashboardCreateSlotsExceptionAlarm1FCF137E": {
+        "Properties": {
+          "AlarmActions": [
+            {
+              "Ref": "ErrorAlarmTopicB94BACEE"
+            }
+          ],
+          "AlarmName": {
+            "Fn::Join": [
+              "",
+              [
+                {
+                  "Ref": "CreateSlots2FADEA09"
+                },
+                "-ExceptionsAlarm"
+              ]
+            ]
+          },
+          "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+          "EvaluationPeriods": 1,
+          "Metrics": [
+            {
+              "Id": "m1",
+              "Label": "CreateSlots Insert Exception",
+              "MetricStat": {
+                "Metric": {
+                  "Dimensions": [
+                    {
+                      "Name": "FunctionName",
+                      "Value": "CreateSlots"
+                    },
+                    {
+                      "Name": "LogGroup",
+                      "Value": {
+                        "Ref": "CreateSlots2FADEA09"
+                      }
+                    },
+                    {
+                      "Name": "ServiceName",
+                      "Value": {
+                        "Ref": "CreateSlots2FADEA09"
+                      }
+                    },
+                    {
+                      "Name": "ServiceType",
+                      "Value": "AWS::Lambda::Function"
+                    }
+                  ],
+                  "MetricName": "CreateSlotsException",
+                  "Namespace": "aws-embedded-metrics"
+                },
+                "Period": 300,
+                "Stat": "Sum"
+              },
+              "ReturnData": true
+            }
+          ],
+          "Threshold": 1
+        },
+        "Type": "AWS::CloudWatch::Alarm"
+      },
+      "FunctionDashboardCreateSlotsFailedToSaveSlotsAlarm84E86969": {
+        "Properties": {
+          "AlarmActions": [
+            {
+              "Ref": "ErrorAlarmTopicB94BACEE"
+            }
+          ],
+          "AlarmName": {
+            "Fn::Join": [
+              "",
+              [
+                {
+                  "Ref": "CreateSlots2FADEA09"
+                },
+                "-FailedToSaveSlotsAlarm"
+              ]
+            ]
+          },
+          "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+          "EvaluationPeriods": 1,
+          "Metrics": [
+            {
+              "Id": "m1",
+              "Label": "CreateSlots Failed to Save Slots",
+              "MetricStat": {
+                "Metric": {
+                  "Dimensions": [
+                    {
+                      "Name": "FunctionName",
+                      "Value": "CreateSlots"
+                    },
+                    {
+                      "Name": "LogGroup",
+                      "Value": {
+                        "Ref": "CreateSlots2FADEA09"
+                      }
+                    },
+                    {
+                      "Name": "ServiceName",
+                      "Value": {
+                        "Ref": "CreateSlots2FADEA09"
+                      }
+                    },
+                    {
+                      "Name": "ServiceType",
+                      "Value": "AWS::Lambda::Function"
+                    }
+                  ],
+                  "MetricName": "FailedToSaveSlots",
+                  "Namespace": "aws-embedded-metrics"
+                },
+                "Period": 300,
+                "Stat": "Sum"
+              },
+              "ReturnData": true
+            }
+          ],
+          "Threshold": 1
+        },
+        "Type": "AWS::CloudWatch::Alarm"
+      },
+      "FunctionDashboardGetSlotsErrorsAlarmF97BC1E3": {
+        "Properties": {
+          "AlarmActions": [
+            {
+              "Ref": "ErrorAlarmTopicB94BACEE"
+            }
+          ],
+          "AlarmName": {
+            "Fn::Join": [
+              "",
+              [
+                {
+                  "Ref": "GetSlots6224F85D"
+                },
+                "-ErrorsAlarm"
+              ]
+            ]
+          },
+          "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+          "EvaluationPeriods": 1,
+          "Metrics": [
+            {
+              "Id": "m1",
+              "Label": "Number of Errors",
+              "MetricStat": {
+                "Metric": {
+                  "Dimensions": [
+                    {
+                      "Name": "FunctionName",
+                      "Value": {
+                        "Ref": "GetSlots6224F85D"
+                      }
+                    }
+                  ],
+                  "MetricName": "Errors",
+                  "Namespace": "AWS/Lambda"
+                },
+                "Period": 300,
+                "Stat": "Sum"
+              },
+              "ReturnData": true
+            }
+          ],
+          "Threshold": 2
+        },
+        "Type": "AWS::CloudWatch::Alarm"
+      },
+      "FunctionDashboardGetSlotsSqlExceptionAlarmCA42D836": {
+        "Properties": {
+          "AlarmActions": [
+            {
+              "Ref": "ErrorAlarmTopicB94BACEE"
+            }
+          ],
+          "AlarmName": {
+            "Fn::Join": [
+              "",
+              [
+                {
+                  "Ref": "GetSlots6224F85D"
+                },
+                "-SqlExceptionAlarm"
+              ]
+            ]
+          },
+          "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+          "EvaluationPeriods": 1,
+          "Metrics": [
+            {
+              "Id": "m1",
+              "Label": "GetSlots SqlException",
+              "MetricStat": {
+                "Metric": {
+                  "Dimensions": [
+                    {
+                      "Name": "FunctionName",
+                      "Value": "GetSlots"
+                    },
+                    {
+                      "Name": "LogGroup",
+                      "Value": {
+                        "Ref": "GetSlots6224F85D"
+                      }
+                    },
+                    {
+                      "Name": "ServiceName",
+                      "Value": {
+                        "Ref": "GetSlots6224F85D"
+                      }
+                    },
+                    {
+                      "Name": "ServiceType",
+                      "Value": "AWS::Lambda::Function"
+                    }
+                  ],
+                  "MetricName": "SqlException",
+                  "Namespace": "aws-embedded-metrics"
+                },
+                "Period": 300,
+                "Stat": "Sum"
+              },
+              "ReturnData": true
+            }
+          ],
+          "Threshold": 1
+        },
+        "Type": "AWS::CloudWatch::Alarm"
+      },
       "GetSlots6224F85D": {
         "DependsOn": [
           "FarmLambdaRdsProxyRoleWithIamDefaultPolicyE0B0D73A",
@@ -439,7 +1024,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
         "Properties": {
           "Code": {
             "S3Bucket": {
-              "Ref": "AssetParameterse5370bee12775210cf268b40ac4de5b7dc50e89fc16368504dd8762c111f65e2S3BucketDA9DEDEE"
+              "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3Bucket02B988B5"
             },
             "S3Key": {
               "Fn::Join": [
@@ -452,7 +1037,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParameterse5370bee12775210cf268b40ac4de5b7dc50e89fc16368504dd8762c111f65e2S3VersionKey1B91D4A7"
+                            "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3VersionKeyD6F9D922"
                           }
                         ]
                       }
@@ -465,7 +1050,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParameterse5370bee12775210cf268b40ac4de5b7dc50e89fc16368504dd8762c111f65e2S3VersionKey1B91D4A7"
+                            "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3VersionKeyD6F9D922"
                           }
                         ]
                       }
@@ -962,7 +1547,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
         },
         "Type": "AWS::IAM::Policy"
       },
-      "PopulateDataProviderv21": {
+      "PopulateDataProviderv22": {
         "DeletionPolicy": "Delete",
         "Properties": {
           "ServiceToken": {
@@ -970,7 +1555,8 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
               "InvokePopulateDataProviderframeworkonEvent9A3B4E42",
               "Arn"
             ]
-          }
+          },
+          "SqlScript": "CREATE DATABASE IF NOT EXISTS deliverydb;\nUSE deliverydb;\n\nCREATE TABLE IF NOT EXISTS delivery_slot\n(\n    slot_id           integer primary key auto_increment not null,\n    delivery_date     date                               not null,\n    slot_from         datetime                           not null,\n    slot_to           datetime                           not null,\n    avail_deliveries  int                                not null,\n    booked_deliveries int,\n    farm_id           integer                            not null\n);\n\nCREATE TABLE IF NOT EXISTS delivery\n(\n    delivery_id integer primary key auto_increment not null,\n    slot_id     integer                            not null,\n    user_id     integer                            not null,\n    farm_id     integer                            not null\n);\n\nDROP USER IF EXISTS '{{username}}';\n\nCREATE USER IF NOT EXISTS '{{username}}' identified by '{{password}}';\nGRANT DELETE, UPDATE, INSERT, SELECT ON deliverydb.* TO '{{username}}';\nFLUSH PRIVILEGES;\n"
         },
         "Type": "Custom::PopulateDataProvider",
         "UpdateReplacePolicy": "Delete"
@@ -983,7 +1569,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
         "Properties": {
           "Code": {
             "S3Bucket": {
-              "Ref": "AssetParameterse5370bee12775210cf268b40ac4de5b7dc50e89fc16368504dd8762c111f65e2S3BucketDA9DEDEE"
+              "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3Bucket02B988B5"
             },
             "S3Key": {
               "Fn::Join": [
@@ -996,7 +1582,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParameterse5370bee12775210cf268b40ac4de5b7dc50e89fc16368504dd8762c111f65e2S3VersionKey1B91D4A7"
+                            "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3VersionKeyD6F9D922"
                           }
                         ]
                       }
@@ -1009,7 +1595,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParameterse5370bee12775210cf268b40ac4de5b7dc50e89fc16368504dd8762c111f65e2S3VersionKey1B91D4A7"
+                            "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3VersionKeyD6F9D922"
                           }
                         ]
                       }

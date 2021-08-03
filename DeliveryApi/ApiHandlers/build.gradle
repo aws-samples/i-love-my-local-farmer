@@ -63,6 +63,7 @@ dependencies {
         exclude group: ['com.fasterxml.jackson.databind.deser', 'com.fasterxml.jackson.databind.ser', 'com.fasterxml.jackson.databind.introspect'], module: 'jackson-databind'
     }
     implementation 'software.amazon.awssdk:url-connection-client:2.16.44'
+    implementation 'software.amazon.cloudwatchlogs:aws-embedded-metrics:1.0.4'
 
     // Log4j2 logging framework dependencies
     implementation group: 'com.amazonaws', name: 'aws-lambda-java-log4j2', version: '1.1.0'

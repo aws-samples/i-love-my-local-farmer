@@ -24,15 +24,20 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.ArrayList;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
+import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
+import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
+import software.amazon.cloudwatchlogs.emf.model.Unit;
 
 /**
  * A Lambda handler for GetSlot API Call.
  */
 public class GetSlots implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
   private SlotService slotService;
+  private MetricsLogger metricsLogger;
   private static final Logger logger = LogManager.getLogger(CreateSlots.class);
 
   /**
@@ -40,6 +45,9 @@ public class GetSlots implements RequestHandler<APIGatewayProxyRequestEvent, API
    */
   public GetSlots() {
     this.slotService = new SlotService();
+    this.metricsLogger = new MetricsLogger();
+    this.metricsLogger.setNamespace("DeliveryApi");
+    this.metricsLogger.putDimensions(DimensionSet.of("FunctionName", "GetSlots"));
   }
 
   /**
@@ -47,8 +55,9 @@ public class GetSlots implements RequestHandler<APIGatewayProxyRequestEvent, API
    *
    * @param slotService Injected SlotService object.
    */
-  public GetSlots(SlotService slotService) {
+  public GetSlots(SlotService slotService, MetricsLogger metricsLogger) {
     this.slotService = slotService;
+    this.metricsLogger = metricsLogger;
   }
 
   /**
@@ -82,16 +91,24 @@ public class GetSlots implements RequestHandler<APIGatewayProxyRequestEvent, API
       if (slotArray.isEmpty()) {
         httpStatus = 400;
         returnVal = "No slots found matching the farm id";
+
+        metricsLogger.putMetric("NoSlotsFound", 1, Unit.COUNT);
       } else {
         JSONArray slotJsonArray = new JSONArray(slotArray);
         returnVal = slotJsonArray.toString();
+
+        metricsLogger.putMetric("SlotsReturned", slotJsonArray.length(), Unit.COUNT);
       }
 
     } catch (SQLException exception) {
       httpStatus = 500;
       returnVal = "Error encountered while retrieving slots from database";
       logger.error(exception.getMessage(), exception);
+
+      metricsLogger.putMetric("SqlException", 1, Unit.COUNT);
     }
+
+    metricsLogger.flush();
 
     return ApiUtil.generateReturnData(httpStatus, returnVal);
   }

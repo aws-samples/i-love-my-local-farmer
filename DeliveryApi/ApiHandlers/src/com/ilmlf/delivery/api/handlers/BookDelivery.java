@@ -24,6 +24,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
+import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
+import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
+import software.amazon.cloudwatchlogs.emf.model.Unit;
 
 
 /**
@@ -31,6 +34,7 @@ import org.json.JSONObject;
  */
 public class BookDelivery implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
   private SlotService slotService;
+  private MetricsLogger metricsLogger;
   private static final Logger logger = LogManager.getLogger(CreateSlots.class);
 
   /**
@@ -38,6 +42,9 @@ public class BookDelivery implements RequestHandler<APIGatewayProxyRequestEvent,
    */
   public BookDelivery() {
     this.slotService = new SlotService();
+    this.metricsLogger = new MetricsLogger();
+    this.metricsLogger.setNamespace("DeliveryApi");
+    metricsLogger.putDimensions(DimensionSet.of("FunctionName", "BookDelivery"));
   }
 
   /**
@@ -45,8 +52,9 @@ public class BookDelivery implements RequestHandler<APIGatewayProxyRequestEvent,
    *
    * @param slotService Injected SlotService object.
    */
-  public BookDelivery(SlotService slotService) {
+  public BookDelivery(SlotService slotService, MetricsLogger metricsLogger) {
     this.slotService = slotService;
+    this.metricsLogger = metricsLogger;
   }
 
   /**
@@ -77,6 +85,7 @@ public class BookDelivery implements RequestHandler<APIGatewayProxyRequestEvent,
       JSONObject bodyJson = new JSONObject(body);
       Object userIdInJson = bodyJson.get("userId");
       if (!(userIdInJson instanceof Integer)) {
+        metricsLogger.putMetric("InvalidUserId", 1, Unit.COUNT);
         throw new JSONException("userId must be an integer");
       }
       userId = (Integer) userIdInJson;
@@ -85,24 +94,31 @@ public class BookDelivery implements RequestHandler<APIGatewayProxyRequestEvent,
       jsonObjDelivery = new JSONObject(delivery);
       httpStatus = 200;
       returnVal = jsonObjDelivery.toString();
+      metricsLogger.putMetric("DeliveryBooked", 1, Unit.COUNT);
 
     } catch (NumberFormatException exception) {
       logger.error(exception.getMessage(), exception);
       httpStatus = 400;
       returnVal = HandlerErrorMessage.FARM_AND_SLOT_INVALID.toString();
+      metricsLogger.putMetric("FarmAndSlotInvalid", 1, Unit.COUNT);
     } catch (JSONException exception) {
       logger.error(exception.getMessage(), exception);
       httpStatus = 400;
       returnVal = HandlerErrorMessage.USER_INVALID.toString();
+      metricsLogger.putMetric("InvalidUserId", 1, Unit.COUNT);
     } catch (SQLException exception) {
       logger.error(exception.getMessage(), exception);
       httpStatus = 500;
       returnVal = HandlerErrorMessage.SQL_FAILED.toString();
+      metricsLogger.putMetric("SqlException", 1, Unit.COUNT);
     } catch (IllegalStateException exception) {
       logger.error(exception.getMessage(), exception);
       httpStatus = 500;
       returnVal = HandlerErrorMessage.NO_AVAILABLE_DELIVERY.toString();
+      metricsLogger.putMetric("NoAvailableDelivery", 1, Unit.COUNT);
     }
+
+    metricsLogger.flush();
 
     return ApiUtil.generateReturnData(httpStatus, returnVal);
   }

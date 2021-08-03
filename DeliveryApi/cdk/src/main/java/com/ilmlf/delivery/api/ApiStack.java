@@ -13,7 +13,6 @@ limitations under the License.
 
 package com.ilmlf.delivery.api;
 
-import static software.amazon.awscdk.core.BundlingOutput.ARCHIVED;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -77,6 +76,11 @@ import software.amazon.awscdk.services.logs.RetentionDays;
 import software.amazon.awscdk.services.s3.assets.AssetOptions;
 import software.amazon.awscdk.services.sam.CfnApi;
 import software.amazon.awscdk.services.sam.CfnApiProps;
+import software.amazon.awscdk.services.sns.Topic;
+import software.amazon.awscdk.services.sns.TopicProps;
+import software.amazon.awscdk.services.sns.subscriptions.EmailSubscription;
+
+import static software.amazon.awscdk.core.BundlingOutput.ARCHIVED;
 
 public class ApiStack extends Stack {
 
@@ -97,6 +101,7 @@ public class ApiStack extends Stack {
     private String dbUserSecretName;
     private String dbUserSecretArn;
     private String dbUser;
+    private String alertEmail;
 
     /**
      * VPC that the database is deployed to.
@@ -142,8 +147,7 @@ public class ApiStack extends Stack {
     // See https://docs.aws.amazon.com/cdk/api/latest/java/software/amazon/awscdk/customresources/package-summary.html for details on writing a Lambda function
     // and providers
     Function dbPopulatorHandler =
-        DefaultLambdaRdsProxy("PopulateFarmDb", props, lambdaRdsProxyRoleWithPw);
-
+        defaultLambdaRdsProxy("PopulateFarmDb", props, lambdaRdsProxyRoleWithPw);
 
     Provider dbPopulatorProvider =
         new Provider(
@@ -262,14 +266,35 @@ public class ApiStack extends Stack {
     logFormat.put("requestTime", "$context.requestTime");
     logFormat.put("username", "$context.authorizer.claims['cognito:username']");
 
-    Function createSlotsHandler =
-        this.DefaultLambdaRdsProxy("CreateSlots", props, this.lambdaRdsProxyRoleWithIam);
+    Topic errorAlarmTopic = new Topic(this, "ErrorAlarmTopic", TopicProps.builder()
+        .topicName("ErrorAlarmTopic")
+        .build());
 
-    Function getSlotsHandler =
-        this.DefaultLambdaRdsProxy("GetSlots", props, this.lambdaRdsProxyRoleWithIam);
+    // Need to check for null as the tryGetContext() call will be null if parameter is not passed in
+    if (props.alertEmail != null && !props.alertEmail.isEmpty()) {
+      errorAlarmTopic.addSubscription(new EmailSubscription(props.alertEmail));
+    }
 
-    Function bookDeliveryHandler =
-        this.DefaultLambdaRdsProxy("BookDelivery", props, this.lambdaRdsProxyRoleWithIam);
+    ApiFunction createSlotsHandler =
+        this.defaultLambdaRdsProxy("CreateSlots", props, this.lambdaRdsProxyRoleWithIam);
+
+    ApiFunction getSlotsHandler =
+        this.defaultLambdaRdsProxy("GetSlots", props, this.lambdaRdsProxyRoleWithIam);
+
+    ApiFunction bookDeliveryHandler =
+        this.defaultLambdaRdsProxy("BookDelivery", props, this.lambdaRdsProxyRoleWithIam);
+
+    FunctionDashboard createSlotsDashboard = new FunctionDashboard(this, "FunctionDashboard",
+        FunctionDashboard.FunctionDashboardProps.builder()
+            .dashboardName("FunctionDashboard")
+            .getSlotsApiMethodName(getSlotsHandler.getApiMethodName())
+            .getSlotsFunctionName(getSlotsHandler.getFunctionName())
+            .createSlotsApiMethodName(createSlotsHandler.getApiMethodName())
+            .createSlotsFunctionName(createSlotsHandler.getFunctionName())
+            .bookDeliveryApiMethodName(bookDeliveryHandler.getApiMethodName())
+            .bookDeliveryFunctionName(bookDeliveryHandler.getFunctionName())
+            .alarmTopic(errorAlarmTopic)
+            .build());
 
     Role apiRole =
         new Role(
@@ -326,8 +351,8 @@ public class ApiStack extends Stack {
       mustache.execute(writer, variables);
       writer.flush();
 
-      ObjectMapper JSONMapper = new ObjectMapper(new JsonFactory());
-      openapiSpecAsObject = JSONMapper.readValue(writer.toString(), Object.class);
+      ObjectMapper jsonMapper = new ObjectMapper(new JsonFactory());
+      openapiSpecAsObject = jsonMapper.readValue(writer.toString(), Object.class);
     }
 
     CfnApi apiGw =
@@ -351,7 +376,7 @@ public class ApiStack extends Stack {
                         .build())
                 .build());
 
-    /**
+    /*
      * Enable API Gateway logging.
      * The logging requires a role with permissions to let API Gateway put logs in CloudWatch.
      * The permission is in the managed policy "AmazonAPIGatewayPushToCloudWatchLogs"
@@ -399,7 +424,7 @@ public class ApiStack extends Stack {
    * Note that CDK expects this function to return either true or false based on bundling result.
    *
    * @param outputPath
-   * @return
+   * @return whether the bundling script was successfully executed
    */
   private Boolean tryBundle(String outputPath) {
     try {
@@ -433,13 +458,12 @@ public class ApiStack extends Stack {
    * @param functionName
    * @param props
    * @param role
-   * @return
    * @throws IOException
    */
-  public Function DefaultLambdaRdsProxy(String functionName, ApiStackProps props, Role role)
+  public ApiFunction defaultLambdaRdsProxy(String functionName, ApiStackProps props, Role role)
       throws IOException {
 
-    /**
+    /*
      * Command for building Java handler inside a container
      */
     List<String> apiHandlersPackagingInstructions =
@@ -463,8 +487,8 @@ public class ApiStack extends Stack {
             .outputType(ARCHIVED)
             .build();
 
-    Function function =
-        new Function(
+    ApiFunction function =
+        new ApiFunction(
             this,
             functionName,
             FunctionProps.builder()
@@ -494,6 +518,7 @@ public class ApiStack extends Stack {
                 .handler("com.ilmlf.delivery.api.handlers." + functionName)
                 .vpc(this.dbVpc)
                 .securityGroups(List.of(this.dbSg))
+                .functionName(functionName)
                 .role(role)
                 .build());
 
