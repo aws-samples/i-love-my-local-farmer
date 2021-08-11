@@ -4,10 +4,14 @@ This solution demonstrates how to create an API backed by Lambda function handle
 
 This README.md contains only architecture, installation steps, and technical note for development. For more details, please check posts in the blog series. 
  
- * [Part 1](https://medium.com/i-love-my-local-farmer-engineering-blog/the-strawberrys-journey-from-your-local-farm-to-your-table-70e80b5a4f51) explains business requirements and the context of the project
- * [Part 2](https://medium.com/i-love-my-local-farmer-engineering-blog/a-serverless-java-solution-for-deliveries-2a29497ca272) discusses architecture and the trade-off decisions we made when choosing to use certain AWS services and frameworks
- * [Part 3](https://medium.com/i-love-my-local-farmer-engineering-blog/writing-your-cdk-in-java-685a380d8e4e) discusses using CDK in Java to set up the AWS resources used in this project, with tips and gotchas on the experience of using CDK for Java.
-
+ 1. [Business Description](https://medium.com/i-love-my-local-farmer-engineering-blog/the-strawberrys-journey-from-your-local-farm-to-your-table-70e80b5a4f51) explains business requirements and the context of the project
+ 1. [Architecture](https://medium.com/i-love-my-local-farmer-engineering-blog/a-serverless-java-solution-for-deliveries-2a29497ca272) discusses architecture and the trade-off decisions we made when choosing to use certain AWS services and frameworks
+ 1. [Writing Java CDK Code](https://medium.com/i-love-my-local-farmer-engineering-blog/writing-your-cdk-in-java-685a380d8e4e) discusses using CDK in Java to set up the AWS resources used in this project, with tips and gotchas on the experience of using CDK for Java.
+ 1. [Integrating Lambda With Other Services](https://medium.com/i-love-my-local-farmer-engineering-blog/java-aws-lambdas-how-to-play-nice-with-the-other-cloud-kids-3ca94a5bf2f) goes through several practical tips in writing AWS Lambda function in Java
+1. [Database Connections And Auth - Part 1](https://medium.com/i-love-my-local-farmer-engineering-blog/how-to-use-java-in-your-db-connected-aws-lambdas-211c1f9c53aa) and [Part 2](https://medium.com/i-love-my-local-farmer-engineering-blog/connecting-your-java-aws-lambda-to-an-rds-database-and-rds-proxy-4512a3ba1c3d) talk about authentication options between RDS and Lambda and their pros/cons. It explains in details how to set them up and the common issues. 
+1. [Cold start optimization](https://medium.com/i-love-my-local-farmer-engineering-blog/optimizing-your-java-lambda-cold-starts-and-initializations-5ca24de2c078) dives into the famous topic of cold start in Java. We go through tips for reducing this latency in Lambda functions.
+1. [Monitoring](https://medium.com/i-love-my-local-farmer-engineering-blog/monitoring-serverless-java-applications-b0f15c487364) shows how we implement dashboard, metrics, and alarm in this application. It also explains core concepts of CloudWatch and how to use Embedded Metrics Format (EMF).
+1. [Unit testing Lambda function - Part 1](https://medium.com/i-love-my-local-farmer-engineering-blog/testing-serverless-applications-1-unit-testing-aws-lambda-functions-in-java-80b7731ef706) explains test properties and how to structure code to make Lambda functions testable. 
 
 # Pre-requisites
 1. **AWS CLI v2:** with AWS credentials configured (See steps [here](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html#getting_started_prerequisites))
