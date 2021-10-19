@@ -1,0 +1,165 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Configure a new private Application Load Balancer for a Fargate or EC2 Launch Type.
+
+Parameters:
+  MasterStackName:
+    Type: String
+  IncludePrivateLoadBalancer:
+    Type: String
+  VpcId:
+    Type: String
+  VpcCIDR:
+    Type: String
+  Subnets:
+    Type: CommaDelimitedList
+  ACMCertificateArn:
+    Type: String
+
+  # Health Check Parameters for Load Balancer Target Groups
+  HealthCheckIntervalSeconds:
+    Type: Number
+  HealthyThresholdCount:
+    Type: Number
+  HealthCheckTimeoutSeconds:
+    Type: Number
+
+Conditions:
+  CreatePrivateLoadBalancer:
+    !Equals [ !Ref IncludePrivateLoadBalancer, true ]
+  ImportCert:
+    !Not [!Equals [ !Ref ACMCertificateArn, "" ]]
+
+Resources:
+  # Creates a service discovery namespace with the form:
+  # {app}.{MasterStackName}.local
+  ServiceDiscoveryNamespace:
+    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
+    Properties:
+      Name: !Sub ${MasterStackName}.local
+      Vpc: !Ref VpcId
+
+  PrivateLoadBalancerSecurityGroup:
+    Condition: CreatePrivateLoadBalancer
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Access to the private facing load balancer
+      SecurityGroupIngress:
+        - CidrIp: !Ref VpcCIDR
+          Description: Allow from same VPC on port 80
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
+        - CidrIp: !Ref VpcCIDR
+          Description: Allow from same VPC on port 443
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Sub 'ecs-${MasterStackName}-lb'
+
+  EnvironmentSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Join ['', [!Ref MasterStackName, '-', EnvironmentSecurityGroup]]
+      SecurityGroupIngress:
+        - CidrIp: !Ref VpcCIDR
+          Description: Allow all traffic from same vpc
+          IpProtocol: -1
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Sub 'ecs-${MasterStackName}-env'
+
+  PrivateLoadBalancer:
+    Condition: CreatePrivateLoadBalancer
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internal
+      SecurityGroups: [ !GetAtt PrivateLoadBalancerSecurityGroup.GroupId ]
+      Subnets: !Ref Subnets
+      Type: application
+
+  # Assign a dummy target group that with no real services as targets, so that we can create
+  # the listeners for the services.
+  DefaultHTTPTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Condition: CreatePrivateLoadBalancer
+    Properties:
+      #  Check if your application is healthy within 20 = 10*2 seconds, compared to 2.5 mins = 30*5 seconds.
+      HealthCheckIntervalSeconds: !Ref HealthCheckIntervalSeconds # Default is 30.
+      HealthyThresholdCount: !Ref HealthyThresholdCount           # Default is 5.
+      HealthCheckTimeoutSeconds: !Ref HealthCheckTimeoutSeconds
+      Port: 80
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60                  # Default is 300.
+      TargetType: ip
+      VpcId: !Ref VpcId
+
+  HTTPListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Condition: CreatePrivateLoadBalancer
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref DefaultHTTPTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref PrivateLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  HTTPSListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Condition: ImportCert
+    Properties:
+      Certificates:
+        - CertificateArn: !Ref ACMCertificateArn
+      DefaultActions:
+        - TargetGroupArn: !Ref DefaultHTTPTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref PrivateLoadBalancer
+      Port: 443
+      Protocol: HTTPS
+
+Outputs:
+  ServiceDiscoveryNamespaceID:
+    Value: !GetAtt ServiceDiscoveryNamespace.Id
+    Export:
+      Name: !Sub '${MasterStackName}-ServiceDiscoveryNamespaceID'
+
+  EnvironmentSecurityGroup:
+    Value: !Ref EnvironmentSecurityGroup
+    Export:
+      Name: !Sub '${MasterStackName}-EnvironmentSecurityGroup'
+
+  PrivateLoadBalancerDNSName:
+    Condition: CreatePrivateLoadBalancer
+    Value: !GetAtt PrivateLoadBalancer.DNSName
+    Export:
+      Name: !Sub '${MasterStackName}-PrivateLoadBalancerDNS'
+
+  PrivateLoadBalancerHostedZone:
+    Condition: CreatePrivateLoadBalancer
+    Value: !GetAtt PrivateLoadBalancer.CanonicalHostedZoneID
+    Export:
+      Name: !Sub '${MasterStackName}-CanonicalHostedZoneID'
+
+  HTTPListenerArn:
+    Condition: CreatePrivateLoadBalancer
+    Value: !Ref HTTPListener
+    Export:
+      Name: !Sub '${MasterStackName}-HTTPListenerArn'
+
+  HTTPSListenerArn:
+    Condition: ImportCert
+    Value: !Ref HTTPSListener
+    Export:
+      Name: !Sub '${MasterStackName}-HTTPSListenerArn'
+
+  DefaultHTTPTargetGroupArn:
+    Condition: CreatePrivateLoadBalancer
+    Value: !Ref DefaultHTTPTargetGroup
+    Export:
+      Name: !Sub '${MasterStackName}-DefaultHTTPTargetGroup'

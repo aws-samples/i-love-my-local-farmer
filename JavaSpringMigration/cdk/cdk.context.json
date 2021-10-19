@@ -1,0 +1,22 @@
+{
+  "CICD_ENV": {
+    "name": "cicd",
+    "region": "<CICD_REGION>",
+    "account": "<CICD_ACCOUNT>"
+  },
+  "QA_ENV": {
+    "name": "qa",
+    "region": "<QA_REGION>",
+    "account": "<QA_ACCOUNT>"
+  },
+  "availability-zones:account=<CICD_ACCOUNT>:region=<CICD_REGION>": [
+    "eu-west-1a",
+    "eu-west-1b",
+    "eu-west-1c"
+  ],
+  "availability-zones:account=<QA_ACCOUNT>:region=<QA_REGION>": [
+    "eu-west-1a",
+    "eu-west-1b",
+    "eu-west-1c"
+  ]
+}

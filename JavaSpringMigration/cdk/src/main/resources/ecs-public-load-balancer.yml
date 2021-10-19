@@ -1,0 +1,177 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Configure a new public Application Load Balancer for a Fargate or EC2 Launch Type.
+
+Parameters:
+  MasterStackName:
+    Type: String
+  IncludePublicLoadBalancer:
+    Type: String
+  VpcId:
+    Type: String
+  PublicSubnets:
+    Type: CommaDelimitedList
+  ACMCertificateArn:
+    Type: String
+
+  # Health Check Parameters for Load Balancer Target Groups
+  HealthCheckIntervalSeconds:
+    Type: Number
+  HealthyThresholdCount:
+    Type: Number
+  HealthCheckTimeoutSeconds:
+    Type: Number
+
+Conditions:
+  CreatePublicLoadBalancer:
+    !Equals [ !Ref IncludePublicLoadBalancer, true ]
+  ImportCert:
+    !Not [!Equals [ !Ref ACMCertificateArn, "" ]]
+
+Resources:
+  # Creates a service discovery namespace with the form:
+  # {app}.{MasterStackName}.local
+  ServiceDiscoveryNamespace:
+    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
+    Properties:
+      Name: !Sub ${MasterStackName}.local
+      Vpc: !Ref VpcId
+
+  PublicLoadBalancerSecurityGroup:
+    Condition: CreatePublicLoadBalancer
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Access to the public facing load balancer
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow from anyone on port 80
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
+        - CidrIp: 0.0.0.0/0
+          Description: Allow from anyone on port 443
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Sub 'ecs-${MasterStackName}-lb'
+
+  # Only accept requests coming from the public ALB or other containers in the same security group.
+  EnvironmentSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Join ['', [!Ref MasterStackName, '-', EnvironmentSecurityGroup]]
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Sub 'ecs-${MasterStackName}-env'
+
+  EnvironmentSecurityGroupIngressFromPublicALB:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: CreatePublicLoadBalancer
+    Properties:
+      Description: Ingress from the public ALB
+      GroupId: !Ref EnvironmentSecurityGroup
+      IpProtocol: -1
+      SourceSecurityGroupId: !Ref PublicLoadBalancerSecurityGroup
+
+  EnvironmentSecurityGroupIngressFromSelf:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Ingress from other containers in the same security group
+      GroupId: !Ref EnvironmentSecurityGroup
+      IpProtocol: -1
+      SourceSecurityGroupId: !Ref EnvironmentSecurityGroup
+
+  PublicLoadBalancer:
+    Condition: CreatePublicLoadBalancer
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internet-facing
+      SecurityGroups: [ !GetAtt PublicLoadBalancerSecurityGroup.GroupId ]
+      Subnets: !Ref PublicSubnets
+      Type: application
+
+  # Assign a dummy target group that with no real services as targets, so that we can create
+  # the listeners for the services.
+  DefaultHTTPTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Condition: CreatePublicLoadBalancer
+    Properties:
+      #  Check if your application is healthy within 20 = 10*2 seconds, compared to 2.5 mins = 30*5 seconds.
+      HealthCheckIntervalSeconds: !Ref HealthCheckIntervalSeconds # Default is 30.
+      HealthyThresholdCount: !Ref HealthyThresholdCount           # Default is 5.
+      HealthCheckTimeoutSeconds: !Ref HealthCheckTimeoutSeconds
+      Port: 80
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60                  # Default is 300.
+      TargetType: ip
+      VpcId: !Ref VpcId
+
+  HTTPListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Condition: CreatePublicLoadBalancer
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref DefaultHTTPTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref PublicLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  HTTPSListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Condition: ImportCert
+    Properties:
+      Certificates:
+        - CertificateArn: !Ref ACMCertificateArn
+      DefaultActions:
+        - TargetGroupArn: !Ref DefaultHTTPTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref PublicLoadBalancer
+      Port: 443
+      Protocol: HTTPS
+
+Outputs:
+  ServiceDiscoveryNamespaceID:
+    Value: !GetAtt ServiceDiscoveryNamespace.Id
+    Export:
+      Name: !Sub '${MasterStackName}-ServiceDiscoveryNamespaceID'
+
+  EnvironmentSecurityGroup:
+    Value: !Ref EnvironmentSecurityGroup
+    Export:
+      Name: !Sub '${MasterStackName}-EnvironmentSecurityGroup'
+
+  PublicLoadBalancerDNSName:
+    Condition: CreatePublicLoadBalancer
+    Value: !GetAtt PublicLoadBalancer.DNSName
+    Export:
+      Name: !Sub '${MasterStackName}-PublicLoadBalancerDNS'
+
+  PublicLoadBalancerHostedZone:
+    Condition: CreatePublicLoadBalancer
+    Value: !GetAtt PublicLoadBalancer.CanonicalHostedZoneID
+    Export:
+      Name: !Sub '${MasterStackName}-CanonicalHostedZoneID'
+
+  HTTPListenerArn:
+    Condition: CreatePublicLoadBalancer
+    Value: !Ref HTTPListener
+    Export:
+      Name: !Sub '${MasterStackName}-HTTPListenerArn'
+
+  HTTPSListenerArn:
+    Condition: ImportCert
+    Value: !Ref HTTPSListener
+    Export:
+      Name: !Sub '${MasterStackName}-HTTPSListenerArn'
+
+  DefaultHTTPTargetGroupArn:
+    Condition: CreatePublicLoadBalancer
+    Value: !Ref DefaultHTTPTargetGroup
+    Export:
+      Name: !Sub '${MasterStackName}-DefaultHTTPTargetGroup'

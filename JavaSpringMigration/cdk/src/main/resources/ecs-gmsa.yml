@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: This deploys an Automation Document that builds a .Net Framework Container that includes msbuild (qs-1qh1429dt)
+Parameters:
+  DomainSecretsArn:
+    Type: "String"
+    Description: "The Secrets Manager name or ARN that represents domain credentials to perform all needed domain actions."
+  DomainDNSName:
+    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
+    Default: example.com
+    Description: Fully qualified domain name (FQDN).
+    MaxLength: '255'
+    MinLength: '2'
+    Type: String
+  DomainMemberSGID:
+    Description: ID of the domain member security group (e.g., sg-7f16e910).
+    Type: String
+  DomainNetBIOSName:
+    AllowedPattern: '[a-zA-Z0-9\-]+'
+    Default: EXAMPLE
+    Description: NetBIOS name of the domain (up to 15 characters) for users of earlier
+      versions of Windows.
+    MaxLength: '15'
+    MinLength: '1'
+    Type: String
+  CreateGMSA:
+    Type: String
+    AllowedValues: [ true, false ]
+  GMSAName:
+    AllowedPattern: '[a-zA-Z0-9\-]+'
+    Default: gMSASample
+    Description: The first group Managed Service Account used with the Cluster, this will create and AD Group of the same name.
+    MaxLength: '25'
+    MinLength: '1'
+    Type: String
+  Subnets:
+    Description: "List of Subnets that give the ability to communicate to Active Directoy"
+    Type: String
+
+  # Following parameters pertain to S3 bucketing for subtemplates
+  S3Bucket:
+    Type: String
+  S3Region:
+    Type: String
+  S3KeyPrefix:
+    Type: String
+
+Conditions:
+  CreateServiceAccount:
+    !Equals [ !Ref CreateGMSA, true ]
+
+Resources:
+  SSMAutomationStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${S3KeyPrefix}/ecs-gmsa-automation-doc.yml'
+  IamStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${S3KeyPrefix}/ecs-gmsa-iam-roles.yml'
+      Parameters:
+        ArtifactBucket: !Ref S3Bucket
+        gMSADocumentName: !GetAtt 'SSMAutomationStack.Outputs.GMSAConfigurationDocName'
+        DomainSecretsArn: !Ref DomainSecretsArn
+  FunctionStack:
+    DependsOn: IamStack
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${S3KeyPrefix}/ecs-gmsa-lambda-functions.yml'
+      Parameters:
+        gMSAExecuteRoleArn: !GetAtt 'IamStack.Outputs.gMSAExecuteRoleArn'
+        LambdaMofRoleArn: !GetAtt 'IamStack.Outputs.LambdaMofRoleArn'
+  gMSAStack:
+    Condition: CreateServiceAccount
+    DependsOn: FunctionStack
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${S3KeyPrefix}/ecs-gmsa-execute.yml'
+      Parameters:
+        CredSpecBucket: !Ref S3Bucket
+        DomainDNSName: !Ref DomainDNSName
+        GroupManagedServiceAccountName: !Ref GMSAName
+        DomainSecretsArn: !Ref DomainSecretsArn
+        gMSAExecuteArn: !GetAtt 'FunctionStack.Outputs.gMSAExecuteArn'
+        gMSAAutomationRoleArn: !GetAtt 'IamStack.Outputs.gMSAAutomationRoleArn'
+        gMSADocumentName: !GetAtt 'SSMAutomationStack.Outputs.GMSAConfigurationDocName'
+        InstanceProfile: !GetAtt IamStack.Outputs.NodeInstanceProfileName
+        DomainMemberSGID: !Ref 'DomainMemberSGID'
+        SubnetId: !Select [ '0', !Split [ ',', !Ref Subnets ] ]
+Outputs:
+  NodeInstanceProfile:
+    Description: Instance Profile for node instance with appropriate permissions
+    Value: !GetAtt IamStack.Outputs.NodeInstanceProfileName
+  WriteMOFFunctionLambdaArn:
+    Description: Write MOF File Arn
+    Value: !GetAtt FunctionStack.Outputs.WriteMOFFunctionLambdaArn

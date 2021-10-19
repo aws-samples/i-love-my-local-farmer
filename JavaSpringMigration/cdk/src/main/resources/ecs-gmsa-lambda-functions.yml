@@ -1,0 +1,158 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: This deploys an Automation Document that builds a .Net Framework Container that includes msbuild (qs-1qh1429dt)
+Parameters:
+  gMSAExecuteRoleArn:
+    Description: Role for Lambda that executes Systems Manager Automation workflow that configures gMSA
+    Type: String
+  LambdaMofRoleArn:
+    Description: Role for Lambda that parses SSM Parameter Value and upload MOF file.
+    Type: String
+
+Resources:
+  gMSAExecute:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Executes SSM Automation Documents
+      Handler: index.handler
+      Runtime: python3.7
+      Role: !Ref gMSAExecuteRoleArn
+      Timeout: 900
+      Code:
+        ZipFile: |
+          def handler(event, context):
+              import cfnresponse
+              import boto3, os, json
+              from botocore.vendored import requests
+
+              ssm_cl = boto3.client('ssm')
+              req_type = event['RequestType']
+              print(event)
+
+              SUCCESS = "SUCCESS"
+              FAILED = "FAILED"
+
+              def start_ssmautomation(event):
+                  doc_name = event['ResourceProperties']['DocumentName']
+                  s3_bucket = event['ResourceProperties']['CredSpecBucket']
+                  ad_domain = event['ResourceProperties']['DomainDNSName']
+                  service_account = event['ResourceProperties']['ServiceAccount']
+                  creds = event['ResourceProperties']['DomainSecretsArn']
+                  instance_profile = event['ResourceProperties']['InstanceProfile']
+                  sg_id = event['ResourceProperties']['SecurityGroupId']
+                  subnet_id = event['ResourceProperties']['SubnetId']
+                  stack_name = event['ResourceProperties']['StackName']
+                  ssm_role = event['ResourceProperties']['AutomationAssumeRole']
+
+                  start_automation = ssm_cl.start_automation_execution(
+                      DocumentName= doc_name,
+                      Parameters={
+                          'CredSpecBucket': [
+                              s3_bucket
+                          ],
+                          'DomainDNSName': [
+                              ad_domain
+                          ],
+                          'ServiceAccount': [
+                              service_account
+                          ],
+                          'DomainSecretsArn': [
+                              creds
+                          ],
+                          'InstanceProfile': [
+                              instance_profile
+                          ],
+                          'SecurityGroupId': [
+                              sg_id
+                          ],
+                          'SubnetId': [
+                              subnet_id
+                          ],
+                          'StackName': [
+                              stack_name
+                          ],
+                          'AutomationAssumeRole': [
+                              ssm_role
+                          ]
+                      },
+                  )
+                  cfnresponse.send(event, context, SUCCESS, start_automation, start_automation['AutomationExecutionId'])
+
+              def delete_automation(event):
+                  responseData = {}
+                  responseData['Data'] = 'nothingtodo'
+                  cfnresponse.send(event, context, SUCCESS, responseData)
+              actions = {
+                  'Create': start_ssmautomation,
+                  'Delete': delete_automation,
+                  'Update': delete_automation
+              }
+              try:
+                  actions.get(req_type)(event)
+              except Exception as exc:
+                  error_msg = {'Error': '{}'.format(exc)}
+                  print(error_msg)
+                  cfnresponse.send(event, context, FAILED, error_msg)
+  ParamParser:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Parses SSM Json Value
+      Handler: index.handler
+      Runtime: python3.7
+      Role: !Ref LambdaMofRoleArn
+      Timeout: 120
+      Code:
+        ZipFile: |
+          def handler(event, context):
+              import cfnresponse
+              import boto3, os, json
+              print(event)
+
+              SUCCESS = "SUCCESS"
+              FAILED = "FAILED"
+
+              def parse_value(event):
+                  j = json.loads(event['ResourceProperties']['SSMValue'])
+                  print(j)
+                  cfnresponse.send(event, context, SUCCESS, j)
+              try:
+                  parse_value(event)
+              except Exception as exc:
+                  error_msg = {'Error': '{}'.format(exc)}
+                  print(error_msg)
+                  cfnresponse.send(event, context, FAILED, error_msg)
+  WriteMOFFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: >
+          var AWS = require('aws-sdk'), s3 = new AWS.S3();
+          const response = require("cfn-response");
+          exports.handler = async (event, context) => {
+            console.log(JSON.stringify(event));
+            if (event.RequestType === 'Delete') {
+                await postResponse(event, context, response.SUCCESS, {})
+                return;
+            }
+            function postResponse(event, context, status, data){
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => response.send(event, context, status, data), 5000)
+                });
+            }
+            await s3.putObject({
+              Body: event.ResourceProperties.Body,
+              Bucket: event.ResourceProperties.Bucket,
+              Key: event.ResourceProperties.Key
+            }).promise();
+            await postResponse(event, context, response.SUCCESS, {});
+          };
+      Handler: index.handler
+      Role: !Ref LambdaMofRoleArn
+      Runtime: nodejs10.x
+      Timeout: 10
+Outputs:
+  gMSAExecuteArn:
+    Value: !GetAtt gMSAExecute.Arn
+  ParamParserArn:
+    Value: !GetAtt ParamParser.Arn
+  WriteMOFFunctionLambdaArn:
+    Value: !GetAtt WriteMOFFunction.Arn
