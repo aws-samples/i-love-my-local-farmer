@@ -1,0 +1,5 @@
+cdk.out
+build
+.gradle
+.idea
+src/main/container/*.war

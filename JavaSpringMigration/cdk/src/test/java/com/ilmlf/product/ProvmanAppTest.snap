@@ -1,0 +1,3291 @@
+com.ilmlf.product.ProvmanAppTest.testApiStack=[
+  {
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Conditions": {
+      "CreateNewCluster": {
+        "Fn::And": [
+          {
+            "Fn::Not": [
+              {
+                "Condition": "ImportExternalCluster"
+              }
+            ]
+          },
+          {
+            "Condition": "CreateNewEnv"
+          }
+        ]
+      },
+      "CreateNewEnv": {
+        "Fn::Equals": [
+          {
+            "Ref": "CfnStackNamePrefix"
+          },
+          ""
+        ]
+      },
+      "CreateNewVpc": {
+        "Fn::And": [
+          {
+            "Fn::Not": [
+              {
+                "Condition": "ImportExternalVpc"
+              }
+            ]
+          },
+          {
+            "Condition": "CreateNewEnv"
+          }
+        ]
+      },
+      "CreatePrivateLoadBalancer": {
+        "Fn::And": [
+          {
+            "Fn::Equals": [
+              {
+                "Ref": "IncludePrivateLoadBalancer"
+              },
+              true
+            ]
+          },
+          {
+            "Condition": "CreateNewEnv"
+          }
+        ]
+      },
+      "CreatePublicLoadBalancer": {
+        "Fn::And": [
+          {
+            "Fn::Equals": [
+              {
+                "Ref": "IncludePublicLoadBalancer"
+              },
+              true
+            ]
+          },
+          {
+            "Condition": "CreateNewEnv"
+          }
+        ]
+      },
+      "CreatePublicWebApp": {
+        "Fn::Or": [
+          {
+            "Fn::Or": [
+              {
+                "Condition": "CreatePublicLoadBalancer"
+              },
+              {
+                "Condition": "CreatePrivateLoadBalancer"
+              }
+            ]
+          },
+          {
+            "Fn::Not": [
+              {
+                "Condition": "CreateNewEnv"
+              }
+            ]
+          }
+        ]
+      },
+      "CreateRoute53Resources": {
+        "Fn::And": [
+          {
+            "Fn::Or": [
+              {
+                "Fn::Equals": [
+                  {
+                    "Ref": "ExistingHostedZoneId"
+                  },
+                  ""
+                ]
+              },
+              {
+                "Fn::Equals": [
+                  {
+                    "Ref": "RecordExist"
+                  },
+                  "false"
+                ]
+              }
+            ]
+          },
+          {
+            "Condition": "CreatePrivateLoadBalancer"
+          }
+        ]
+      },
+      "CreateServiceAccount": {
+        "Fn::Equals": [
+          {
+            "Ref": "CreateGMSA"
+          },
+          true
+        ]
+      },
+      "DoNotCreatePublicWebApp": {
+        "Fn::Not": [
+          {
+            "Condition": "CreatePublicWebApp"
+          }
+        ]
+      },
+      "ImportCert": {
+        "Fn::Not": [
+          {
+            "Fn::Equals": [
+              {
+                "Ref": "ACMCertificateArn"
+              },
+              ""
+            ]
+          }
+        ]
+      },
+      "ImportExternalCluster": {
+        "Fn::Not": [
+          {
+            "Fn::Equals": [
+              {
+                "Ref": "ClusterId"
+              },
+              ""
+            ]
+          }
+        ]
+      },
+      "ImportExternalVpc": {
+        "Fn::Not": [
+          {
+            "Fn::Equals": [
+              {
+                "Ref": "VpcId"
+              },
+              ""
+            ]
+          }
+        ]
+      },
+      "UseServiceAccount": {
+        "Fn::Not": [
+          {
+            "Fn::Equals": [
+              {
+                "Ref": "GMSAName"
+              },
+              ""
+            ]
+          }
+        ]
+      }
+    },
+    "Description": "Deploys an application into an ECS Cluster",
+    "Metadata": {
+      "AWS::CloudFormation::Interface": [
+        {
+          "Label": {
+            "default": "App Service Parameters for the application being deployed, check ecs-lb-webapp.yml for usage."
+          },
+          "Parameters": [
+            "AppName",
+            "ContainerImage",
+            "ContainerPort",
+            "RulePath",
+            "TaskCPU",
+            "TaskMemory",
+            "TaskCount",
+            "LogRetention",
+            "HealthCheckPath",
+            "HealthCheckCommand"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Logging Parameters for the application being deployed, check ecs-lb-webapp.yml for usage"
+          },
+          "Parameters": [
+            "TaskLogDriver",
+            "MultipleDests",
+            "SingleDestName",
+            "IncludePattern",
+            "LogGrpName",
+            "LogStrmName",
+            "AutoCrtGrp",
+            "FirehoseStream",
+            "KinesisStream",
+            "KinesisAppendNewline",
+            "FirelensName",
+            "FirelensImage",
+            "ConfigType",
+            "ConfigPath",
+            "UsingCloudwatchLogs",
+            "UsingFirehoseLogs",
+            "UsingKinesisLogs"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Parameters for the infrastructure the app will be deployed to, including VPC, subnets, ECS Cluster, etc. Check ecs-cluster.yml, ecs-public-load-balancer.yml, and ecs-vpc.yml for usage."
+          },
+          "Parameters": [
+            "LaunchType",
+            "VpcCIDR",
+            "PublicSubnet1CIDR",
+            "PublicSubnet2CIDR",
+            "PrivateSubnet1CIDR",
+            "PrivateSubnet2CIDR",
+            "IncludePublicLoadBalancer",
+            "IncludePrivateLoadBalancer",
+            "HealthCheckIntervalSeconds",
+            "HealthyThresholdCount",
+            "HealthCheckTimeoutSeconds",
+            "MaxSize",
+            "DesiredCapacity",
+            "AmiId",
+            "InstanceType",
+            "KeyName"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Parameters for creating DNS resources in Route53, it is only used when deploying dependent application"
+          },
+          "Parameters": [
+            "ExistingHostedZoneId",
+            "DomainName",
+            "RecordName",
+            "RecordExist"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Parameters pertaining to S3 bucketing for subtemplates referenced in this master template"
+          },
+          "Parameters": [
+            "S3Bucket",
+            "S3Region",
+            "S3KeyPrefix"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Existing resources to import rather than creating them in this template."
+          },
+          "Parameters": [
+            "VpcId",
+            "PublicSubnets",
+            "ClusterId"
+          ]
+        }
+      ]
+    },
+    "Outputs": {
+      "ClusterId": {
+        "Export": {
+          "Name": {
+            "Fn::Sub": "${AWS::StackName}-ClusterIdOutput"
+          }
+        },
+        "Value": {
+          "Fn::If": [
+            "ImportExternalCluster",
+            {
+              "Ref": "ClusterId"
+            },
+            {
+              "Fn::If": [
+                "CreateNewEnv",
+                {
+                  "Fn::GetAtt": "ClusterStack.Outputs.ClusterId"
+                },
+                {
+                  "Fn::ImportValue": {
+                    "Fn::Sub": "${CfnStackNamePrefix}-ClusterId"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "ECSService": {
+        "Export": {
+          "Name": {
+            "Fn::Sub": "${AWS::StackName}-ECSServiceOutput"
+          }
+        },
+        "Value": {
+          "Fn::If": [
+            "CreateNewEnv",
+            {
+              "Fn::If": [
+                "CreatePublicWebApp",
+                {
+                  "Fn::GetAtt": "LBWebAppStack.Outputs.ECSService"
+                },
+                {
+                  "Fn::GetAtt": "PrivateAppStack.Outputs.ECSService"
+                }
+              ]
+            },
+            {
+              "Fn::ImportValue": {
+                "Fn::Sub": "${CfnStackNamePrefix}-ECSService"
+              }
+            }
+          ]
+        }
+      },
+      "HostedZoneId": {
+        "Condition": "CreateRoute53Resources",
+        "Export": {
+          "Name": {
+            "Fn::Sub": "${AWS::StackName}-HostedZoneIdOutput"
+          }
+        },
+        "Value": {
+          "Fn::GetAtt": "Route53Stack.Outputs.HostedZoneId"
+        }
+      },
+      "LoadBalancerDNSName": {
+        "Condition": "CreatePublicWebApp",
+        "Export": {
+          "Name": {
+            "Fn::Sub": "${AWS::StackName}-LoadBalancerDNSForCLIOutput"
+          }
+        },
+        "Value": {
+          "Fn::If": [
+            "CreateNewEnv",
+            {
+              "Fn::If": [
+                "CreatePublicLoadBalancer",
+                {
+                  "Fn::GetAtt": "ALBStack.Outputs.PublicLoadBalancerDNSName"
+                },
+                {
+                  "Fn::GetAtt": "PrivateALBStack.Outputs.PrivateLoadBalancerDNSName"
+                }
+              ]
+            },
+            {
+              "Fn::ImportValue": {
+                "Fn::Sub": "${CfnStackNamePrefix}-PublicLoadBalancerDNS"
+              }
+            }
+          ]
+        }
+      },
+      "PublicSubnets": {
+        "Export": {
+          "Name": {
+            "Fn::Sub": "${AWS::StackName}-PublicSubnetsOutput"
+          }
+        },
+        "Value": {
+          "Fn::If": [
+            "ImportExternalVpc",
+            {
+              "Fn::Join": [
+                ",",
+                {
+                  "Ref": "PublicSubnets"
+                }
+              ]
+            },
+            {
+              "Fn::If": [
+                "CreateNewEnv",
+                {
+                  "Fn::GetAtt": "VPCStack.Outputs.PublicSubnets"
+                },
+                {
+                  "Fn::ImportValue": {
+                    "Fn::Sub": "${CfnStackNamePrefix}-PublicSubnets"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "VpcId": {
+        "Export": {
+          "Name": {
+            "Fn::Sub": "${AWS::StackName}-VpcIdOutput"
+          }
+        },
+        "Value": {
+          "Fn::If": [
+            "ImportExternalVpc",
+            {
+              "Ref": "VpcId"
+            },
+            {
+              "Fn::If": [
+                "CreateNewEnv",
+                {
+                  "Fn::GetAtt": "VPCStack.Outputs.VpcId"
+                },
+                {
+                  "Fn::ImportValue": {
+                    "Fn::Sub": "${CfnStackNamePrefix}-VpcId"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "Parameters": {
+      "ACMCertificateArn": {
+        "Default": "",
+        "Type": "String"
+      },
+      "AmiId": {
+        "Default": "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id",
+        "Description": "AMI ID",
+        "Type": "AWS::SSM::Parameter::Value<String>"
+      },
+      "AppName": {
+        "Default": "java-tomcat-08525b57",
+        "Type": "String"
+      },
+      "AssetParameters1e26574f99a39ba3aa8f1fb647dd17d84f395d5ba51eee8b27ee20b0e3744395ArtifactHashC8089122": {
+        "Description": "Artifact hash for asset \"1e26574f99a39ba3aa8f1fb647dd17d84f395d5ba51eee8b27ee20b0e3744395\"",
+        "Type": "String"
+      },
+      "AssetParameters1e26574f99a39ba3aa8f1fb647dd17d84f395d5ba51eee8b27ee20b0e3744395S3Bucket3798948F": {
+        "Description": "S3 bucket for asset \"1e26574f99a39ba3aa8f1fb647dd17d84f395d5ba51eee8b27ee20b0e3744395\"",
+        "Type": "String"
+      },
+      "AssetParameters1e26574f99a39ba3aa8f1fb647dd17d84f395d5ba51eee8b27ee20b0e3744395S3VersionKey628605DF": {
+        "Description": "S3 key for asset version \"1e26574f99a39ba3aa8f1fb647dd17d84f395d5ba51eee8b27ee20b0e3744395\"",
+        "Type": "String"
+      },
+      "AssetParameters214d6fcf138f4af4e59f2f55f7feeee683210f2b5f1182c7c266ee1137253eebArtifactHashCA5CA25B": {
+        "Description": "Artifact hash for asset \"214d6fcf138f4af4e59f2f55f7feeee683210f2b5f1182c7c266ee1137253eeb\"",
+        "Type": "String"
+      },
+      "AssetParameters214d6fcf138f4af4e59f2f55f7feeee683210f2b5f1182c7c266ee1137253eebS3Bucket90300E00": {
+        "Description": "S3 bucket for asset \"214d6fcf138f4af4e59f2f55f7feeee683210f2b5f1182c7c266ee1137253eeb\"",
+        "Type": "String"
+      },
+      "AssetParameters214d6fcf138f4af4e59f2f55f7feeee683210f2b5f1182c7c266ee1137253eebS3VersionKeyED0079A5": {
+        "Description": "S3 key for asset version \"214d6fcf138f4af4e59f2f55f7feeee683210f2b5f1182c7c266ee1137253eeb\"",
+        "Type": "String"
+      },
+      "AssetParameters4213fb4f0fa08e52b9e31f059404b0bbede5f9175a9e9043d1c4f27268d6c071ArtifactHash1DA149B3": {
+        "Description": "Artifact hash for asset \"4213fb4f0fa08e52b9e31f059404b0bbede5f9175a9e9043d1c4f27268d6c071\"",
+        "Type": "String"
+      },
+      "AssetParameters4213fb4f0fa08e52b9e31f059404b0bbede5f9175a9e9043d1c4f27268d6c071S3Bucket5CB8FA4A": {
+        "Description": "S3 bucket for asset \"4213fb4f0fa08e52b9e31f059404b0bbede5f9175a9e9043d1c4f27268d6c071\"",
+        "Type": "String"
+      },
+      "AssetParameters4213fb4f0fa08e52b9e31f059404b0bbede5f9175a9e9043d1c4f27268d6c071S3VersionKeyCE059D35": {
+        "Description": "S3 key for asset version \"4213fb4f0fa08e52b9e31f059404b0bbede5f9175a9e9043d1c4f27268d6c071\"",
+        "Type": "String"
+      },
+      "AssetParameters48bdb06ef2a972d3b8ce3522f22fc9162bf391435046e0551626f272575ba58dArtifactHashE99BB09D": {
+        "Description": "Artifact hash for asset \"48bdb06ef2a972d3b8ce3522f22fc9162bf391435046e0551626f272575ba58d\"",
+        "Type": "String"
+      },
+      "AssetParameters48bdb06ef2a972d3b8ce3522f22fc9162bf391435046e0551626f272575ba58dS3BucketB0278372": {
+        "Description": "S3 bucket for asset \"48bdb06ef2a972d3b8ce3522f22fc9162bf391435046e0551626f272575ba58d\"",
+        "Type": "String"
+      },
+      "AssetParameters48bdb06ef2a972d3b8ce3522f22fc9162bf391435046e0551626f272575ba58dS3VersionKey5E3FA735": {
+        "Description": "S3 key for asset version \"48bdb06ef2a972d3b8ce3522f22fc9162bf391435046e0551626f272575ba58d\"",
+        "Type": "String"
+      },
+      "AssetParameters65d2596fa48d2ce4ef6ea54f839ae7e069a996bc7f43c5fdd8fd38a33555d453ArtifactHash6BCAFD88": {
+        "Description": "Artifact hash for asset \"65d2596fa48d2ce4ef6ea54f839ae7e069a996bc7f43c5fdd8fd38a33555d453\"",
+        "Type": "String"
+      },
+      "AssetParameters65d2596fa48d2ce4ef6ea54f839ae7e069a996bc7f43c5fdd8fd38a33555d453S3BucketC894BF17": {
+        "Description": "S3 bucket for asset \"65d2596fa48d2ce4ef6ea54f839ae7e069a996bc7f43c5fdd8fd38a33555d453\"",
+        "Type": "String"
+      },
+      "AssetParameters65d2596fa48d2ce4ef6ea54f839ae7e069a996bc7f43c5fdd8fd38a33555d453S3VersionKey69711CF5": {
+        "Description": "S3 key for asset version \"65d2596fa48d2ce4ef6ea54f839ae7e069a996bc7f43c5fdd8fd38a33555d453\"",
+        "Type": "String"
+      },
+      "AssetParameters663df10d538c2355e2e9f894051b241dc4e51fd9398d744231ebfdbb24970ba9ArtifactHash18AABD8A": {
+        "Description": "Artifact hash for asset \"663df10d538c2355e2e9f894051b241dc4e51fd9398d744231ebfdbb24970ba9\"",
+        "Type": "String"
+      },
+      "AssetParameters663df10d538c2355e2e9f894051b241dc4e51fd9398d744231ebfdbb24970ba9S3BucketBDB24F72": {
+        "Description": "S3 bucket for asset \"663df10d538c2355e2e9f894051b241dc4e51fd9398d744231ebfdbb24970ba9\"",
+        "Type": "String"
+      },
+      "AssetParameters663df10d538c2355e2e9f894051b241dc4e51fd9398d744231ebfdbb24970ba9S3VersionKey628CBF8A": {
+        "Description": "S3 key for asset version \"663df10d538c2355e2e9f894051b241dc4e51fd9398d744231ebfdbb24970ba9\"",
+        "Type": "String"
+      },
+      "AssetParameters7992a3853fe2bfb62e703a935da291d276e52b14e54bd67f26d26e86614b7267ArtifactHash08A9B417": {
+        "Description": "Artifact hash for asset \"7992a3853fe2bfb62e703a935da291d276e52b14e54bd67f26d26e86614b7267\"",
+        "Type": "String"
+      },
+      "AssetParameters7992a3853fe2bfb62e703a935da291d276e52b14e54bd67f26d26e86614b7267S3Bucket36E6DC88": {
+        "Description": "S3 bucket for asset \"7992a3853fe2bfb62e703a935da291d276e52b14e54bd67f26d26e86614b7267\"",
+        "Type": "String"
+      },
+      "AssetParameters7992a3853fe2bfb62e703a935da291d276e52b14e54bd67f26d26e86614b7267S3VersionKeyE9BCED4D": {
+        "Description": "S3 key for asset version \"7992a3853fe2bfb62e703a935da291d276e52b14e54bd67f26d26e86614b7267\"",
+        "Type": "String"
+      },
+      "AssetParameterseceb6dd728128ca0926d476802c2bfc432642045dec656d6d39f0d12f99733e1ArtifactHash1039F81B": {
+        "Description": "Artifact hash for asset \"eceb6dd728128ca0926d476802c2bfc432642045dec656d6d39f0d12f99733e1\"",
+        "Type": "String"
+      },
+      "AssetParameterseceb6dd728128ca0926d476802c2bfc432642045dec656d6d39f0d12f99733e1S3BucketFDE405F1": {
+        "Description": "S3 bucket for asset \"eceb6dd728128ca0926d476802c2bfc432642045dec656d6d39f0d12f99733e1\"",
+        "Type": "String"
+      },
+      "AssetParameterseceb6dd728128ca0926d476802c2bfc432642045dec656d6d39f0d12f99733e1S3VersionKey9292460C": {
+        "Description": "S3 key for asset version \"eceb6dd728128ca0926d476802c2bfc432642045dec656d6d39f0d12f99733e1\"",
+        "Type": "String"
+      },
+      "AutoCrtGrp": {
+        "Default": "",
+        "Type": "String"
+      },
+      "CfnStackNamePrefix": {
+        "Default": "",
+        "Type": "String"
+      },
+      "ClusterId": {
+        "Default": "",
+        "Type": "String"
+      },
+      "ConfigPath": {
+        "Default": "",
+        "Type": "String"
+      },
+      "ConfigType": {
+        "Default": "",
+        "Type": "String"
+      },
+      "ContainerImage": {
+        "Default": "598227823083.dkr.ecr.eu-west-3.amazonaws.com/java-tomcat-08525b57:latest",
+        "Type": "String"
+      },
+      "ContainerPort": {
+        "Default": 8080,
+        "Type": "Number"
+      },
+      "CreateGMSA": {
+        "AllowedValues": [
+          true,
+          false
+        ],
+        "Default": false,
+        "Type": "String"
+      },
+      "DesiredCapacity": {
+        "Default": 1,
+        "Description": "Number of instances to launch in your ECS cluster.",
+        "Type": "Number"
+      },
+      "DomainDNSName": {
+        "Default": "",
+        "Description": "Fully qualified domain name (FQDN).",
+        "MaxLength": "255",
+        "Type": "String"
+      },
+      "DomainName": {
+        "Default": "",
+        "Type": "String"
+      },
+      "DomainNetBIOSName": {
+        "Default": "",
+        "Description": "NetBIOS name of the domain (up to 15 characters) for users of earlier versions of Windows.",
+        "MaxLength": "15",
+        "Type": "String"
+      },
+      "DomainSecretsArn": {
+        "Default": "",
+        "Description": "The Secrets Manager name or ARN that represents domain credentials to perform all needed domain actions.",
+        "Type": "String"
+      },
+      "ExistingHostedZoneId": {
+        "Default": "",
+        "Type": "String"
+      },
+      "FirehoseStream": {
+        "Default": "",
+        "Type": "String"
+      },
+      "FirelensImage": {
+        "Default": "",
+        "Type": "String"
+      },
+      "FirelensName": {
+        "Default": "java-tomcat-08525b57-log-router",
+        "Type": "String"
+      },
+      "GMSAName": {
+        "Default": "",
+        "Description": "The Group Managed Service Account to be used with this stack, this will create an AD Group of the same name.",
+        "MaxLength": "25",
+        "Type": "String"
+      },
+      "HealthCheckCommand": {
+        "Default": "",
+        "Type": "String"
+      },
+      "HealthCheckIntervalSeconds": {
+        "Default": 10,
+        "Type": "Number"
+      },
+      "HealthCheckPath": {
+        "Default": "/",
+        "Type": "String"
+      },
+      "HealthCheckTimeoutSeconds": {
+        "Default": 5,
+        "Type": "Number"
+      },
+      "HealthyThresholdCount": {
+        "Default": 2,
+        "Type": "Number"
+      },
+      "IncludePattern": {
+        "Default": "",
+        "Type": "String"
+      },
+      "IncludePrivateLoadBalancer": {
+        "AllowedValues": [
+          true,
+          false
+        ],
+        "Default": false,
+        "Type": "String"
+      },
+      "IncludePublicLoadBalancer": {
+        "AllowedValues": [
+          true,
+          false
+        ],
+        "Default": true,
+        "Type": "String"
+      },
+      "InstanceType": {
+        "AllowedValues": [
+          "t2.micro",
+          "t2.small",
+          "t2.medium",
+          "t2.large",
+          "m3.medium",
+          "m3.large",
+          "m3.xlarge",
+          "m3.2xlarge",
+          "m4.large",
+          "m4.xlarge",
+          "m4.2xlarge",
+          "m4.4xlarge",
+          "m4.10xlarge",
+          "c4.large",
+          "c4.xlarge",
+          "c4.2xlarge",
+          "c4.4xlarge",
+          "c4.8xlarge",
+          "c3.large",
+          "c3.xlarge",
+          "c3.2xlarge",
+          "c3.4xlarge",
+          "c3.8xlarge",
+          "r3.large",
+          "r3.xlarge",
+          "r3.2xlarge",
+          "r3.4xlarge",
+          "r3.8xlarge",
+          "i2.xlarge",
+          "i2.2xlarge",
+          "i2.4xlarge",
+          "i2.8xlarge",
+          "c5.4xlarge",
+          "c5.9xlarge",
+          "c5.12xlarge",
+          "c5.18xlarge",
+          "c5.24xlarge",
+          "c5a.4xlarge",
+          "c5a.8xlarge",
+          "c5a.12xlarge",
+          "c5a.16xlarge",
+          "c5a.24xlarge",
+          "c5ad.4xlarge",
+          "c5ad.8xlarge",
+          "c5ad.12xlarge",
+          "c5ad.16xlarge",
+          "c5ad.24xlarge",
+          "c5d.4xlarge",
+          "c5d.9xlarge",
+          "c5d.12xlarge",
+          "c5d.18xlarge",
+          "c5d.24xlarge",
+          "c5n.4xlarge",
+          "c5n.9xlarge",
+          "c5n.18xlarge",
+          "c6g.4xlarge",
+          "c6g.8xlarge",
+          "c6g.12xlarge",
+          "c6g.16xlarge",
+          "c6gd.4xlarge",
+          "c6gd.8xlarge",
+          "c6gd.12xlarge",
+          "c6gd.16xlarge",
+          "c6gn.4xlarge",
+          "c6gn.8xlarge",
+          "c6gn.12xlarge",
+          "c6gn.16xlarge",
+          "d3.4xlarge",
+          "d3.8xlarge",
+          "d3en.4xlarge",
+          "d3en.6xlarge",
+          "d3en.8xlarge",
+          "d3en.12xlarge",
+          "i3en.6xlarge",
+          "i3en.12xlarge",
+          "i3en.24xlarge",
+          "inf1.6xlarge",
+          "inf1.24xlarge",
+          "m5.4xlarge",
+          "m5.8xlarge",
+          "m5.12xlarge",
+          "m5.16xlarge",
+          "m5.24xlarge",
+          "m5a.4xlarge",
+          "m5a.8xlarge",
+          "m5a.12xlarge",
+          "m5a.16xlarge",
+          "m5a.24xlarge",
+          "m5ad.4xlarge",
+          "m5ad.8xlarge",
+          "m5ad.12xlarge",
+          "m5ad.16xlarge",
+          "m5ad.24xlarge",
+          "m5d.4xlarge",
+          "m5d.8xlarge",
+          "m5d.12xlarge",
+          "m5d.16xlarge",
+          "m5d.24xlarge",
+          "m5dn.4xlarge",
+          "m5dn.8xlarge",
+          "m5dn.12xlarge",
+          "m5dn.16xlarge",
+          "m5dn.24xlarge",
+          "m5n.4xlarge",
+          "m5n.8xlarge",
+          "m5n.12xlarge",
+          "m5n.16xlarge. m5n.24xlarge",
+          "m5zn.6xlarge",
+          "m5zn.12xlarge",
+          "m6g.4xlarge",
+          "m6g.8xlarge",
+          "m6g.12xlarge",
+          "m6g.16xlarge",
+          "m6gd.4xlarge",
+          "m6gd.8xlarge",
+          "m6gd.12xlarge",
+          "m6gd.16xlarge",
+          "r5.4xlarge",
+          "r5.8xlarge",
+          "r5.12xlarge",
+          "r5.16xlarge",
+          "r5.24xlarge",
+          "r5a.4xlarge",
+          "r5a.8xlarge",
+          "r5a.12xlarge",
+          "r5a.16xlarge",
+          "r5a.24xlarge",
+          "r5ad.4xlarge",
+          "r5ad.8xlarge",
+          "r5ad.12xlarge",
+          "r5ad.16xlarge",
+          "r5ad.24xlarge",
+          "r5b.4xlarge",
+          "r5b.8xlarge",
+          "r5b.12xlarge",
+          "r5b.16xlarge",
+          "r5b.24xlarge",
+          "r5d.4xlarge",
+          "r5d.8xlarge",
+          "r5d.12xlarge",
+          "r5d.16xlarge",
+          "r5d.24xlarge",
+          "r5dn.4xlarge",
+          "r5dn.8xlarge",
+          "r5dn.12xlarge",
+          "r5dn.16xlarge",
+          "r5dn.24xlarge",
+          "r5n.4xlarge",
+          "r5n.8xlarge",
+          "r5n.12xlarge",
+          "r5n.16xlarge",
+          "r5n.24xlarge",
+          "r6g.4xlarge",
+          "r6g.8xlarge",
+          "r6g.12xlarge",
+          "r6g.16xlarge",
+          "r6gd.4xlarge",
+          "r6gd.8xlarge",
+          "r6gd.12xlarge",
+          "r6gd.16xlarge",
+          "z1d.6xlarge",
+          "z1d.12xlarge"
+        ],
+        "ConstraintDescription": "Please choose a valid instance type.",
+        "Default": "c4.4xlarge",
+        "Description": "EC2 instance type",
+        "Type": "String"
+      },
+      "KeyName": {
+        "ConstraintDescription": "Must be the name of an existing EC2 KeyPair.",
+        "Default": "",
+        "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+        "Type": "String"
+      },
+      "KinesisAppendNewline": {
+        "Default": "",
+        "Type": "String"
+      },
+      "KinesisStream": {
+        "Default": "",
+        "Type": "String"
+      },
+      "LaunchType": {
+        "AllowedValues": [
+          "FARGATE",
+          "EC2"
+        ],
+        "Default": "FARGATE",
+        "Type": "String"
+      },
+      "LogGrpName": {
+        "Default": "",
+        "Type": "String"
+      },
+      "LogRetention": {
+        "Default": 30,
+        "Type": "Number"
+      },
+      "LogStrmName": {
+        "Default": "",
+        "Type": "String"
+      },
+      "MaxSize": {
+        "Default": "4",
+        "Description": "Maximum number of EC2 instances that can be launched in your ECS Cluster.",
+        "Type": "Number"
+      },
+      "MultipleDests": {
+        "AllowedValues": [
+          true,
+          false
+        ],
+        "Default": false,
+        "Type": "String"
+      },
+      "PrivateSubnet1CIDR": {
+        "Default": "10.1.2.0/24",
+        "Type": "String"
+      },
+      "PrivateSubnet2CIDR": {
+        "Default": "10.1.3.0/24",
+        "Type": "String"
+      },
+      "PublicSubnet1CIDR": {
+        "Default": "10.1.0.0/24",
+        "Type": "String"
+      },
+      "PublicSubnet2CIDR": {
+        "Default": "10.1.1.0/24",
+        "Type": "String"
+      },
+      "PublicSubnets": {
+        "Default": "",
+        "Type": "CommaDelimitedList"
+      },
+      "RecordExist": {
+        "AllowedValues": [
+          true,
+          false
+        ],
+        "Default": "true",
+        "Type": "String"
+      },
+      "RecordName": {
+        "Default": "",
+        "Type": "String"
+      },
+      "RulePath": {
+        "Default": "",
+        "Type": "String"
+      },
+      "S3Bucket": {
+        "Default": "app2container-ms-tomcat-fargate",
+        "Type": "String"
+      },
+      "S3KeyPrefix": {
+        "Default": "a2c-java-tomcat-08525b57/ecs/subtemplates",
+        "Type": "String"
+      },
+      "S3Region": {
+        "Default": "eu-west-3",
+        "Type": "String"
+      },
+      "SingleDestName": {
+        "Default": "",
+        "Type": "String"
+      },
+      "TaskCPU": {
+        "Default": "2048",
+        "Type": "String"
+      },
+      "TaskCount": {
+        "Default": 1,
+        "Type": "Number"
+      },
+      "TaskLogDriver": {
+        "Default": "",
+        "Type": "String"
+      },
+      "TaskMemory": {
+        "Default": "4096",
+        "Type": "String"
+      },
+      "UsingCloudwatchLogs": {
+        "Default": false,
+        "Type": "String"
+      },
+      "UsingFirehoseLogs": {
+        "Default": false,
+        "Type": "String"
+      },
+      "UsingKinesisLogs": {
+        "Default": false,
+        "Type": "String"
+      },
+      "VpcCIDR": {
+        "Default": "10.1.0.0/16",
+        "Type": "String"
+      },
+      "VpcId": {
+        "Default": "",
+        "Type": "String"
+      }
+    },
+    "Resources": {
+      "ALBStack": {
+        "Condition": "CreatePublicLoadBalancer",
+        "Properties": {
+          "Parameters": {
+            "ACMCertificateArn": {
+              "Ref": "ACMCertificateArn"
+            },
+            "HealthCheckIntervalSeconds": {
+              "Ref": "HealthCheckIntervalSeconds"
+            },
+            "HealthCheckTimeoutSeconds": {
+              "Ref": "HealthCheckTimeoutSeconds"
+            },
+            "HealthyThresholdCount": {
+              "Ref": "HealthyThresholdCount"
+            },
+            "IncludePublicLoadBalancer": {
+              "Ref": "IncludePublicLoadBalancer"
+            },
+            "MasterStackName": {
+              "Ref": "AWS::StackName"
+            },
+            "PublicSubnets": {
+              "Fn::If": [
+                "ImportExternalVpc",
+                {
+                  "Fn::Join": [
+                    ",",
+                    {
+                      "Ref": "PublicSubnets"
+                    }
+                  ]
+                },
+                {
+                  "Fn::GetAtt": "VPCStack.Outputs.PublicSubnets"
+                }
+              ]
+            },
+            "VpcId": {
+              "Fn::If": [
+                "ImportExternalVpc",
+                {
+                  "Ref": "VpcId"
+                },
+                {
+                  "Fn::GetAtt": "VPCStack.Outputs.VpcId"
+                }
+              ]
+            }
+          },
+          "TemplateURL": {
+            "Fn::Join": [
+              "",
+              [
+                "https://s3.",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ".",
+                {
+                  "Ref": "AWS::URLSuffix"
+                },
+                "/",
+                {
+                  "Ref": "AssetParameters48bdb06ef2a972d3b8ce3522f22fc9162bf391435046e0551626f272575ba58dS3BucketB0278372"
+                },
+                "/",
+                {
+                  "Fn::Select": [
+                    0,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameters48bdb06ef2a972d3b8ce3522f22fc9162bf391435046e0551626f272575ba58dS3VersionKey5E3FA735"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Fn::Select": [
+                    1,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameters48bdb06ef2a972d3b8ce3522f22fc9162bf391435046e0551626f272575ba58dS3VersionKey5E3FA735"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        },
+        "Type": "AWS::CloudFormation::Stack"
+      },
+      "ClusterStack": {
+        "Condition": "CreateNewCluster",
+        "Properties": {
+          "Parameters": {
+            "AmiId": {
+              "Ref": "AmiId"
+            },
+            "DesiredCapacity": {
+              "Ref": "DesiredCapacity"
+            },
+            "DomainDNSName": {
+              "Ref": "DomainDNSName"
+            },
+            "DomainNetBIOSName": {
+              "Ref": "DomainNetBIOSName"
+            },
+            "DomainSecretsArn": {
+              "Ref": "DomainSecretsArn"
+            },
+            "ECSArtifactBucket": {
+              "Ref": "S3Bucket"
+            },
+            "EnvironmentSecurityGroup": {
+              "Fn::If": [
+                "CreateNewEnv",
+                {
+                  "Fn::If": [
+                    "CreatePublicLoadBalancer",
+                    {
+                      "Fn::GetAtt": "ALBStack.Outputs.EnvironmentSecurityGroup"
+                    },
+                    {
+                      "Fn::GetAtt": "PrivateALBStack.Outputs.EnvironmentSecurityGroup"
+                    }
+                  ]
+                },
+                {
+                  "Fn::ImportValue": {
+                    "Fn::Sub": "${CfnStackNamePrefix}-EnvironmentSecurityGroup"
+                  }
+                }
+              ]
+            },
+            "GroupManagedServiceAccountName": {
+              "Ref": "GMSAName"
+            },
+            "InstanceType": {
+              "Ref": "InstanceType"
+            },
+            "KeyName": {
+              "Ref": "KeyName"
+            },
+            "LaunchType": {
+              "Ref": "LaunchType"
+            },
+            "MasterStackName": {
+              "Ref": "AWS::StackName"
+            },
+            "MaxSize": {
+              "Ref": "MaxSize"
+            },
+            "PublicSubnets": {
+              "Fn::If": [
+                "ImportExternalVpc",
+                {
+                  "Fn::Join": [
+                    ",",
+                    {
+                      "Ref": "PublicSubnets"
+                    }
+                  ]
+                },
+                {
+                  "Fn::If": [
+                    "CreateNewEnv",
+                    {
+                      "Fn::GetAtt": "VPCStack.Outputs.PublicSubnets"
+                    },
+                    {
+                      "Fn::ImportValue": {
+                        "Fn::Sub": "${CfnStackNamePrefix}-PublicSubnets"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "WriteMOFFunctionLambdaArn": {
+              "Fn::If": [
+                "UseServiceAccount",
+                {
+                  "Fn::GetAtt": "gMSASetupStack.Outputs.WriteMOFFunctionLambdaArn"
+                },
+                {
+                  "Ref": "AWS::NoValue"
+                }
+              ]
+            }
+          },
+          "TemplateURL": {
+            "Fn::Join": [
+              "",
+              [
+                "https://s3.",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ".",
+                {
+                  "Ref": "AWS::URLSuffix"
+                },
+                "/",
+                {
+                  "Ref": "AssetParameters7992a3853fe2bfb62e703a935da291d276e52b14e54bd67f26d26e86614b7267S3Bucket36E6DC88"
+                },
+                "/",
+                {
+                  "Fn::Select": [
+                    0,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameters7992a3853fe2bfb62e703a935da291d276e52b14e54bd67f26d26e86614b7267S3VersionKeyE9BCED4D"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Fn::Select": [
+                    1,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameters7992a3853fe2bfb62e703a935da291d276e52b14e54bd67f26d26e86614b7267S3VersionKeyE9BCED4D"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        },
+        "Type": "AWS::CloudFormation::Stack"
+      },
+      "LBWebAppStack": {
+        "Condition": "CreatePublicWebApp",
+        "Properties": {
+          "Parameters": {
+            "AppName": {
+              "Ref": "AppName"
+            },
+            "AutoCrtGrp": {
+              "Ref": "AutoCrtGrp"
+            },
+            "ClusterId": {
+              "Fn::If": [
+                "ImportExternalCluster",
+                {
+                  "Ref": "ClusterId"
+                },
+                {
+                  "Fn::If": [
+                    "CreateNewEnv",
+                    {
+                      "Fn::GetAtt": "ClusterStack.Outputs.ClusterId"
+                    },
+                    {
+                      "Fn::ImportValue": {
+                        "Fn::Sub": "${CfnStackNamePrefix}-ClusterId"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "ConfigPath": {
+              "Ref": "ConfigPath"
+            },
+            "ConfigType": {
+              "Ref": "ConfigType"
+            },
+            "ContainerImage": {
+              "Ref": "ContainerImage"
+            },
+            "ContainerPort": {
+              "Ref": "ContainerPort"
+            },
+            "CredSpecBucket": {
+              "Ref": "S3Bucket"
+            },
+            "CredSpecKey": {
+              "Fn::Sub": "CredSpecs/${GMSAName}.json"
+            },
+            "EnvironmentSecurityGroup": {
+              "Fn::If": [
+                "CreateNewEnv",
+                {
+                  "Fn::If": [
+                    "CreatePublicLoadBalancer",
+                    {
+                      "Fn::GetAtt": "ALBStack.Outputs.EnvironmentSecurityGroup"
+                    },
+                    {
+                      "Fn::GetAtt": "PrivateALBStack.Outputs.EnvironmentSecurityGroup"
+                    }
+                  ]
+                },
+                {
+                  "Fn::ImportValue": {
+                    "Fn::Sub": "${CfnStackNamePrefix}-EnvironmentSecurityGroup"
+                  }
+                }
+              ]
+            },
+            "FirehoseStream": {
+              "Ref": "FirehoseStream"
+            },
+            "FirelensImage": {
+              "Ref": "FirelensImage"
+            },
+            "FirelensName": {
+              "Ref": "FirelensName"
+            },
+            "GMSAName": {
+              "Ref": "GMSAName"
+            },
+            "HTTPListenerArn": {
+              "Fn::If": [
+                "CreateNewEnv",
+                {
+                  "Fn::If": [
+                    "CreatePublicLoadBalancer",
+                    {
+                      "Fn::GetAtt": "ALBStack.Outputs.HTTPListenerArn"
+                    },
+                    {
+                      "Fn::GetAtt": "PrivateALBStack.Outputs.HTTPListenerArn"
+                    }
+                  ]
+                },
+                {
+                  "Fn::ImportValue": {
+                    "Fn::Sub": "${CfnStackNamePrefix}-HTTPListenerArn"
+                  }
+                }
+              ]
+            },
+            "HTTPSListenerArn": {
+              "Fn::If": [
+                "ImportCert",
+                {
+                  "Fn::If": [
+                    "CreateNewEnv",
+                    {
+                      "Fn::If": [
+                        "CreatePublicLoadBalancer",
+                        {
+                          "Fn::GetAtt": "ALBStack.Outputs.HTTPSListenerArn"
+                        },
+                        {
+                          "Fn::GetAtt": "PrivateALBStack.Outputs.HTTPSListenerArn"
+                        }
+                      ]
+                    },
+                    {
+                      "Fn::ImportValue": {
+                        "Fn::Sub": "${CfnStackNamePrefix}-HTTPSListenerArn"
+                      }
+                    }
+                  ]
+                },
+                ""
+              ]
+            },
+            "HealthCheckIntervalSeconds": {
+              "Ref": "HealthCheckIntervalSeconds"
+            },
+            "HealthCheckPath": {
+              "Ref": "HealthCheckPath"
+            },
+            "HealthCheckTimeoutSeconds": {
+              "Ref": "HealthCheckTimeoutSeconds"
+            },
+            "HealthyThresholdCount": {
+              "Ref": "HealthyThresholdCount"
+            },
+            "IncludePattern": {
+              "Ref": "IncludePattern"
+            },
+            "KinesisAppendNewline": {
+              "Ref": "KinesisAppendNewline"
+            },
+            "KinesisStream": {
+              "Ref": "KinesisStream"
+            },
+            "LaunchType": {
+              "Ref": "LaunchType"
+            },
+            "LoadBalancerDNSName": {
+              "Fn::If": [
+                "CreateNewEnv",
+                {
+                  "Fn::If": [
+                    "CreatePublicLoadBalancer",
+                    {
+                      "Fn::GetAtt": "ALBStack.Outputs.PublicLoadBalancerDNSName"
+                    },
+                    {
+                      "Fn::GetAtt": "PrivateALBStack.Outputs.PrivateLoadBalancerDNSName"
+                    }
+                  ]
+                },
+                {
+                  "Fn::ImportValue": {
+                    "Fn::Sub": "${CfnStackNamePrefix}-PublicLoadBalancerDNS"
+                  }
+                }
+              ]
+            },
+            "LoadBalancerHostedZone": {
+              "Fn::If": [
+                "CreateNewEnv",
+                {
+                  "Fn::If": [
+                    "CreatePublicLoadBalancer",
+                    {
+                      "Fn::GetAtt": "ALBStack.Outputs.PublicLoadBalancerHostedZone"
+                    },
+                    {
+                      "Fn::GetAtt": "PrivateALBStack.Outputs.PrivateLoadBalancerHostedZone"
+                    }
+                  ]
+                },
+                {
+                  "Fn::ImportValue": {
+                    "Fn::Sub": "${CfnStackNamePrefix}-CanonicalHostedZoneID"
+                  }
+                }
+              ]
+            },
+            "LogGrpName": {
+              "Ref": "LogGrpName"
+            },
+            "LogRetention": {
+              "Ref": "LogRetention"
+            },
+            "LogStrmName": {
+              "Ref": "LogStrmName"
+            },
+            "MasterStackName": {
+              "Ref": "AWS::StackName"
+            },
+            "MultipleDests": {
+              "Ref": "MultipleDests"
+            },
+            "PublicSubnets": {
+              "Fn::If": [
+                "ImportExternalVpc",
+                {
+                  "Fn::Join": [
+                    ",",
+                    {
+                      "Ref": "PublicSubnets"
+                    }
+                  ]
+                },
+                {
+                  "Fn::If": [
+                    "CreateNewEnv",
+                    {
+                      "Fn::GetAtt": "VPCStack.Outputs.PublicSubnets"
+                    },
+                    {
+                      "Fn::ImportValue": {
+                        "Fn::Sub": "${CfnStackNamePrefix}-PublicSubnets"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "RulePath": {
+              "Ref": "RulePath"
+            },
+            "RulePriorityLambda": "\"use strict\";const aws=require(\"aws-sdk\"),priorityForRootRule=\"50000\";let defaultResponseURL,report=function(e,t,r,s,a,o){return new Promise((n,i)=>{const u=require(\"https\"),{URL:c}=require(\"url\");var l=JSON.stringify({Status:r,Reason:o,PhysicalResourceId:s||t.logStreamName,StackId:e.StackId,RequestId:e.RequestId,LogicalResourceId:e.LogicalResourceId,Data:a});const R=new c(e.ResponseURL||defaultResponseURL),p={hostname:R.hostname,port:443,path:R.pathname+R.search,method:\"PUT\",headers:{\"Content-Type\":\"\",\"Content-Length\":l.length}};u.request(p).on(\"error\",i).on(\"response\",e=>{e.resume(),e.statusCode>=400?i(new Error(`Error ${e.statusCode}: ${e.statusMessage}`)):n()}).end(l,\"utf8\")})};const calculateNextRulePriority=async function(e){var t,r=new aws.ELBv2,s=[];do{const a=await r.describeRules({ListenerArn:e,Marker:t}).promise();s=s.concat(a.Rules),t=a.NextMarker}while(t);let a=1;if(s.length>0){const e=s.map(e=>\"default\"===e.Priority||\"50000\"===e.Priority?0:parseInt(e.Priority));a=Math.max(...e)+1}return a};exports.nextAvailableRulePriorityHandler=async function(e,t){var r,s,a={};try{switch(e.RequestType){case\"Create\":s=await calculateNextRulePriority(e.ResourceProperties.ListenerArn),a.Priority=s,r=`alb-rule-priority-${e.LogicalResourceId}`;break;case\"Update\":case\"Delete\":r=e.PhysicalResourceId;break;default:throw new Error(`Unsupported request type ${e.RequestType}`)}await report(e,t,\"SUCCESS\",r,a)}catch(s){console.log(`Caught error ${s}.`),await report(e,t,\"FAILED\",r,null,s.message)}},exports.withDefaultResponseURL=function(e){defaultResponseURL=e};",
+            "ServiceDiscoveryNamespaceID": {
+              "Fn::If": [
+                "CreateNewEnv",
+                {
+                  "Fn::If": [
+                    "CreatePublicLoadBalancer",
+                    {
+                      "Fn::GetAtt": "ALBStack.Outputs.ServiceDiscoveryNamespaceID"
+                    },
+                    {
+                      "Fn::GetAtt": "PrivateALBStack.Outputs.ServiceDiscoveryNamespaceID"
+                    }
+                  ]
+                },
+                {
+                  "Fn::ImportValue": {
+                    "Fn::Sub": "${CfnStackNamePrefix}-ServiceDiscoveryNamespaceID"
+                  }
+                }
+              ]
+            },
+            "SingleDestName": {
+              "Ref": "SingleDestName"
+            },
+            "TaskCPU": {
+              "Ref": "TaskCPU"
+            },
+            "TaskCount": {
+              "Ref": "TaskCount"
+            },
+            "TaskLogDriver": {
+              "Ref": "TaskLogDriver"
+            },
+            "TaskMemory": {
+              "Ref": "TaskMemory"
+            },
+            "UsingCloudwatchLogs": {
+              "Ref": "UsingCloudwatchLogs"
+            },
+            "UsingFirehoseLogs": {
+              "Ref": "UsingFirehoseLogs"
+            },
+            "UsingKinesisLogs": {
+              "Ref": "UsingKinesisLogs"
+            },
+            "VpcId": {
+              "Fn::If": [
+                "ImportExternalVpc",
+                {
+                  "Ref": "VpcId"
+                },
+                {
+                  "Fn::If": [
+                    "CreateNewEnv",
+                    {
+                      "Fn::GetAtt": "VPCStack.Outputs.VpcId"
+                    },
+                    {
+                      "Fn::ImportValue": {
+                        "Fn::Sub": "${CfnStackNamePrefix}-VpcId"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "TemplateURL": {
+            "Fn::Join": [
+              "",
+              [
+                "https://s3.",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ".",
+                {
+                  "Ref": "AWS::URLSuffix"
+                },
+                "/",
+                {
+                  "Ref": "AssetParameters4213fb4f0fa08e52b9e31f059404b0bbede5f9175a9e9043d1c4f27268d6c071S3Bucket5CB8FA4A"
+                },
+                "/",
+                {
+                  "Fn::Select": [
+                    0,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameters4213fb4f0fa08e52b9e31f059404b0bbede5f9175a9e9043d1c4f27268d6c071S3VersionKeyCE059D35"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Fn::Select": [
+                    1,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameters4213fb4f0fa08e52b9e31f059404b0bbede5f9175a9e9043d1c4f27268d6c071S3VersionKeyCE059D35"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        },
+        "Type": "AWS::CloudFormation::Stack"
+      },
+      "PrivateALBStack": {
+        "Condition": "CreatePrivateLoadBalancer",
+        "Properties": {
+          "Parameters": {
+            "ACMCertificateArn": {
+              "Ref": "ACMCertificateArn"
+            },
+            "HealthCheckIntervalSeconds": {
+              "Ref": "HealthCheckIntervalSeconds"
+            },
+            "HealthCheckTimeoutSeconds": {
+              "Ref": "HealthCheckTimeoutSeconds"
+            },
+            "HealthyThresholdCount": {
+              "Ref": "HealthyThresholdCount"
+            },
+            "IncludePrivateLoadBalancer": {
+              "Ref": "IncludePrivateLoadBalancer"
+            },
+            "MasterStackName": {
+              "Ref": "AWS::StackName"
+            },
+            "Subnets": {
+              "Fn::If": [
+                "ImportExternalVpc",
+                {
+                  "Fn::Join": [
+                    ",",
+                    {
+                      "Ref": "PublicSubnets"
+                    }
+                  ]
+                },
+                {
+                  "Fn::GetAtt": "VPCStack.Outputs.PublicSubnets"
+                }
+              ]
+            },
+            "VpcCIDR": {
+              "Ref": "VpcCIDR"
+            },
+            "VpcId": {
+              "Fn::If": [
+                "ImportExternalVpc",
+                {
+                  "Ref": "VpcId"
+                },
+                {
+                  "Fn::GetAtt": "VPCStack.Outputs.VpcId"
+                }
+              ]
+            }
+          },
+          "TemplateURL": {
+            "Fn::Join": [
+              "",
+              [
+                "https://s3.",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ".",
+                {
+                  "Ref": "AWS::URLSuffix"
+                },
+                "/",
+                {
+                  "Ref": "AssetParameterseceb6dd728128ca0926d476802c2bfc432642045dec656d6d39f0d12f99733e1S3BucketFDE405F1"
+                },
+                "/",
+                {
+                  "Fn::Select": [
+                    0,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameterseceb6dd728128ca0926d476802c2bfc432642045dec656d6d39f0d12f99733e1S3VersionKey9292460C"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Fn::Select": [
+                    1,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameterseceb6dd728128ca0926d476802c2bfc432642045dec656d6d39f0d12f99733e1S3VersionKey9292460C"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        },
+        "Type": "AWS::CloudFormation::Stack"
+      },
+      "PrivateAppStack": {
+        "Condition": "DoNotCreatePublicWebApp",
+        "Properties": {
+          "Parameters": {
+            "AppName": {
+              "Ref": "AppName"
+            },
+            "AutoCrtGrp": {
+              "Ref": "AutoCrtGrp"
+            },
+            "ClusterId": {
+              "Fn::If": [
+                "ImportExternalCluster",
+                {
+                  "Ref": "ClusterId"
+                },
+                {
+                  "Fn::If": [
+                    "CreateNewEnv",
+                    {
+                      "Fn::GetAtt": "ClusterStack.Outputs.ClusterId"
+                    },
+                    {
+                      "Fn::ImportValue": {
+                        "Fn::Sub": "${CfnStackNamePrefix}-ClusterId"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "ConfigPath": {
+              "Ref": "ConfigPath"
+            },
+            "ConfigType": {
+              "Ref": "ConfigType"
+            },
+            "ContainerImage": {
+              "Ref": "ContainerImage"
+            },
+            "ContainerPort": {
+              "Ref": "ContainerPort"
+            },
+            "CredSpecBucket": {
+              "Ref": "S3Bucket"
+            },
+            "CredSpecKey": {
+              "Fn::Sub": "CredSpecs/${GMSAName}.json"
+            },
+            "EnvironmentSecurityGroup": {
+              "Fn::If": [
+                "CreateNewEnv",
+                {
+                  "Fn::If": [
+                    "CreatePublicLoadBalancer",
+                    {
+                      "Fn::GetAtt": "ALBStack.Outputs.EnvironmentSecurityGroup"
+                    },
+                    {
+                      "Fn::GetAtt": "PrivateALBStack.Outputs.EnvironmentSecurityGroup"
+                    }
+                  ]
+                },
+                {
+                  "Fn::ImportValue": {
+                    "Fn::Sub": "${CfnStackNamePrefix}-EnvironmentSecurityGroup"
+                  }
+                }
+              ]
+            },
+            "FirehoseStream": {
+              "Ref": "FirehoseStream"
+            },
+            "FirelensImage": {
+              "Ref": "FirelensImage"
+            },
+            "FirelensName": {
+              "Ref": "FirelensName"
+            },
+            "GMSAName": {
+              "Ref": "GMSAName"
+            },
+            "HealthCheckCommand": {
+              "Ref": "HealthCheckCommand"
+            },
+            "IncludePattern": {
+              "Ref": "IncludePattern"
+            },
+            "KinesisAppendNewline": {
+              "Ref": "KinesisAppendNewline"
+            },
+            "KinesisStream": {
+              "Ref": "KinesisStream"
+            },
+            "LaunchType": {
+              "Ref": "LaunchType"
+            },
+            "LogGrpName": {
+              "Ref": "LogGrpName"
+            },
+            "LogRetention": {
+              "Ref": "LogRetention"
+            },
+            "LogStrmName": {
+              "Ref": "LogStrmName"
+            },
+            "MasterStackName": {
+              "Ref": "AWS::StackName"
+            },
+            "MultipleDests": {
+              "Ref": "MultipleDests"
+            },
+            "PublicSubnets": {
+              "Fn::If": [
+                "ImportExternalVpc",
+                {
+                  "Fn::Join": [
+                    ",",
+                    {
+                      "Ref": "PublicSubnets"
+                    }
+                  ]
+                },
+                {
+                  "Fn::If": [
+                    "CreateNewEnv",
+                    {
+                      "Fn::GetAtt": "VPCStack.Outputs.PublicSubnets"
+                    },
+                    {
+                      "Fn::ImportValue": {
+                        "Fn::Sub": "${CfnStackNamePrefix}-PublicSubnets"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "ServiceDiscoveryNamespaceID": {
+              "Fn::If": [
+                "CreateNewEnv",
+                {
+                  "Fn::If": [
+                    "CreatePublicLoadBalancer",
+                    {
+                      "Fn::GetAtt": "ALBStack.Outputs.ServiceDiscoveryNamespaceID"
+                    },
+                    {
+                      "Fn::GetAtt": "PrivateALBStack.Outputs.ServiceDiscoveryNamespaceID"
+                    }
+                  ]
+                },
+                {
+                  "Fn::ImportValue": {
+                    "Fn::Sub": "${CfnStackNamePrefix}-ServiceDiscoveryNamespaceID"
+                  }
+                }
+              ]
+            },
+            "SingleDestName": {
+              "Ref": "SingleDestName"
+            },
+            "TaskCPU": {
+              "Ref": "TaskCPU"
+            },
+            "TaskCount": {
+              "Ref": "TaskCount"
+            },
+            "TaskLogDriver": {
+              "Ref": "TaskLogDriver"
+            },
+            "TaskMemory": {
+              "Ref": "TaskMemory"
+            },
+            "UsingCloudwatchLogs": {
+              "Ref": "UsingCloudwatchLogs"
+            },
+            "UsingFirehoseLogs": {
+              "Ref": "UsingFirehoseLogs"
+            },
+            "UsingKinesisLogs": {
+              "Ref": "UsingKinesisLogs"
+            }
+          },
+          "TemplateURL": {
+            "Fn::Join": [
+              "",
+              [
+                "https://s3.",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ".",
+                {
+                  "Ref": "AWS::URLSuffix"
+                },
+                "/",
+                {
+                  "Ref": "AssetParameters65d2596fa48d2ce4ef6ea54f839ae7e069a996bc7f43c5fdd8fd38a33555d453S3BucketC894BF17"
+                },
+                "/",
+                {
+                  "Fn::Select": [
+                    0,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameters65d2596fa48d2ce4ef6ea54f839ae7e069a996bc7f43c5fdd8fd38a33555d453S3VersionKey69711CF5"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Fn::Select": [
+                    1,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameters65d2596fa48d2ce4ef6ea54f839ae7e069a996bc7f43c5fdd8fd38a33555d453S3VersionKey69711CF5"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        },
+        "Type": "AWS::CloudFormation::Stack"
+      },
+      "Route53Stack": {
+        "Condition": "CreateRoute53Resources",
+        "Properties": {
+          "Parameters": {
+            "DomainName": {
+              "Ref": "DomainName"
+            },
+            "ExistingHostedZoneId": {
+              "Ref": "ExistingHostedZoneId"
+            },
+            "LoadBalancerDNSName": {
+              "Fn::If": [
+                "CreatePrivateLoadBalancer",
+                {
+                  "Fn::GetAtt": "PrivateALBStack.Outputs.PrivateLoadBalancerDNSName"
+                },
+                {
+                  "Ref": "AWS::NoValue"
+                }
+              ]
+            },
+            "MasterStackName": {
+              "Ref": "AWS::StackName"
+            },
+            "RecordExist": {
+              "Ref": "RecordExist"
+            },
+            "RecordName": {
+              "Ref": "RecordName"
+            },
+            "VpcId": {
+              "Fn::If": [
+                "ImportExternalVpc",
+                {
+                  "Ref": "VpcId"
+                },
+                {
+                  "Fn::GetAtt": "VPCStack.Outputs.VpcId"
+                }
+              ]
+            }
+          },
+          "TemplateURL": {
+            "Fn::Join": [
+              "",
+              [
+                "https://s3.",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ".",
+                {
+                  "Ref": "AWS::URLSuffix"
+                },
+                "/",
+                {
+                  "Ref": "AssetParameters1e26574f99a39ba3aa8f1fb647dd17d84f395d5ba51eee8b27ee20b0e3744395S3Bucket3798948F"
+                },
+                "/",
+                {
+                  "Fn::Select": [
+                    0,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameters1e26574f99a39ba3aa8f1fb647dd17d84f395d5ba51eee8b27ee20b0e3744395S3VersionKey628605DF"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Fn::Select": [
+                    1,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameters1e26574f99a39ba3aa8f1fb647dd17d84f395d5ba51eee8b27ee20b0e3744395S3VersionKey628605DF"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        },
+        "Type": "AWS::CloudFormation::Stack"
+      },
+      "VPCStack": {
+        "Condition": "CreateNewVpc",
+        "Properties": {
+          "Parameters": {
+            "MasterStackName": {
+              "Ref": "AWS::StackName"
+            },
+            "PrivateSubnet1CIDR": {
+              "Ref": "PrivateSubnet1CIDR"
+            },
+            "PrivateSubnet2CIDR": {
+              "Ref": "PrivateSubnet2CIDR"
+            },
+            "PublicSubnet1CIDR": {
+              "Ref": "PublicSubnet1CIDR"
+            },
+            "PublicSubnet2CIDR": {
+              "Ref": "PublicSubnet2CIDR"
+            },
+            "VpcCIDR": {
+              "Ref": "VpcCIDR"
+            }
+          },
+          "TemplateURL": {
+            "Fn::Join": [
+              "",
+              [
+                "https://s3.",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ".",
+                {
+                  "Ref": "AWS::URLSuffix"
+                },
+                "/",
+                {
+                  "Ref": "AssetParameters663df10d538c2355e2e9f894051b241dc4e51fd9398d744231ebfdbb24970ba9S3BucketBDB24F72"
+                },
+                "/",
+                {
+                  "Fn::Select": [
+                    0,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameters663df10d538c2355e2e9f894051b241dc4e51fd9398d744231ebfdbb24970ba9S3VersionKey628CBF8A"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Fn::Select": [
+                    1,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameters663df10d538c2355e2e9f894051b241dc4e51fd9398d744231ebfdbb24970ba9S3VersionKey628CBF8A"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        },
+        "Type": "AWS::CloudFormation::Stack"
+      },
+      "gMSASetupStack": {
+        "Condition": "UseServiceAccount",
+        "Properties": {
+          "Parameters": {
+            "CreateGMSA": {
+              "Ref": "CreateGMSA"
+            },
+            "DomainDNSName": {
+              "Ref": "DomainDNSName"
+            },
+            "DomainMemberSGID": {
+              "Fn::If": [
+                "CreateNewEnv",
+                {
+                  "Fn::If": [
+                    "CreatePublicLoadBalancer",
+                    {
+                      "Fn::GetAtt": "ALBStack.Outputs.EnvironmentSecurityGroup"
+                    },
+                    {
+                      "Fn::GetAtt": "PrivateALBStack.Outputs.EnvironmentSecurityGroup"
+                    }
+                  ]
+                },
+                {
+                  "Fn::ImportValue": {
+                    "Fn::Sub": "${CfnStackNamePrefix}-EnvironmentSecurityGroup"
+                  }
+                }
+              ]
+            },
+            "DomainNetBIOSName": {
+              "Ref": "DomainNetBIOSName"
+            },
+            "DomainSecretsArn": {
+              "Ref": "DomainSecretsArn"
+            },
+            "GMSAName": {
+              "Ref": "GMSAName"
+            },
+            "S3Bucket": {
+              "Ref": "S3Bucket"
+            },
+            "S3KeyPrefix": {
+              "Ref": "S3KeyPrefix"
+            },
+            "S3Region": {
+              "Ref": "S3Region"
+            },
+            "Subnets": {
+              "Fn::If": [
+                "ImportExternalVpc",
+                {
+                  "Fn::Join": [
+                    ",",
+                    {
+                      "Ref": "PublicSubnets"
+                    }
+                  ]
+                },
+                {
+                  "Fn::If": [
+                    "CreateNewEnv",
+                    {
+                      "Fn::GetAtt": "VPCStack.Outputs.PublicSubnets"
+                    },
+                    {
+                      "Fn::ImportValue": {
+                        "Fn::Sub": "${CfnStackNamePrefix}-PublicSubnets"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "TemplateURL": {
+            "Fn::Join": [
+              "",
+              [
+                "https://s3.",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ".",
+                {
+                  "Ref": "AWS::URLSuffix"
+                },
+                "/",
+                {
+                  "Ref": "AssetParameters214d6fcf138f4af4e59f2f55f7feeee683210f2b5f1182c7c266ee1137253eebS3Bucket90300E00"
+                },
+                "/",
+                {
+                  "Fn::Select": [
+                    0,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameters214d6fcf138f4af4e59f2f55f7feeee683210f2b5f1182c7c266ee1137253eebS3VersionKeyED0079A5"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Fn::Select": [
+                    1,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameters214d6fcf138f4af4e59f2f55f7feeee683210f2b5f1182c7c266ee1137253eebS3VersionKeyED0079A5"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        },
+        "Type": "AWS::CloudFormation::Stack"
+      }
+    },
+    "Rules": {
+      "FirelensSingleCloudwatch": {
+        "Assertions": [
+          {
+            "Assert": {
+              "Fn::And": [
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "UsingFirehoseLogs"
+                    },
+                    "false"
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "UsingKinesisLogs"
+                    },
+                    "false"
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "SingleDestName"
+                    },
+                    "cloudwatch"
+                  ]
+                },
+                {
+                  "Fn::Not": [
+                    {
+                      "Fn::Equals": [
+                        {
+                          "Ref": "LogGrpName"
+                        },
+                        ""
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Fn::Not": [
+                    {
+                      "Fn::Equals": [
+                        {
+                          "Ref": "LogStrmName"
+                        },
+                        ""
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Fn::Not": [
+                    {
+                      "Fn::Equals": [
+                        {
+                          "Ref": "AutoCrtGrp"
+                        },
+                        ""
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "AssertDescription": "You cannot use any other firelens destination if a single cloudwatch stream is desired"
+          }
+        ],
+        "RuleCondition": {
+          "Fn::And": [
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "MultipleDests"
+                },
+                "false"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "UsingCloudwatchLogs"
+                },
+                "true"
+              ]
+            }
+          ]
+        }
+      },
+      "FirelensSingleFirehose": {
+        "Assertions": [
+          {
+            "Assert": {
+              "Fn::And": [
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "UsingCloudwatchLogs"
+                    },
+                    "false"
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "UsingKinesisLogs"
+                    },
+                    "false"
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "SingleDestName"
+                    },
+                    "firehose"
+                  ]
+                },
+                {
+                  "Fn::Not": [
+                    {
+                      "Fn::Equals": [
+                        {
+                          "Ref": "FirehoseStream"
+                        },
+                        ""
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "AssertDescription": "You cannot use any other firelens destination if a single firehose stream is desired"
+          }
+        ],
+        "RuleCondition": {
+          "Fn::And": [
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "MultipleDests"
+                },
+                "false"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "UsingFirehoseLogs"
+                },
+                "true"
+              ]
+            }
+          ]
+        }
+      },
+      "FirelensSingleKinesis": {
+        "Assertions": [
+          {
+            "Assert": {
+              "Fn::And": [
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "UsingCloudwatchLogs"
+                    },
+                    "false"
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "UsingFirehoseLogs"
+                    },
+                    "false"
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "SingleDestName"
+                    },
+                    "kinesis"
+                  ]
+                },
+                {
+                  "Fn::Not": [
+                    {
+                      "Fn::Equals": [
+                        {
+                          "Ref": "KinesisStream"
+                        },
+                        ""
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Fn::Not": [
+                    {
+                      "Fn::Equals": [
+                        {
+                          "Ref": "KinesisAppendNewline"
+                        },
+                        ""
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "AssertDescription": "You cannot use any other firelens destination if a single kinesis stream is desired"
+          }
+        ],
+        "RuleCondition": {
+          "Fn::And": [
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "MultipleDests"
+                },
+                "false"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "UsingKinesisLogs"
+                },
+                "true"
+              ]
+            }
+          ]
+        }
+      },
+      "MultipleDestinations": {
+        "Assertions": [
+          {
+            "Assert": {
+              "Fn::And": [
+                {
+                  "Fn::Not": [
+                    {
+                      "Fn::Equals": [
+                        {
+                          "Ref": "ConfigType"
+                        },
+                        ""
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Fn::Not": [
+                    {
+                      "Fn::Equals": [
+                        {
+                          "Ref": "ConfigPath"
+                        },
+                        ""
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "SingleDestName"
+                    },
+                    ""
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "IncludePattern"
+                    },
+                    ""
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "LogGrpName"
+                    },
+                    ""
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "LogStrmName"
+                    },
+                    ""
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "AutoCrtGrp"
+                    },
+                    ""
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "FirehoseStream"
+                    },
+                    ""
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "KinesisStream"
+                    },
+                    ""
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "KinesisAppendNewline"
+                    },
+                    ""
+                  ]
+                }
+              ]
+            },
+            "AssertDescription": "You must supply a configuration file location and filepath if multiple firelens destinations are being used"
+          }
+        ],
+        "RuleCondition": {
+          "Fn::Equals": [
+            {
+              "Ref": "MultipleDests"
+            },
+            "true"
+          ]
+        }
+      },
+      "UsingCWLogsForWindows": {
+        "Assertions": [
+          {
+            "Assert": {
+              "Fn::And": [
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "ConfigType"
+                    },
+                    ""
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "ConfigPath"
+                    },
+                    ""
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "SingleDestName"
+                    },
+                    ""
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "IncludePattern"
+                    },
+                    ""
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "LogGrpName"
+                    },
+                    ""
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "LogStrmName"
+                    },
+                    ""
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "AutoCrtGrp"
+                    },
+                    ""
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "FirehoseStream"
+                    },
+                    ""
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "KinesisStream"
+                    },
+                    ""
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    {
+                      "Ref": "KinesisAppendNewline"
+                    },
+                    ""
+                  ]
+                }
+              ]
+            },
+            "AssertDescription": "You cannot supply any linux-only firelens parameters if you are using cloudwatch logs for a .NET Application"
+          }
+        ],
+        "RuleCondition": {
+          "Fn::Equals": [
+            {
+              "Ref": "TaskLogDriver"
+            },
+            "awslogs"
+          ]
+        }
+      }
+    }
+  }
+]
+
+
+com.ilmlf.product.ProvmanAppTest.testDbStack=[
+  {
+    "Resources": {
+      "ProvmanDb704FC1DD": {
+        "DeletionPolicy": "Snapshot",
+        "Properties": {
+          "AllocatedStorage": "25",
+          "AutoMinorVersionUpgrade": true,
+          "BackupRetentionPeriod": 7,
+          "CopyTagsToSnapshot": true,
+          "DBInstanceClass": "db.t2.small",
+          "DBName": "ProvmanDb",
+          "DBSubnetGroupName": {
+            "Ref": "ProvmanDbSubnetGroupBF828240"
+          },
+          "DeletionProtection": false,
+          "Engine": "mysql",
+          "EngineVersion": "5.7.31",
+          "MasterUserPassword": {
+            "Fn::Join": [
+              "",
+              [
+                "{{resolve:secretsmanager:",
+                {
+                  "Ref": "ProvmanDbProvmanDbSecretE29183E33fdaad7efa858a3daf9490cf0a702aeb"
+                },
+                ":SecretString:password::}}"
+              ]
+            ]
+          },
+          "MasterUsername": "ProvmanDbadmin",
+          "MultiAZ": true,
+          "Port": "3306",
+          "PubliclyAccessible": true,
+          "StorageEncrypted": true,
+          "StorageType": "gp2",
+          "VPCSecurityGroups": [
+            {
+              "Fn::GetAtt": [
+                "ProvmanDbSecurityGroup26DE61C7",
+                "GroupId"
+              ]
+            }
+          ]
+        },
+        "Type": "AWS::RDS::DBInstance",
+        "UpdateReplacePolicy": "Snapshot"
+      },
+      "ProvmanDbProvmanDbSecretE29183E33fdaad7efa858a3daf9490cf0a702aeb": {
+        "Properties": {
+          "Description": {
+            "Fn::Join": [
+              "",
+              [
+                "Generated by the CDK for stack: ",
+                {
+                  "Ref": "AWS::StackName"
+                }
+              ]
+            ]
+          },
+          "GenerateSecretString": {
+            "ExcludeCharacters": " %+~`#$&*()|[]{}:;<>?!'/@\"\\",
+            "GenerateStringKey": "password",
+            "PasswordLength": 30,
+            "SecretStringTemplate": "{\"username\":\"ProvmanDbadmin\"}"
+          }
+        },
+        "Type": "AWS::SecretsManager::Secret"
+      },
+      "ProvmanDbSecretAttachment4F89219F": {
+        "Properties": {
+          "SecretId": {
+            "Ref": "ProvmanDbProvmanDbSecretE29183E33fdaad7efa858a3daf9490cf0a702aeb"
+          },
+          "TargetId": {
+            "Ref": "ProvmanDb704FC1DD"
+          },
+          "TargetType": "AWS::RDS::DBInstance"
+        },
+        "Type": "AWS::SecretsManager::SecretTargetAttachment"
+      },
+      "ProvmanDbSecurityGroup26DE61C7": {
+        "Properties": {
+          "GroupDescription": "Security group for ProvmanDb database",
+          "SecurityGroupEgress": [
+            {
+              "CidrIp": "0.0.0.0/0",
+              "Description": "Allow all outbound traffic by default",
+              "IpProtocol": "-1"
+            }
+          ],
+          "VpcId": {
+            "Ref": "provmanVpc5FE95D00"
+          }
+        },
+        "Type": "AWS::EC2::SecurityGroup"
+      },
+      "ProvmanDbSubnetGroupBF828240": {
+        "Properties": {
+          "DBSubnetGroupDescription": "Subnet group for ProvmanDb database",
+          "SubnetIds": [
+            {
+              "Ref": "provmanVpcPrivateSubnet1Subnet8E47BB31"
+            },
+            {
+              "Ref": "provmanVpcPrivateSubnet2Subnet344D5369"
+            },
+            {
+              "Ref": "provmanVpcPrivateSubnet3SubnetD88EF11A"
+            }
+          ]
+        },
+        "Type": "AWS::RDS::DBSubnetGroup"
+      },
+      "provmanVpc5FE95D00": {
+        "Properties": {
+          "CidrBlock": "10.0.0.0/16",
+          "EnableDnsHostnames": true,
+          "EnableDnsSupport": true,
+          "InstanceTenancy": "default",
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc"
+            }
+          ]
+        },
+        "Type": "AWS::EC2::VPC"
+      },
+      "provmanVpcIGW52491507": {
+        "Properties": {
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc"
+            }
+          ]
+        },
+        "Type": "AWS::EC2::InternetGateway"
+      },
+      "provmanVpcPrivateSubnet1DefaultRoute33F257A1": {
+        "Properties": {
+          "DestinationCidrBlock": "0.0.0.0/0",
+          "NatGatewayId": {
+            "Ref": "provmanVpcPublicSubnet1NATGateway93F9CDEC"
+          },
+          "RouteTableId": {
+            "Ref": "provmanVpcPrivateSubnet1RouteTable1A9B80FD"
+          }
+        },
+        "Type": "AWS::EC2::Route"
+      },
+      "provmanVpcPrivateSubnet1RouteTable1A9B80FD": {
+        "Properties": {
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc/PrivateSubnet1"
+            }
+          ],
+          "VpcId": {
+            "Ref": "provmanVpc5FE95D00"
+          }
+        },
+        "Type": "AWS::EC2::RouteTable"
+      },
+      "provmanVpcPrivateSubnet1RouteTableAssociationEB5B9E65": {
+        "Properties": {
+          "RouteTableId": {
+            "Ref": "provmanVpcPrivateSubnet1RouteTable1A9B80FD"
+          },
+          "SubnetId": {
+            "Ref": "provmanVpcPrivateSubnet1Subnet8E47BB31"
+          }
+        },
+        "Type": "AWS::EC2::SubnetRouteTableAssociation"
+      },
+      "provmanVpcPrivateSubnet1Subnet8E47BB31": {
+        "Properties": {
+          "AvailabilityZone": "dummy1a",
+          "CidrBlock": "10.0.96.0/19",
+          "MapPublicIpOnLaunch": false,
+          "Tags": [
+            {
+              "Key": "aws-cdk:subnet-name",
+              "Value": "Private"
+            },
+            {
+              "Key": "aws-cdk:subnet-type",
+              "Value": "Private"
+            },
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc/PrivateSubnet1"
+            }
+          ],
+          "VpcId": {
+            "Ref": "provmanVpc5FE95D00"
+          }
+        },
+        "Type": "AWS::EC2::Subnet"
+      },
+      "provmanVpcPrivateSubnet2DefaultRoute25C6DC54": {
+        "Properties": {
+          "DestinationCidrBlock": "0.0.0.0/0",
+          "NatGatewayId": {
+            "Ref": "provmanVpcPublicSubnet2NATGateway42E4D647"
+          },
+          "RouteTableId": {
+            "Ref": "provmanVpcPrivateSubnet2RouteTable7610B5D3"
+          }
+        },
+        "Type": "AWS::EC2::Route"
+      },
+      "provmanVpcPrivateSubnet2RouteTable7610B5D3": {
+        "Properties": {
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc/PrivateSubnet2"
+            }
+          ],
+          "VpcId": {
+            "Ref": "provmanVpc5FE95D00"
+          }
+        },
+        "Type": "AWS::EC2::RouteTable"
+      },
+      "provmanVpcPrivateSubnet2RouteTableAssociationF6990C92": {
+        "Properties": {
+          "RouteTableId": {
+            "Ref": "provmanVpcPrivateSubnet2RouteTable7610B5D3"
+          },
+          "SubnetId": {
+            "Ref": "provmanVpcPrivateSubnet2Subnet344D5369"
+          }
+        },
+        "Type": "AWS::EC2::SubnetRouteTableAssociation"
+      },
+      "provmanVpcPrivateSubnet2Subnet344D5369": {
+        "Properties": {
+          "AvailabilityZone": "dummy1b",
+          "CidrBlock": "10.0.128.0/19",
+          "MapPublicIpOnLaunch": false,
+          "Tags": [
+            {
+              "Key": "aws-cdk:subnet-name",
+              "Value": "Private"
+            },
+            {
+              "Key": "aws-cdk:subnet-type",
+              "Value": "Private"
+            },
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc/PrivateSubnet2"
+            }
+          ],
+          "VpcId": {
+            "Ref": "provmanVpc5FE95D00"
+          }
+        },
+        "Type": "AWS::EC2::Subnet"
+      },
+      "provmanVpcPrivateSubnet3DefaultRoute40002E85": {
+        "Properties": {
+          "DestinationCidrBlock": "0.0.0.0/0",
+          "NatGatewayId": {
+            "Ref": "provmanVpcPublicSubnet3NATGatewayA804CF71"
+          },
+          "RouteTableId": {
+            "Ref": "provmanVpcPrivateSubnet3RouteTableC773E07B"
+          }
+        },
+        "Type": "AWS::EC2::Route"
+      },
+      "provmanVpcPrivateSubnet3RouteTableAssociation9F121B9A": {
+        "Properties": {
+          "RouteTableId": {
+            "Ref": "provmanVpcPrivateSubnet3RouteTableC773E07B"
+          },
+          "SubnetId": {
+            "Ref": "provmanVpcPrivateSubnet3SubnetD88EF11A"
+          }
+        },
+        "Type": "AWS::EC2::SubnetRouteTableAssociation"
+      },
+      "provmanVpcPrivateSubnet3RouteTableC773E07B": {
+        "Properties": {
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc/PrivateSubnet3"
+            }
+          ],
+          "VpcId": {
+            "Ref": "provmanVpc5FE95D00"
+          }
+        },
+        "Type": "AWS::EC2::RouteTable"
+      },
+      "provmanVpcPrivateSubnet3SubnetD88EF11A": {
+        "Properties": {
+          "AvailabilityZone": "dummy1c",
+          "CidrBlock": "10.0.160.0/19",
+          "MapPublicIpOnLaunch": false,
+          "Tags": [
+            {
+              "Key": "aws-cdk:subnet-name",
+              "Value": "Private"
+            },
+            {
+              "Key": "aws-cdk:subnet-type",
+              "Value": "Private"
+            },
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc/PrivateSubnet3"
+            }
+          ],
+          "VpcId": {
+            "Ref": "provmanVpc5FE95D00"
+          }
+        },
+        "Type": "AWS::EC2::Subnet"
+      },
+      "provmanVpcPublicSubnet1DefaultRoute015A1C4B": {
+        "DependsOn": [
+          "provmanVpcVPCGW30A126F3"
+        ],
+        "Properties": {
+          "DestinationCidrBlock": "0.0.0.0/0",
+          "GatewayId": {
+            "Ref": "provmanVpcIGW52491507"
+          },
+          "RouteTableId": {
+            "Ref": "provmanVpcPublicSubnet1RouteTable43B7F695"
+          }
+        },
+        "Type": "AWS::EC2::Route"
+      },
+      "provmanVpcPublicSubnet1EIP5EC9BD26": {
+        "Properties": {
+          "Domain": "vpc",
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc/PublicSubnet1"
+            }
+          ]
+        },
+        "Type": "AWS::EC2::EIP"
+      },
+      "provmanVpcPublicSubnet1NATGateway93F9CDEC": {
+        "Properties": {
+          "AllocationId": {
+            "Fn::GetAtt": [
+              "provmanVpcPublicSubnet1EIP5EC9BD26",
+              "AllocationId"
+            ]
+          },
+          "SubnetId": {
+            "Ref": "provmanVpcPublicSubnet1Subnet04FE63B1"
+          },
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc/PublicSubnet1"
+            }
+          ]
+        },
+        "Type": "AWS::EC2::NatGateway"
+      },
+      "provmanVpcPublicSubnet1RouteTable43B7F695": {
+        "Properties": {
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc/PublicSubnet1"
+            }
+          ],
+          "VpcId": {
+            "Ref": "provmanVpc5FE95D00"
+          }
+        },
+        "Type": "AWS::EC2::RouteTable"
+      },
+      "provmanVpcPublicSubnet1RouteTableAssociationB8209012": {
+        "Properties": {
+          "RouteTableId": {
+            "Ref": "provmanVpcPublicSubnet1RouteTable43B7F695"
+          },
+          "SubnetId": {
+            "Ref": "provmanVpcPublicSubnet1Subnet04FE63B1"
+          }
+        },
+        "Type": "AWS::EC2::SubnetRouteTableAssociation"
+      },
+      "provmanVpcPublicSubnet1Subnet04FE63B1": {
+        "Properties": {
+          "AvailabilityZone": "dummy1a",
+          "CidrBlock": "10.0.0.0/19",
+          "MapPublicIpOnLaunch": true,
+          "Tags": [
+            {
+              "Key": "aws-cdk:subnet-name",
+              "Value": "Public"
+            },
+            {
+              "Key": "aws-cdk:subnet-type",
+              "Value": "Public"
+            },
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc/PublicSubnet1"
+            }
+          ],
+          "VpcId": {
+            "Ref": "provmanVpc5FE95D00"
+          }
+        },
+        "Type": "AWS::EC2::Subnet"
+      },
+      "provmanVpcPublicSubnet2DefaultRouteC980B5DC": {
+        "DependsOn": [
+          "provmanVpcVPCGW30A126F3"
+        ],
+        "Properties": {
+          "DestinationCidrBlock": "0.0.0.0/0",
+          "GatewayId": {
+            "Ref": "provmanVpcIGW52491507"
+          },
+          "RouteTableId": {
+            "Ref": "provmanVpcPublicSubnet2RouteTableAECD7D57"
+          }
+        },
+        "Type": "AWS::EC2::Route"
+      },
+      "provmanVpcPublicSubnet2EIP56A6BDD9": {
+        "Properties": {
+          "Domain": "vpc",
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc/PublicSubnet2"
+            }
+          ]
+        },
+        "Type": "AWS::EC2::EIP"
+      },
+      "provmanVpcPublicSubnet2NATGateway42E4D647": {
+        "Properties": {
+          "AllocationId": {
+            "Fn::GetAtt": [
+              "provmanVpcPublicSubnet2EIP56A6BDD9",
+              "AllocationId"
+            ]
+          },
+          "SubnetId": {
+            "Ref": "provmanVpcPublicSubnet2SubnetB1C696B3"
+          },
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc/PublicSubnet2"
+            }
+          ]
+        },
+        "Type": "AWS::EC2::NatGateway"
+      },
+      "provmanVpcPublicSubnet2RouteTableAECD7D57": {
+        "Properties": {
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc/PublicSubnet2"
+            }
+          ],
+          "VpcId": {
+            "Ref": "provmanVpc5FE95D00"
+          }
+        },
+        "Type": "AWS::EC2::RouteTable"
+      },
+      "provmanVpcPublicSubnet2RouteTableAssociation58F22282": {
+        "Properties": {
+          "RouteTableId": {
+            "Ref": "provmanVpcPublicSubnet2RouteTableAECD7D57"
+          },
+          "SubnetId": {
+            "Ref": "provmanVpcPublicSubnet2SubnetB1C696B3"
+          }
+        },
+        "Type": "AWS::EC2::SubnetRouteTableAssociation"
+      },
+      "provmanVpcPublicSubnet2SubnetB1C696B3": {
+        "Properties": {
+          "AvailabilityZone": "dummy1b",
+          "CidrBlock": "10.0.32.0/19",
+          "MapPublicIpOnLaunch": true,
+          "Tags": [
+            {
+              "Key": "aws-cdk:subnet-name",
+              "Value": "Public"
+            },
+            {
+              "Key": "aws-cdk:subnet-type",
+              "Value": "Public"
+            },
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc/PublicSubnet2"
+            }
+          ],
+          "VpcId": {
+            "Ref": "provmanVpc5FE95D00"
+          }
+        },
+        "Type": "AWS::EC2::Subnet"
+      },
+      "provmanVpcPublicSubnet3DefaultRoute2234180D": {
+        "DependsOn": [
+          "provmanVpcVPCGW30A126F3"
+        ],
+        "Properties": {
+          "DestinationCidrBlock": "0.0.0.0/0",
+          "GatewayId": {
+            "Ref": "provmanVpcIGW52491507"
+          },
+          "RouteTableId": {
+            "Ref": "provmanVpcPublicSubnet3RouteTableF61D240A"
+          }
+        },
+        "Type": "AWS::EC2::Route"
+      },
+      "provmanVpcPublicSubnet3EIPBEDAA35B": {
+        "Properties": {
+          "Domain": "vpc",
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc/PublicSubnet3"
+            }
+          ]
+        },
+        "Type": "AWS::EC2::EIP"
+      },
+      "provmanVpcPublicSubnet3NATGatewayA804CF71": {
+        "Properties": {
+          "AllocationId": {
+            "Fn::GetAtt": [
+              "provmanVpcPublicSubnet3EIPBEDAA35B",
+              "AllocationId"
+            ]
+          },
+          "SubnetId": {
+            "Ref": "provmanVpcPublicSubnet3Subnet38A8D089"
+          },
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc/PublicSubnet3"
+            }
+          ]
+        },
+        "Type": "AWS::EC2::NatGateway"
+      },
+      "provmanVpcPublicSubnet3RouteTableAssociationE3B3D85A": {
+        "Properties": {
+          "RouteTableId": {
+            "Ref": "provmanVpcPublicSubnet3RouteTableF61D240A"
+          },
+          "SubnetId": {
+            "Ref": "provmanVpcPublicSubnet3Subnet38A8D089"
+          }
+        },
+        "Type": "AWS::EC2::SubnetRouteTableAssociation"
+      },
+      "provmanVpcPublicSubnet3RouteTableF61D240A": {
+        "Properties": {
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc/PublicSubnet3"
+            }
+          ],
+          "VpcId": {
+            "Ref": "provmanVpc5FE95D00"
+          }
+        },
+        "Type": "AWS::EC2::RouteTable"
+      },
+      "provmanVpcPublicSubnet3Subnet38A8D089": {
+        "Properties": {
+          "AvailabilityZone": "dummy1c",
+          "CidrBlock": "10.0.64.0/19",
+          "MapPublicIpOnLaunch": true,
+          "Tags": [
+            {
+              "Key": "aws-cdk:subnet-name",
+              "Value": "Public"
+            },
+            {
+              "Key": "aws-cdk:subnet-type",
+              "Value": "Public"
+            },
+            {
+              "Key": "Name",
+              "Value": "Provman-Db/provman-Vpc/PublicSubnet3"
+            }
+          ],
+          "VpcId": {
+            "Ref": "provmanVpc5FE95D00"
+          }
+        },
+        "Type": "AWS::EC2::Subnet"
+      },
+      "provmanVpcVPCGW30A126F3": {
+        "Properties": {
+          "InternetGatewayId": {
+            "Ref": "provmanVpcIGW52491507"
+          },
+          "VpcId": {
+            "Ref": "provmanVpc5FE95D00"
+          }
+        },
+        "Type": "AWS::EC2::VPCGatewayAttachment"
+      }
+    }
+  }
+]
