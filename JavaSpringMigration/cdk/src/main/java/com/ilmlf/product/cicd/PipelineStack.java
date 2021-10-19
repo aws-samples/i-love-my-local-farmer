@@ -14,7 +14,6 @@ limitations under the License.
 package com.ilmlf.product.cicd;
 
 import lombok.Data;
-import software.amazon.awscdk.core.App;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Environment;
 import software.amazon.awscdk.core.SecretValue;
@@ -72,8 +71,8 @@ public class PipelineStack extends Stack {
                                                 SecretValue.secretsManager("GITHUB_TOKEN")).build()
                                         )
                                 )
-                                .commands(Arrays.asList("npm install -g aws-cdk", "cd cdk", "cdk synth"))
-                                .primaryOutputDirectory("cdk/cdk.out")
+                                .commands(Arrays.asList("npm install -g aws-cdk", "cd JavaSpringMigration/cdk", "cdk synth"))
+                                .primaryOutputDirectory("JavaSpringMigration/cdk/cdk.out")
                                 .build())
                 .build();
 

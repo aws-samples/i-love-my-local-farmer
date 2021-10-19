@@ -61,12 +61,12 @@ test {
 // This task removes the generated Cloudformation template snapshot during the build process,
 // which allows the snapshot to be generated and committed with pull requests without failing builds outright.
 task removeSnapshot(type: Delete) {
-    delete './src/test/java/com/ilmlf/delivery/DeliveryAppTest.snap'
+    delete './src/test/java/com/ilmlf/product/ProvmanAppTest.snap'
 }
 
-group = 'com.ilmlf.delivery'
+group = 'com.ilmlf.product'
 version = '0.1'
-description = 'api'
+description = 'provman'
 java.sourceCompatibility = JavaVersion.VERSION_11
 
 tasks.withType(JavaCompile) {

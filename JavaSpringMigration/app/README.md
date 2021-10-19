@@ -1,14 +1,18 @@
-#Spring MVC Hibernate Mysql integration CRUD Example 
+#Provman Spring MVC Hibernate Mysql Integration 
 
-Guide
+This application is a fully functional Provider Management (Provman) service that tracks providers and products for the farms
+that partner with our service.
 
-This is a part of the tutorial http://javabycode.com/spring-framework-tutorial/spring-mvc-tutorial/spring-mvc-hibernate-mysql-integration-crud-example-tutorial.html
+It allows us to update the providers listed in our store application as well as update their stock.
 
-What you'll need
+## Configuration
 
-JDK 1.7 or later
-Maven 3 or later
-Spring MVC 4.2.6.RELEASE  
-Build
+This application was migrated from our on-premise environment into a containerized version that runs on AWS. It uses Spring
+MVC and Hibernate to provide an API and perform database operations.
 
-mvn clean install    
+Because we have migrated to AWS, certain configurations are read from environment variables injected into the container
+during deployment of the corresponding infrastructure. The rest of the configuration can be found in `src/main/resources/jdbc.properties`
+
+## Deployment
+
+This application can be deployed using the corresponding CDK code in the `cdk` directory
