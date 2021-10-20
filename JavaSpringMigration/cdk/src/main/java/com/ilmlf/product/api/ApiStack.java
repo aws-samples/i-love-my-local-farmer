@@ -18,7 +18,6 @@ import java.util.Map;
 import lombok.Data;
 import software.amazon.awscdk.core.Annotations;
 import software.amazon.awscdk.core.Construct;
-import software.amazon.awscdk.core.Fn;
 import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.core.StackProps;
 import software.amazon.awscdk.services.ec2.Vpc;
@@ -55,7 +54,7 @@ public class ApiStack extends Stack {
         .clusterName("ProvmanCluster")
         .build());
 
-    ISecret dbPasswordSecret = Secret.fromSecretCompleteArn(this, "DbPasswordSecret", Fn.importValue(props.jdbcSecretArn));
+    ISecret dbPasswordSecret = Secret.fromSecretCompleteArn(this, "DbPasswordSecret", props.jdbcSecretArn);
 
     ApplicationLoadBalancedFargateService fargateService = new ApplicationLoadBalancedFargateService(this, "FargateService",
         ApplicationLoadBalancedFargateServiceProps.builder()
@@ -68,7 +67,7 @@ public class ApiStack extends Stack {
                     software.amazon.awscdk.services.ecs.Secret.fromSecretsManager(dbPasswordSecret)))
                 .environment(Map.of(
                     "DB_USERNAME", props.jdbcUsername,
-                    "ENDPOINT_URL", "jdbc:mysql://" + Fn.importValue(props.jdbcEndpointUrl) + "/" + props.dbName
+                    "ENDPOINT_URL", "jdbc:mysql://" + props.jdbcEndpointUrl + "/" + props.dbName
                 ))
                 .build())
             .desiredCount(1)

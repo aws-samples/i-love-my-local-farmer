@@ -35,27 +35,25 @@ import java.io.IOException;
  * </p>
  */
 public class ProvmanStage extends Stage {
-    private static final String DB_SECRET_EXPORT_NAME = "DbSecret";
-    private static final String DB_ENDPOINT_URL_EXPORT_NAME = "DbEndpointUrl";
 
-    public ProvmanStage(Construct scope,
-                        java.lang.String id,
-                        StageProps props) throws Exception {
+    public ProvmanStage(Construct scope, java.lang.String id, StageProps props) throws Exception {
         super(scope, id, props);
-        DbStack dbStack = new DbStack(this, "ProvmanDbStack",DbStack.DbStackProps.builder()
+
+        DbStack dbStack = new DbStack(this, "ProvmanDbStack", DbStack.DbStackProps.builder()
             .dbPort(3306)
             .dbName("ProvmanDb")
             .dbUsername("admin")
-            .dbSecretExportName(DB_SECRET_EXPORT_NAME)
-            .dbEndpointUrlExportName(DB_ENDPOINT_URL_EXPORT_NAME)
             .build());
 
         ApiStack apiStack = new ApiStack(this, "ProvmanClusterStack", ApiStack.ApiStackProps.builder()
             .jdbcUsername(dbStack.getDbUsername())
-            .jdbcSecretArn(DB_SECRET_EXPORT_NAME)
-            .jdbcEndpointUrl(DB_ENDPOINT_URL_EXPORT_NAME)
+            .jdbcSecretArn(dbStack.getAdminSecret().getSecretFullArn())
+            .jdbcEndpointUrl(dbStack.getInstanceEndpoint())
             .dbName(dbStack.getDbName())
+            .vpc(dbStack.getVpc())
             .build());
+
+        apiStack.addDependency(dbStack);
 
     }
 

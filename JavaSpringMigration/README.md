@@ -65,7 +65,7 @@ The code contains two folders:
    Powershell on Windows
     ```
     cd cdk
-    rm -r ../app/target # Remove previous build
+    rm -r ../app/target # Remove previous app build
     rm -r cdk.out # Remove previous build
     npx cdk deploy --all --profile <PROFILE_NAME> 
     ```
