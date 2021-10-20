@@ -81,8 +81,6 @@ public class DbStack extends Stack {
     private Integer dbPort;
     private Environment env;
     private boolean isPublicSubnetDb;
-    private String dbSecretExportName;
-    private String dbEndpointUrlExportName;
     private String dbName;
   }
 
@@ -184,15 +182,5 @@ public class DbStack extends Stack {
 
     this.instanceEndpoint = farmerDb.getDbInstanceEndpointAddress() + ":" + farmerDb.getDbInstanceEndpointPort();
     this.adminSecret = farmerDb.getSecret();
-
-    new CfnOutput(this, "DbEndpointUrl", CfnOutputProps.builder()
-        .value(this.instanceEndpoint)
-        .exportName(props.dbEndpointUrlExportName)
-        .build());
-
-    new CfnOutput(this, "DbSecret", CfnOutputProps.builder()
-        .value(this.adminSecret.getSecretFullArn())
-        .exportName(props.dbSecretExportName)
-        .build());
   }
 }

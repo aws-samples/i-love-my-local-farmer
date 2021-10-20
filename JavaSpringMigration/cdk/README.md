@@ -1,5 +1,7 @@
 # ECS and ECR Infrastructure for Provman App
 
+This directory contains  CDK code for deploying the Provman application into the cloud.
+
 ## Deployment
 
 This CDK code can be deployed in just a few steps,
