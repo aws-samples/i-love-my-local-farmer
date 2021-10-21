@@ -97,6 +97,15 @@ When you develop this locally, you can get faster cycle of build and unit tests 
 You can also view the generated Cloudformation templates that the `cdk` project creates by running `npx cdk synth` within that directly.
 This will forego deploying the resources and allow you to inspect the templates for any specific changes before deploying.
 
+Another useful CDK command line feature is the ability to bypass CI/CD pipeline creation and specify a directory with stack templates
+that you wish to deploy directly to an account. This is useful in the situation that you just want to test your stacks, without
+having to create an entire pipeline to deploy them. To do this you simply use the `--app` argument to specify the directory
+where your generated stack templates are created.
+
+```
+npx cdk --app ./cdk.out/assembly-Pipeline-qa deploy --all
+```
+
 ## CDK Snapshot Testing
 Our `cdk` project uses [json-snapshot](https://json-snapshot.github.io/) to perform snapshot testing. The tests are in `ProvmanAppTest.java`.
 
