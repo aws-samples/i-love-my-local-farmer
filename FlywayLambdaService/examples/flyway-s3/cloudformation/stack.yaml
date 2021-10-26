@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Orders webapp with flyway lambda support
+Parameters: 
+  Username:
+    Type: String
+  DBName:
+    Type: String
+    Default: postgres
+  S3Bucket:
+    Type: String
+Resources: 
+  VPC:
+    Properties:
+      TemplateURL: vpc.yaml
+      TimeoutInMinutes: '60'
+    Type: AWS::CloudFormation::Stack
+
+  DB:
+    Properties:
+      Parameters:
+        VPC: !GetAtt VPC.Outputs.VPCId
+        Subnets: !GetAtt VPC.Outputs.PrivateSubnets
+        Username: !Ref Username
+        DBName: !Ref DBName
+      TemplateURL: db.yaml
+      TimeoutInMinutes: '60'
+    Type: AWS::CloudFormation::Stack
+
+  Flyway:
+    Properties:
+      Parameters:
+        VPC: !GetAtt VPC.Outputs.VPCId
+        Subnets: !GetAtt VPC.Outputs.PrivateSubnets
+        RDSSecurityGroup: !GetAtt DB.Outputs.DBSecurityGroup
+        DBSecretArn: !GetAtt DB.Outputs.DBSecretArn
+        DBSecretName: !GetAtt DB.Outputs.DBSecretName
+        ConnectionString: !Join ["", ["jdbc:postgresql://", !GetAtt DB.Outputs.Endpoint, "/", !Ref DBName]]
+        S3Bucket: !Ref S3Bucket
+      TemplateURL: flyway-s3.yaml
+      TimeoutInMinutes: '60'
+    Type: AWS::CloudFormation::Stack

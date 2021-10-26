@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: RDS instance with secrets manager
+Parameters:
+  VPC:
+    Type: String
+  Subnets:
+    Type: String
+  Username:
+    Type: String
+  DBName:
+    Type: String
+    Default: postgres
+  InstanceType:
+    Type: String
+    Default: db.t3.small
+Resources:
+  DBSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Join ["-", [!Ref AWS::StackName, "Secret"]]
+      Description: 'Postgres password'
+      GenerateSecretString:
+        SecretStringTemplate: !Sub '{"username": "${Username}"}'
+        GenerateStringKey: 'password'
+        PasswordLength: 16
+        ExcludeCharacters: '"@/\'
+  DB:
+    Properties:
+      AllowMajorVersionUpgrade: true
+      AutoMinorVersionUpgrade: true
+      DBInstanceClass: !Ref InstanceType
+      AllocatedStorage: 10
+      DBName: !Ref DBName
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      Engine: postgres
+      EngineVersion: '11.5'
+      MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref DBSecret, ':SecretString:username}}' ]]
+      MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref DBSecret, ':SecretString:password}}' ]]
+      StorageType: gp2
+      MultiAZ: false
+      VPCSecurityGroups:
+        - Ref: DBSecurityGroup
+    Type: AWS::RDS::DBInstance
+
+  SecretRDSInstanceAttachment:
+    Type: AWS::SecretsManager::SecretTargetAttachment
+    Properties:
+      SecretId: !Ref DBSecret
+      TargetId: !Ref DB
+      TargetType: AWS::RDS::DBInstance
+
+  DBSecurityGroup:
+    Properties:
+      GroupDescription: Postgres Security Group
+      VpcId: !Ref VPC
+    Type: AWS::EC2::SecurityGroup
+
+  DBSubnetGroup:
+    Properties:
+      DBSubnetGroupDescription: Subnets available for the RDS DB Instance
+      SubnetIds: !Split [",", !Ref Subnets]
+    Type: AWS::RDS::DBSubnetGroup
+
+Outputs:
+  DBSecurityGroup:
+    Value: !Ref DBSecurityGroup
+  DBSecretArn:
+    Value: !Ref DBSecret
+  DBSecretName:
+    Value: !Join ["-", [!Ref AWS::StackName, "Secret"]]
+  Endpoint:
+    Value: !GetAtt DB.Endpoint.Address
