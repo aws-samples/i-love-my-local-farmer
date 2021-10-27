@@ -17,8 +17,6 @@ import java.util.List;
 
 import lombok.Data;
 import lombok.Getter;
-import software.amazon.awscdk.core.CfnOutput;
-import software.amazon.awscdk.core.CfnOutputProps;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Duration;
 import software.amazon.awscdk.core.Environment;
@@ -40,6 +38,9 @@ import software.amazon.awscdk.services.rds.MySqlInstanceEngineProps;
 import software.amazon.awscdk.services.rds.MysqlEngineVersion;
 import software.amazon.awscdk.services.rds.StorageType;
 import software.amazon.awscdk.services.secretsmanager.ISecret;
+import com.ilmlf.product.db.schemaManager.FlywayRunner;
+import com.ilmlf.product.db.schemaManager.FlywayRunner.FlywayRunnerProps;
+
 
 
 /**
@@ -179,6 +180,14 @@ public class DbStack extends Stack {
                 .databaseName(this.dbName)
                 .port(this.dbPort)
                 .build());
+
+    FlywayRunner schemaChangesRunner = new FlywayRunner(this, "DBMigrationRunner",  FlywayRunnerProps.builder()
+            .migrationScriptsFolderAbsolutePath(System.getProperty("user.dir") + "/src/main/databaseMigrationFiles")
+            .databaseName(this.dbName)
+            .databaseInstance(farmerDb)
+            .build());
+
+    schemaChangesRunner.getNode().addDependency(farmerDb);
 
     this.instanceEndpoint = farmerDb.getDbInstanceEndpointAddress() + ":" + farmerDb.getDbInstanceEndpointPort();
     this.adminSecret = farmerDb.getSecret();

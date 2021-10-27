@@ -1,0 +1,230 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: VPC (across two AZs), and NAT
+Parameters:
+  VPCCidrBlock:
+    Type: String
+    Default: 10.9.0.0/16
+Outputs:
+  NatIP:
+    Value: !Ref NatEip
+  PrivateSubnets:
+    Value: !Join [',', [!Ref PrivateSubnet1, !Ref PrivateSubnet2]]
+  PublicSubnets:
+    Value: !Join [',', [!Ref PublicSubnet1, !Ref PublicSubnet2]]
+  VPCId:
+    Value: !Ref VPC
+Resources:
+  AttachGateway:
+    Properties:
+      InternetGatewayId:
+        Ref: InternetGateway
+      VpcId:
+        Ref: VPC
+    Type: AWS::EC2::VPCGatewayAttachment
+  InternetGateway:
+    Properties:
+      Tags:
+      - Key: Application
+        Value:
+          Ref: AWS::StackName
+      - Key: Name
+        Value:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - igw
+    Type: AWS::EC2::InternetGateway
+  Nat:
+    Properties:
+      AllocationId:
+        Fn::GetAtt:
+        - NatEip
+        - AllocationId
+      SubnetId:
+        Ref: PublicSubnet1
+    Type: AWS::EC2::NatGateway
+  NatEip:
+    Properties:
+      Domain: vpc
+    Type: AWS::EC2::EIP
+  NatRoute:
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: Nat
+      RouteTableId:
+        Ref: PrivateRouteTable
+    Type: AWS::EC2::Route
+  PrivateRouteTable:
+    Properties:
+      Tags:
+      - Key: Application
+        Value:
+          Ref: AWS::StackName
+      - Key: Name
+        Value:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - private
+      VpcId:
+        Ref: VPC
+    Type: AWS::EC2::RouteTable
+  PrivateSubnet1:
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock: !Join [ ".", [ !Select [ 0, !Split [".", !Ref VPCCidrBlock] ], !Select [ 1, !Split [".", !Ref VPCCidrBlock] ], '1.0/24' ] ]
+      Tags:
+      - Key: Application
+        Value:
+          Ref: AWS::StackName
+      - Key: Network
+        Value: Private
+      - Key: Name
+        Value:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - private-1
+      VpcId:
+        Ref: VPC
+    Type: AWS::EC2::Subnet
+  PrivateSubnet2:
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock: !Join [ ".", [ !Select [ 0, !Split [".", !Ref VPCCidrBlock] ], !Select [ 1, !Split [".", !Ref VPCCidrBlock] ], '2.0/24' ] ]
+      Tags:
+      - Key: Application
+        Value:
+          Ref: AWS::StackName
+      - Key: Network
+        Value: Private
+      - Key: Name
+        Value:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - private-2
+      VpcId:
+        Ref: VPC
+    Type: AWS::EC2::Subnet
+  PrivateSubnetRouteTableAssociation1:
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTable
+      SubnetId:
+        Ref: PrivateSubnet1
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  PrivateSubnetRouteTableAssociation2:
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTable
+      SubnetId:
+        Ref: PrivateSubnet2
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  PublicRouteTable:
+    Properties:
+      Tags:
+      - Key: Application
+        Value:
+          Ref: AWS::StackName
+      - Key: Name
+        Value:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - public
+      VpcId:
+        Ref: VPC
+    Type: AWS::EC2::RouteTable
+  PublicSubnet1:
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock: !Join [ ".", [ !Select [ 0, !Split [".", !Ref VPCCidrBlock] ], !Select [ 1, !Split [".", !Ref VPCCidrBlock] ], '3.0/24' ] ]
+      Tags:
+      - Key: Application
+        Value:
+          Ref: AWS::StackName
+      - Key: Network
+        Value: Public
+      - Key: Name
+        Value:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - public-1
+      VpcId:
+        Ref: VPC
+    Type: AWS::EC2::Subnet
+  PublicSubnet2:
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock: !Join [ ".", [ !Select [ 0, !Split [".", !Ref VPCCidrBlock] ], !Select [ 1, !Split [".", !Ref VPCCidrBlock] ], '4.0/24' ] ]
+      Tags:
+      - Key: Application
+        Value:
+          Ref: AWS::StackName
+      - Key: Network
+        Value: Public
+      - Key: Name
+        Value:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - public-2
+      VpcId:
+        Ref: VPC
+    Type: AWS::EC2::Subnet
+  PublicSubnetRouteTableAssociation1:
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      SubnetId:
+        Ref: PublicSubnet1
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  PublicSubnetRouteTableAssociation2:
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      SubnetId:
+        Ref: PublicSubnet2
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  Route:
+    DependsOn: AttachGateway
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: InternetGateway
+      RouteTableId:
+        Ref: PublicRouteTable
+    Type: AWS::EC2::Route
+  VPC:
+    Properties:
+      CidrBlock:
+        Ref: VPCCidrBlock
+      EnableDnsHostnames: 'true'
+      EnableDnsSupport: 'true'
+      Tags:
+      - Key: Application
+        Value:
+          Ref: AWS::StackName
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+    Type: AWS::EC2::VPC
