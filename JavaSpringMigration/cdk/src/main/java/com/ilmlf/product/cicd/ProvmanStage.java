@@ -26,7 +26,7 @@ import java.io.IOException;
  * The stage for the application. This class creates a CDK Stage with two stacks
  * 1. DbStack contains network resources (e.g. VPC, subnets), MySQL DB, DB Proxy, and secrets
  * 2. ApiStack contains API Gateway and Lambda functions for compute
- * 
+ *
  * <p>
  * We separate the two stacks from each other as they have different life cycles. The ApiStack will
  * be updated more frequently while the DbStack should be rarely updated. This also allows us to
@@ -40,18 +40,19 @@ public class ProvmanStage extends Stage {
         super(scope, id, props);
 
         DbStack dbStack = new DbStack(this, "ProvmanDbStack", DbStack.DbStackProps.builder()
-            .dbPort(3306)
-            .dbName("ProvmanDb")
-            .dbUsername("admin")
-            .build());
+                .description("ProvMan DB Stack (uksb-1sdgsl619)")
+                .dbPort(3306)
+                .dbName("ProvmanDb")
+                .dbUsername("admin")
+                .build());
 
         ApiStack apiStack = new ApiStack(this, "ProvmanClusterStack", ApiStack.ApiStackProps.builder()
-            .jdbcUsername(dbStack.getDbUsername())
-            .jdbcSecretArn(dbStack.getAdminSecret().getSecretFullArn())
-            .jdbcEndpointUrl(dbStack.getInstanceEndpoint())
-            .dbName(dbStack.getDbName())
-            .vpc(dbStack.getVpc())
-            .build());
+                .jdbcUsername(dbStack.getDbUsername())
+                .jdbcSecretArn(dbStack.getAdminSecret().getSecretFullArn())
+                .jdbcEndpointUrl(dbStack.getInstanceEndpoint())
+                .dbName(dbStack.getDbName())
+                .vpc(dbStack.getVpc())
+                .build());
 
         apiStack.addDependency(dbStack);
 
