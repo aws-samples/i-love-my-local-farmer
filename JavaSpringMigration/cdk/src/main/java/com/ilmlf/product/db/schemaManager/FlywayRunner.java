@@ -1,6 +1,7 @@
 package com.ilmlf.product.db.schemaManager;
 
 import lombok.Data;
+import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 import software.amazon.awscdk.core.BundlingOptions;
 import software.amazon.awscdk.core.Construct;
@@ -48,26 +49,19 @@ public class FlywayRunner extends Construct {
          *
          * @see <a href="https://flywaydb.org/documentation/concepts/migrations.html#sql-based-migrations">for more details.</a>
          */
+        @NonNull
         private String migrationScriptsFolderAbsolutePath;
-
-        /**
-         * The cluster to run migration scripts against.
-         */
-//    private rds cluster: redshift.Cluster;
-
-        /**
-         * The vpc hosting the cluster.
-         */
-        private Vpc vpc;
 
         /**
          * The database name to run migration scripts against.
          */
+        @NonNull
         private String databaseName;
 
         /**
          * The database instance to connect to
          */
+        @NonNull
         private DatabaseInstance databaseInstance;
 
         /**
@@ -79,12 +73,11 @@ public class FlywayRunner extends Construct {
     }
 
     /**
-     * Constructs a new pipeline stack.
+     * Constructs a runner for Flyway DB
      *
      * @param scope
      * @param id
-     * @param options specify the stages environment details (account and region) and pipeline environement
-     * @throws Exception thrown in case of war build failure
+     * @param options specify the parameters needed to push the migration files and connect to the target DB
      */
     public FlywayRunner(Construct scope, String id, FlywayRunnerProps options) {
         super(scope, id);
@@ -92,7 +85,11 @@ public class FlywayRunner extends Construct {
         @NotNull ISource sqlFilesAsset = Source.asset(options.migrationScriptsFolderAbsolutePath);
 
         Bucket migrationFilesBucket = new Bucket(this, "MigrationFilesBucket");
-        BucketDeployment migrationFilesDeployment = BucketDeployment.Builder.create(this, "DeploySQLMigrationFiles").sources(List.of(sqlFilesAsset)).destinationBucket(migrationFilesBucket).build();
+        BucketDeployment migrationFilesDeployment = BucketDeployment.Builder
+                .create(this, "DeploySQLMigrationFiles")
+                .sources(List.of(sqlFilesAsset))
+                .destinationBucket(migrationFilesBucket)
+                .build();
 
         /*
          * Command for building Java handler inside a container
@@ -129,7 +126,7 @@ public class FlywayRunner extends Construct {
                         .timeout(Duration.minutes(15))
                         .memorySize(2048)
                         .handler("com.geekoosh.flyway.FlywayHandler::handleRequest")
-                        .vpc(options.vpc)
+                        .vpc(options.databaseInstance.getVpc())
                         .securityGroups(options.databaseInstance.getConnections().getSecurityGroups())
                         .build());
 
@@ -152,7 +149,9 @@ public class FlywayRunner extends Construct {
                         .parameters(Map.of(
                                 "FunctionName", flywayServiceLambda.getFunctionName(),
                                 "InvocationType", "RequestResponse",
-                                "Payload", "{\"flywayRequest\":{\"flywayMethod\": \"migrate\"}, \"assetHash\": \"" + ((Asset) migrationFilesDeployment.getNode().findChild("Asset1")).getAssetHash()+ "\"}"
+                                "Payload", "{" +
+                                        "\"flywayRequest\":{\"flywayMethod\": \"migrate\"}," +
+                                        " \"assetHash\": \"" + ((Asset) migrationFilesDeployment.getNode().findChild("Asset1")).getAssetHash()+ "\"}"
                         )).build())
                 .policy(AwsCustomResourcePolicy.fromStatements(List.of(PolicyStatement.Builder.create()
                         .actions(List.of("lambda:InvokeFunction"))

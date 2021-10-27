@@ -185,7 +185,6 @@ public class DbStack extends Stack {
             .migrationScriptsFolderAbsolutePath(System.getProperty("user.dir") + "/src/main/databaseMigrationFiles")
             .databaseName(this.dbName)
             .databaseInstance(farmerDb)
-            .vpc(vpc)
             .build());
 
     schemaChangesRunner.getNode().addDependency(farmerDb);
