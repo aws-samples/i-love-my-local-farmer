@@ -20,6 +20,10 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Ref S3Bucket
+      BucketEncryption: 
+        ServerSideEncryptionConfiguration: 
+        - ServerSideEncryptionByDefault:
+            SSEAlgorithm: AES256
 
   FlywayLambdaExecutionRole:
     Type: AWS::IAM::Role
