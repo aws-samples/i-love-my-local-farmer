@@ -92,6 +92,6 @@ The App comes with one function, however, to create additional functions to trig
 
 ![Multiple Functions](./images/MultipleFunctions.PNG)
 
-When adding additional functions, you will need to update the main.json template to a [maximum of 10](https://docs.microsoft.com/en-us/azure/azure-functions/functions-app-settings#functions_worker_process_count_). Both of these values to 4.
+When adding additional functions, you will need to update the main.json template to a [maximum of 10](https://docs.microsoft.com/en-us/azure/azure-functions/functions-app-settings#functions_worker_process_count_). Both of these values are currently set to 4.
 
 ![Update Values](./images/WorkerProcess.PNG)
