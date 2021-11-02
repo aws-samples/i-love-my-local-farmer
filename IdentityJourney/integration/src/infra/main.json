@@ -1,0 +1,208 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+      "user": {
+          "type": "string",
+          "metadata": {
+              "description": "User objectId"
+          }
+      },
+      "project": {
+          "type": "string",
+          "metadata": {
+              "description": "Project name"
+          }
+      }
+  },
+  "functions": [],
+  "resources": [
+      {
+          "type": "Microsoft.Storage/storageAccounts",
+          "apiVersion": "2020-08-01-preview",
+          "name": "[parameters('project')]",
+          "location": "[resourceGroup().location]",
+          "sku": {
+              "name": "Standard_LRS",
+              "tier": "Standard"
+          },
+          "kind": "StorageV2",
+          "properties": {},
+          "tags": {}
+      },
+      {
+          "type": "Microsoft.Web/serverfarms",
+          "apiVersion": "2020-06-01",
+          "name": "[parameters('project')]",
+          "location": "[resourceGroup().location]",
+          "kind": "functionapp",
+          "sku": {
+              "name": "Y1",
+              "tier": "Dynamic"
+          },
+          "properties": {},
+          "tags": {}
+      },
+      {
+          "type": "Microsoft.Web/sites",
+          "apiVersion": "2020-06-01",
+          "name": "[parameters('project')]",
+          "location": "[resourceGroup().location]",
+          "kind": "functionapp",
+          "properties": {
+              "enabled": true,
+              "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('project'))]",
+              "siteConfig": {
+                  "appSettings": [
+                      {
+                          "name": "AzureWebJobsStorage",
+                          "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', parameters('project'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('project')), '2020-08-01-preview').keys[0].value)]"
+                      },
+                      {
+                          "name": "AzureWebJobsSecretStorageType",
+                          "value": "Files"
+                      },
+                      {
+                          "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                          "value": "[reference(resourceId('Microsoft.Insights/components', parameters('project'))).InstrumentationKey]"
+                      },
+                      {
+                          "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                          "value": "[format('InstrumentationKey={0}', reference(resourceId('Microsoft.Insights/components', parameters('project'))).InstrumentationKey)]"
+                      },
+                      {
+                          "name": "WEBSITE_CONTENTSHARE",
+                          "value": "[parameters('project')]"
+                      },
+                      {
+                          "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                          "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', parameters('project'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('project')), '2020-08-01-preview').keys[0].value)]"
+                      },
+                      {
+                          "name": "FUNCTIONS_WORKER_RUNTIME",
+                          "value": "powershell"
+                      },
+                      {
+                          "name": "FUNCTIONS_EXTENSION_VERSION",
+                          "value": "~3"
+                      },
+                      {
+                          "name": "FUNCTIONS_WORKER_PROCESS_COUNT",
+                          "value": "4"
+                      },
+                      {
+                          "name": "PSWorkerInProcConcurrencyUpperBound",
+                          "value": "4"
+                      },
+                      {
+                          "name": "X_TENANT_ID",
+                          "value": "[concat('@Microsoft.KeyVault(SecretUri=', format('https://{0}.vault.azure.net/secrets/x-tenant-id/', parameters('project')), ')')]"
+                      },
+                      {
+                          "name": "X_DISPLAY_NAME",
+                          "value": "[concat('@Microsoft.KeyVault(SecretUri=', format('https://{0}.vault.azure.net/secrets/x-display-name/', parameters('project')), ')')]"
+                      },
+                      {
+                          "name": "X_APPLICATION_ID",
+                          "value": "[concat('@Microsoft.KeyVault(SecretUri=', format('https://{0}.vault.azure.net/secrets/x-application-id/', parameters('project')), ')')]"
+                      },
+                      {
+                          "name": "X_CLIENT_SECRET",
+                          "value": "[concat('@Microsoft.KeyVault(SecretUri=', format('https://{0}.vault.azure.net/secrets/x-client-secret/', parameters('project')), ')')]"
+                      }
+                  ],
+                  "powerShellVersion": "~7"
+              },
+              "httpsOnly": true,
+              "clientAffinityEnabled": true
+          },
+          "identity": {
+              "type": "SystemAssigned"
+          },
+          "tags": {},
+          "dependsOn": [
+              "[resourceId('Microsoft.Storage/storageAccounts', parameters('project'))]",
+              "[resourceId('Microsoft.Insights/components', parameters('project'))]",
+              "[resourceId('Microsoft.Web/serverfarms', parameters('project'))]"
+          ]
+      },
+      {
+          "type": "Microsoft.KeyVault/vaults",
+          "apiVersion": "2019-09-01",
+          "name": "[parameters('project')]",
+          "location": "[resourceGroup().location]",
+          "properties": {
+              "sku": {
+                  "name": "standard",
+                  "family": "A"
+              },
+              "tenantId": "[subscription().tenantId]",
+              "accessPolicies": []
+          },
+          "tags": {}
+      },
+      {
+          "type": "Microsoft.KeyVault/vaults/accessPolicies",
+          "apiVersion": "2019-09-01",
+          "name": "[format('{0}/add', parameters('project'))]",
+          "properties": {
+              "accessPolicies": [
+                  {
+                      "objectId": "[reference(resourceId('Microsoft.Web/sites', parameters('project')), '2020-06-01', 'Full').identity.principalId]",
+                      "tenantId": "[subscription().tenantId]",
+                      "permissions": {
+                          "secrets": [
+                              "get"
+                          ]
+                      }
+                  },
+                  {
+                      "objectId": "[parameters('user')]",
+                      "tenantId": "[subscription().tenantId]",
+                      "permissions": {
+                          "secrets": [
+                              "delete",
+                              "list",
+                              "get",
+                              "set",
+                              "purge"
+                          ]
+                      }
+                  }
+              ]
+          },
+          "dependsOn": [
+              "[resourceId('Microsoft.Web/sites', parameters('project'))]"
+          ]
+      },
+      {
+          "type": "Microsoft.OperationalInsights/workspaces",
+          "apiVersion": "2021-06-01",
+          "name": "[parameters('project')]",
+          "location": "[resourceGroup().location]",
+          "properties": {
+              "sku": {
+                  "name": "PerGB2018"
+              }
+          },
+          "tags": {}
+      },
+      {
+          "type": "Microsoft.Insights/components",
+          "apiVersion": "2020-02-02-preview",
+          "name": "[parameters('project')]",
+          "location": "[resourceGroup().location]",
+          "kind": "web",
+          "properties": {
+              "Application_Type": "web",
+              "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('project'))]",
+              "publicNetworkAccessForIngestion": "Enabled",
+              "publicNetworkAccessForQuery": "Enabled"
+          },
+          "tags": {},
+          "dependsOn": [
+              "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('project'))]"
+          ]
+      }
+  ]
+}
