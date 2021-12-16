@@ -17,18 +17,6 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
       }
     },
     "Parameters": {
-      "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7ArtifactHashB1419344": {
-        "Description": "Artifact hash for asset \"3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7\"",
-        "Type": "String"
-      },
-      "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3Bucket02B988B5": {
-        "Description": "S3 bucket for asset \"3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7\"",
-        "Type": "String"
-      },
-      "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3VersionKeyD6F9D922": {
-        "Description": "S3 key for asset version \"3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7\"",
-        "Type": "String"
-      },
       "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cArtifactHash627DAAA7": {
         "Description": "Artifact hash for asset \"c691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49c\"",
         "Type": "String"
@@ -39,6 +27,18 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
       },
       "AssetParametersc691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49cS3VersionKeyDD9AE9E7": {
         "Description": "S3 key for asset version \"c691172cdeefa2c91b5a2907f9d81118e47597634943344795f1a844192dd49c\"",
+        "Type": "String"
+      },
+      "AssetParametersd120cdbcddfb180e262424f79897e84e21d040e072a650a00c87e3728dab37fbArtifactHash9589AE55": {
+        "Description": "Artifact hash for asset \"d120cdbcddfb180e262424f79897e84e21d040e072a650a00c87e3728dab37fb\"",
+        "Type": "String"
+      },
+      "AssetParametersd120cdbcddfb180e262424f79897e84e21d040e072a650a00c87e3728dab37fbS3BucketFEE641E3": {
+        "Description": "S3 bucket for asset \"d120cdbcddfb180e262424f79897e84e21d040e072a650a00c87e3728dab37fb\"",
+        "Type": "String"
+      },
+      "AssetParametersd120cdbcddfb180e262424f79897e84e21d040e072a650a00c87e3728dab37fbS3VersionKeyD535D084": {
+        "Description": "S3 key for asset version \"d120cdbcddfb180e262424f79897e84e21d040e072a650a00c87e3728dab37fb\"",
         "Type": "String"
       }
     },
@@ -96,7 +96,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
         "Properties": {
           "Code": {
             "S3Bucket": {
-              "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3Bucket02B988B5"
+              "Ref": "AssetParametersd120cdbcddfb180e262424f79897e84e21d040e072a650a00c87e3728dab37fbS3BucketFEE641E3"
             },
             "S3Key": {
               "Fn::Join": [
@@ -109,7 +109,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3VersionKeyD6F9D922"
+                            "Ref": "AssetParametersd120cdbcddfb180e262424f79897e84e21d040e072a650a00c87e3728dab37fbS3VersionKeyD535D084"
                           }
                         ]
                       }
@@ -122,7 +122,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3VersionKeyD6F9D922"
+                            "Ref": "AssetParametersd120cdbcddfb180e262424f79897e84e21d040e072a650a00c87e3728dab37fbS3VersionKeyD535D084"
                           }
                         ]
                       }
@@ -208,7 +208,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
         "Properties": {
           "Code": {
             "S3Bucket": {
-              "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3Bucket02B988B5"
+              "Ref": "AssetParametersd120cdbcddfb180e262424f79897e84e21d040e072a650a00c87e3728dab37fbS3BucketFEE641E3"
             },
             "S3Key": {
               "Fn::Join": [
@@ -221,7 +221,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3VersionKeyD6F9D922"
+                            "Ref": "AssetParametersd120cdbcddfb180e262424f79897e84e21d040e072a650a00c87e3728dab37fbS3VersionKeyD535D084"
                           }
                         ]
                       }
@@ -234,7 +234,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3VersionKeyD6F9D922"
+                            "Ref": "AssetParametersd120cdbcddfb180e262424f79897e84e21d040e072a650a00c87e3728dab37fbS3VersionKeyD535D084"
                           }
                         ]
                       }
@@ -461,7 +461,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                 {
                   "Ref": "AWS::Region"
                 },
-                "\",\"metrics\":[[\"aws-embedded-metrics\",\"NoSlotsFound\",\"FunctionName\",\"GetSlots\",\"LogGroup\",\"",
+                "\",\"metrics\":[[\"DeliveryApi\",\"NoSlotsFound\",\"FunctionName\",\"GetSlots\",\"LogGroup\",\"",
                 {
                   "Ref": "GetSlots6224F85D"
                 },
@@ -473,7 +473,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                 {
                   "Ref": "AWS::Region"
                 },
-                "\",\"metrics\":[[\"aws-embedded-metrics\",\"SlotsReturned\",\"FunctionName\",\"GetSlots\",\"LogGroup\",\"",
+                "\",\"metrics\":[[\"DeliveryApi\",\"SlotsReturned\",\"FunctionName\",\"GetSlots\",\"LogGroup\",\"",
                 {
                   "Ref": "GetSlots6224F85D"
                 },
@@ -537,7 +537,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                 {
                   "Ref": "AWS::Region"
                 },
-                "\",\"metrics\":[[\"aws-embedded-metrics\",\"InvalidSlotList\",\"FunctionName\",\"CreateSlots\",\"LogGroup\",\"",
+                "\",\"metrics\":[[\"DeliveryApi\",\"InvalidSlotList\",\"FunctionName\",\"CreateSlots\",\"LogGroup\",\"",
                 {
                   "Ref": "CreateSlots2FADEA09"
                 },
@@ -568,7 +568,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                 {
                   "Ref": "AWS::Region"
                 },
-                "\",\"metrics\":[[\"aws-embedded-metrics\",\"InvalidUserId\",\"FunctionName\",\"BookDelivery\",\"LogGroup\",\"",
+                "\",\"metrics\":[[\"DeliveryApi\",\"InvalidUserId\",\"FunctionName\",\"BookDelivery\",\"LogGroup\",\"",
                 {
                   "Ref": "BookDelivery402AFA0C"
                 },
@@ -580,7 +580,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                 {
                   "Ref": "AWS::Region"
                 },
-                "\",\"metrics\":[[\"aws-embedded-metrics\",\"DeliveryBooked\",\"FunctionName\",\"BookDelivery\",\"LogGroup\",\"",
+                "\",\"metrics\":[[\"DeliveryApi\",\"DeliveryBooked\",\"FunctionName\",\"BookDelivery\",\"LogGroup\",\"",
                 {
                   "Ref": "BookDelivery402AFA0C"
                 },
@@ -592,7 +592,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                 {
                   "Ref": "AWS::Region"
                 },
-                "\",\"metrics\":[[\"aws-embedded-metrics\",\"FarmAndSlotInvalid\",\"FunctionName\",\"BookDelivery\",\"LogGroup\",\"",
+                "\",\"metrics\":[[\"DeliveryApi\",\"FarmAndSlotInvalid\",\"FunctionName\",\"BookDelivery\",\"LogGroup\",\"",
                 {
                   "Ref": "BookDelivery402AFA0C"
                 },
@@ -604,7 +604,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                 {
                   "Ref": "AWS::Region"
                 },
-                "\",\"metrics\":[[\"aws-embedded-metrics\",\"NoAvailableDelivery\",\"FunctionName\",\"BookDelivery\",\"LogGroup\",\"",
+                "\",\"metrics\":[[\"DeliveryApi\",\"NoAvailableDelivery\",\"FunctionName\",\"BookDelivery\",\"LogGroup\",\"",
                 {
                   "Ref": "BookDelivery402AFA0C"
                 },
@@ -727,7 +727,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                     }
                   ],
                   "MetricName": "SqlException",
-                  "Namespace": "aws-embedded-metrics"
+                  "Namespace": "DeliveryApi"
                 },
                 "Period": 300,
                 "Stat": "Sum"
@@ -835,7 +835,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                     }
                   ],
                   "MetricName": "CreateSlotsException",
-                  "Namespace": "aws-embedded-metrics"
+                  "Namespace": "DeliveryApi"
                 },
                 "Period": 300,
                 "Stat": "Sum"
@@ -896,7 +896,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                     }
                   ],
                   "MetricName": "FailedToSaveSlots",
-                  "Namespace": "aws-embedded-metrics"
+                  "Namespace": "DeliveryApi"
                 },
                 "Period": 300,
                 "Stat": "Sum"
@@ -1004,7 +1004,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                     }
                   ],
                   "MetricName": "SqlException",
-                  "Namespace": "aws-embedded-metrics"
+                  "Namespace": "DeliveryApi"
                 },
                 "Period": 300,
                 "Stat": "Sum"
@@ -1024,7 +1024,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
         "Properties": {
           "Code": {
             "S3Bucket": {
-              "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3Bucket02B988B5"
+              "Ref": "AssetParametersd120cdbcddfb180e262424f79897e84e21d040e072a650a00c87e3728dab37fbS3BucketFEE641E3"
             },
             "S3Key": {
               "Fn::Join": [
@@ -1037,7 +1037,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3VersionKeyD6F9D922"
+                            "Ref": "AssetParametersd120cdbcddfb180e262424f79897e84e21d040e072a650a00c87e3728dab37fbS3VersionKeyD535D084"
                           }
                         ]
                       }
@@ -1050,7 +1050,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3VersionKeyD6F9D922"
+                            "Ref": "AssetParametersd120cdbcddfb180e262424f79897e84e21d040e072a650a00c87e3728dab37fbS3VersionKeyD535D084"
                           }
                         ]
                       }
@@ -1569,7 +1569,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
         "Properties": {
           "Code": {
             "S3Bucket": {
-              "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3Bucket02B988B5"
+              "Ref": "AssetParametersd120cdbcddfb180e262424f79897e84e21d040e072a650a00c87e3728dab37fbS3BucketFEE641E3"
             },
             "S3Key": {
               "Fn::Join": [
@@ -1582,7 +1582,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3VersionKeyD6F9D922"
+                            "Ref": "AssetParametersd120cdbcddfb180e262424f79897e84e21d040e072a650a00c87e3728dab37fbS3VersionKeyD535D084"
                           }
                         ]
                       }
@@ -1595,7 +1595,7 @@ com.ilmlf.delivery.DeliveryAppTest.testApiStack=[
                         "Fn::Split": [
                           "||",
                           {
-                            "Ref": "AssetParameters3ee8246d77a64942208dbd7b5de49290759d775ab53e2998065dd63aa7be2de7S3VersionKeyD6F9D922"
+                            "Ref": "AssetParametersd120cdbcddfb180e262424f79897e84e21d040e072a650a00c87e3728dab37fbS3VersionKeyD535D084"
                           }
                         ]
                       }
