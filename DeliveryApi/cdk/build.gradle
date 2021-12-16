@@ -43,6 +43,18 @@ dependencies {
 
     compileOnly 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok:1.18.20'
+
+    // Prevent using feature log4j below 2.16.0 which can contain CVE-2021-44228
+    // See step 3 in https://blog.gradle.org/log4j-vulnerability 
+    constraints {
+        implementation("org.apache.logging.log4j:log4j-core") {
+            version {
+                strictly("[2.16, 3[")
+                prefer("2.16.0")
+            }
+            because("CVE-2021-44228: Log4j vulnerable to remote code execution")
+        }
+    }
 }
 
 
