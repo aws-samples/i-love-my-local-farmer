@@ -4,6 +4,7 @@
 *.class
 .mtj.tmp/
 *.jar
+!gradle-wrapper.jar
 *.war
 *.ear
 hs_err_pid*
