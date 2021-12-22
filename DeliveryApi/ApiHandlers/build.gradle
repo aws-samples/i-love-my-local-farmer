@@ -47,13 +47,13 @@ dependencies {
     testImplementation 'org.mockito:mockito-junit-jupiter:3.7.7'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
     testImplementation 'org.mockito:mockito-core:3.+'
-    testImplementation 'com.google.code.gson:gson:2.8.6'
+    testImplementation 'com.google.code.gson:gson:2.8.9'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
 
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.1'
     implementation 'com.amazonaws:aws-lambda-java-events:3.9.0'
-    runtimeOnly 'mysql:mysql-connector-java:8.0.15'
+    runtimeOnly 'mysql:mysql-connector-java:8.0.27'
     implementation 'org.json:json:20210307'
 
     implementation 'software.amazon.awssdk:rds:2.16.38'
