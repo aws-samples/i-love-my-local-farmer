@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h1 style="margin: auto">Welcome to <span id="env"></span></h1>
+    <script>
+      fetch('/config.json')
+        .then((res) => res.json())
+        .then((config) => fetch(config.apiEndpoint + '/env'))
+        .then((res) => res.text())
+        .then((env) => (document.getElementById('env').innerText = env));
+    </script>
+  </body>
+</html>
