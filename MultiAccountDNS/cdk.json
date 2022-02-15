@@ -1,0 +1,36 @@
+{
+  "app": "npx ts-node --prefer-ts-exts bin/cdk-dns-subdomains.ts",
+  "watch": {
+    "include": ["**"],
+    "exclude": ["README.md", "cdk*.json", "**/*.d.ts", "**/*.js", "tsconfig.json", "package*.json", "yarn.lock", "node_modules", "test"]
+  },
+  "context": {
+    "@aws-cdk/aws-apigateway:usagePlanKeyOrderInsensitiveId": true,
+    "@aws-cdk/core:stackRelativeExports": true,
+    "@aws-cdk/aws-rds:lowercaseDbIdentifier": true,
+    "@aws-cdk/aws-lambda:recognizeVersionProps": true,
+    "@aws-cdk/aws-cloudfront:defaultSecurityPolicyTLSv1.2_2021": true,
+    "environments": {
+      "root": {
+        "domain": "<ROOT_DOMAIN e.g. ilovemylocalfarmer.com>",
+        "account": "<ACCOUNT_NUMBER>",
+        "region": "<REGION>"
+      },
+      "dev": {
+        "domain": "<DEV_SUB_DOMAIN e.g. dev.ilovemylocalfarmer.com>",
+        "account": "<ACCOUNT_NUMBER>",
+        "region": "<REGION>"
+      },
+      "staging": {
+        "domain": "<DEV_SUB_DOMAIN e.g. staging.ilovemylocalfarmer.com>",
+        "account": "<ACCOUNT_NUMBER>",
+        "region": "<REGION>"
+      },
+      "prod": {
+        "domain": "<DEV_SUB_DOMAIN e.g. prod.ilovemylocalfarmer.com>",
+        "account": "<ACCOUNT_NUMBER>",
+        "region": "<REGION>"
+      }
+    }
+  }
+}
