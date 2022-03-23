@@ -1,6 +1,6 @@
 # Multi-Environment Sub-Domain Infrastructure
 
-This solution demonstrates how to create a Sub-Domain setup for Mult-Environment Infrascture, using CDK in Typescript. The solution accompanies blog posts from the [I Love My Local Farmer Engineering Blog](https://medium.com/i-love-my-local-farmer-engineering-blog).
+This solution demonstrates how to create a Sub-Domain setup for Mult-Environment Infrascture, using CDK in Typescript. The solution accompanies [this blog post](https://medium.com/i-love-my-local-farmer-engineering-blog/dns-multi-account-management-using-cdk-6394ef295eee) from the [I Love My Local Farmer Engineering Blog Series](https://medium.com/i-love-my-local-farmer-engineering-blog).
 
 This README.md contains only architecture and installation steps. For more details, please check the blog post
 
