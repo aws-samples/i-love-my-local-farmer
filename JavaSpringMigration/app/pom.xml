@@ -10,7 +10,7 @@
 	<version>1.0</version>
 
 	<properties>
-		<springframework.version>5.3.14</springframework.version>
+		<springframework.version>5.3.18</springframework.version>
 		<hibernate.version>5.4.24.Final</hibernate.version>
 		<mysql.version>8.0.27</mysql.version>		
 	</properties>
