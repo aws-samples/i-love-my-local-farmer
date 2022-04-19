@@ -79,6 +79,7 @@ dependencies {
     // Aspects for Powertools
     aspect 'software.amazon.lambda:powertools-tracing:1.12.0'
     aspect 'software.amazon.lambda:powertools-metrics:1.12.0'
+    aspect 'software.amazon.lambda:powertools-logging:1.12.0'
 
     // Prevent using feature log4j below 2.17.0 which can contain CVE-2021-44228 and CVE-2021-45046
     // See step 3 in https://blog.gradle.org/log4j-vulnerability 

@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
+import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.MetricsUtils;
 import software.amazon.lambda.powertools.tracing.Tracing;
@@ -32,23 +33,24 @@ import software.amazon.lambda.powertools.tracing.Tracing;
 import java.util.ArrayList;
 import java.util.List;
 
+import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.API_GATEWAY_REST;
+
 /**
  * A Lambda handler for CreateSlot API Call.
  */
 public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
   private static final Logger logger = LogManager.getLogger(CreateSlots.class);
   private static final MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
-  private SlotService slotService;
-  private SlotParser slotParser;
+  private final SlotService slotService;
+  private final SlotParser slotParser;
 
   /**
    * Constructor called by AWS Lambda.
    */
+  @SuppressWarnings("unused")
   public CreateSlots() {
+    this(new SlotService(), new SlotParser());
     metricsLogger.putDimensions(DimensionSet.of("FunctionName", "CreateSlots"));
-    this.slotService = new SlotService();
-    this.slotParser = new SlotParser();
-    logger.info("CreateSlots empty constructor, called by AWS Lambda");
   }
 
   /**
@@ -59,7 +61,6 @@ public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, 
   CreateSlots(SlotService slotService, SlotParser slotParser) {
     this.slotService = slotService;
     this.slotParser = slotParser;
-    logger.info("CreateSlots constructor for unit testing, allowing injection of mock SlotService");
   }
 
   /**
@@ -81,11 +82,12 @@ public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, 
    *        4xx: if request doesn't come from authenticated client app<br/>
    *        5xx: if slot can't be persisted
    */
+  @Logging(correlationIdPath = API_GATEWAY_REST)
   @Tracing
   @Metrics(captureColdStart = true)
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
     String returnVal = "";
-    Integer httpStatus = 200;
+    int httpStatus = 200;
     List<Slot> slotList = new ArrayList<>();
 
     try {

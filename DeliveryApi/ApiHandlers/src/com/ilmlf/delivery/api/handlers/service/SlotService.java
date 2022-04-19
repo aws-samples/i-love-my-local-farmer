@@ -9,7 +9,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -44,9 +43,7 @@ public class SlotService {
    * Constructor used in actual environment (inside Lambda handler).
    */
   public SlotService() {
-    this.dbUtil = new DbUtil();
-    this.con = dbUtil.createConnectionViaIamAuth(DB_USER, DB_ENDPOINT, DB_REGION, DB_PORT);;
-    logger.info("SlotService Empty constructor, reading from env vars");
+    this(new DbUtil());
   }
 
   /**
@@ -54,7 +51,7 @@ public class SlotService {
    *
    * @param dbUtil Injected DbUtil
    */
-  public SlotService(DbUtil dbUtil) {
+  SlotService(DbUtil dbUtil) {
     this.dbUtil = dbUtil;
     this.con = this.dbUtil.createConnectionViaIamAuth(DB_USER, DB_ENDPOINT, DB_REGION, DB_PORT);
   }
@@ -70,7 +67,7 @@ public class SlotService {
   @Tracing(segmentName = "Insert_Slot_Transac")
   public int insertSlotList(List<Slot> slots) throws SQLException {
     this.con = refreshDbConnection();
-    Integer rowsUpdated = 0;
+    int rowsUpdated = 0;
 
     try {
       this.con.setAutoCommit(false); // for transaction handling
@@ -82,12 +79,13 @@ public class SlotService {
       if (slots.size() == rowsUpdated) {
         this.con.commit();
       } else {
+        logger.error("Rolling back transaction!");
         this.con.rollback();
         rowsUpdated = 0;
       }
 
     } catch (SQLException e) {
-      logger.error(e.getMessage(), e);
+      logger.error(e.getMessage() + ", rolling back transaction!", e);
       this.con.rollback();
       rowsUpdated = 0;
     }
@@ -105,6 +103,7 @@ public class SlotService {
   @Tracing(segmentName = "Insert_Slot_RDS")
   public int insertSlot(Slot slot) throws SQLException {
     TracingUtils.putAnnotation("farm", slot.getFarmId());
+    logger.info("Inserting slot: {}", slot);
 
     String query = "Insert into deliverydb.delivery_slot "
         + " (delivery_date, slot_from, slot_to, avail_deliveries, booked_deliveries, farm_id)"
@@ -118,7 +117,7 @@ public class SlotService {
     prepStmt.setInt(5, slot.getBookedDeliveries());
     prepStmt.setInt(6, slot.getFarmId());
 
-    logger.info("prepStmt: " + prepStmt.toString());  // prints bind variables passed in
+    logger.debug("prepStmt: {}", prepStmt.toString());  // prints bind variables passed in
 
     int rowsUpdated = prepStmt.executeUpdate();
 
@@ -151,7 +150,7 @@ public class SlotService {
     preparedStatement.setInt(1, farmId);
     preparedStatement.setObject(2, availableSlotsBeginDate);
     preparedStatement.setObject(3, availableSlotsEndDate);
-    logger.info("prepStmt: " + preparedStatement.toString());
+    logger.debug("prepStmt: {}", preparedStatement.toString());
 
     ResultSet results = preparedStatement.executeQuery();
 
@@ -188,13 +187,15 @@ public class SlotService {
   @Tracing(segmentName = "Book_Delivery_Transac")
   public Delivery bookDelivery(Integer farmId, Integer slotId, Integer userId) throws SQLException {
     TracingUtils.putAnnotation("farm", farmId);
+    logger.info("Booking slot {} for user {} on farm {}", slotId, userId, farmId);
+
     this.con = refreshDbConnection();
     Delivery delivery;
 
     try {
       this.con.setAutoCommit(false);
 
-      Boolean decreaseSucceeded = decreaseAvailableDeliveries(farmId, slotId);
+      boolean decreaseSucceeded = decreaseAvailableDeliveries(farmId, slotId);
       if (decreaseSucceeded) {
         delivery = insertNewDelivery(farmId, slotId, userId);
 
@@ -208,6 +209,7 @@ public class SlotService {
     } catch (SQLException exception) {
       // If any update fails, we need to rollback to the original state.
       // Else, the data between `delivery_slot` and `delivery` tables will be left inconsistent
+      logger.error(exception.getMessage()+ ", rolling back transaction!", exception);
       this.con.rollback();
       throw exception;
 
@@ -227,13 +229,15 @@ public class SlotService {
     updateStmt.setInt(1, slotId);
     updateStmt.setInt(2, farmId);
 
-    logger.info("updateStmt: " + updateStmt.toString());
+    logger.debug("updateStmt: {}", updateStmt.toString());
     return updateStmt.executeUpdate() == 1;
   }
 
   @Tracing(segmentName = "Book_Delivery_RDS")
   private Delivery insertNewDelivery(Integer farmId, Integer slotId, Integer userId) throws SQLException {
     TracingUtils.putAnnotation("farm", farmId);
+    logger.info("Inserting delivery for slot {}, user {} on farm {}", slotId, userId, farmId);
+
     String insertDeliveryQuery = "INSERT INTO deliverydb.delivery "
         + "(farm_id, slot_id, user_id) "
         + "values(?, ?, ?)";
@@ -241,7 +245,8 @@ public class SlotService {
     insertStmt.setInt(1, farmId);
     insertStmt.setInt(2, slotId);
     insertStmt.setInt(3, userId);
-    logger.info("insertStmt: " + insertStmt.toString());
+    logger.debug("insertStmt: {}", insertStmt.toString());
+
     insertStmt.executeUpdate();
     ResultSet rs = insertStmt.getGeneratedKeys();
 
@@ -249,7 +254,7 @@ public class SlotService {
       Integer deliveryId = rs.getInt(1);
       return new Delivery(deliveryId);
     } else {
-      logger.info("No Result Set was returned!");
+      logger.warn("No Result Set was returned!");
       throw new RuntimeException("Fail to insert a new record into delivery table");
     }
   }
@@ -290,7 +295,6 @@ public class SlotService {
       port = Integer.valueOf(System.getenv(envVarName));
     } catch (NumberFormatException nfe) {
       logger.warn("DB_PORT is not in environment variables or not an integer");
-      port = defaultPort;
     }
     return port;
   }

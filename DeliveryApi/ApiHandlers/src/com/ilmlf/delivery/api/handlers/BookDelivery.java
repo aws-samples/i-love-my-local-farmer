@@ -27,9 +27,12 @@ import org.json.JSONObject;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
+import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.MetricsUtils;
 import software.amazon.lambda.powertools.tracing.Tracing;
+
+import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.API_GATEWAY_REST;
 
 
 /**
@@ -38,13 +41,14 @@ import software.amazon.lambda.powertools.tracing.Tracing;
 public class BookDelivery implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
   private static final MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
   private static final Logger logger = LogManager.getLogger(CreateSlots.class);
-  private SlotService slotService;
+  private final SlotService slotService;
 
   /**
    * Constructor called by AWS Lambda.
    */
+  @SuppressWarnings("unused")
   public BookDelivery() {
-    this.slotService = new SlotService();
+    this(new SlotService());
     metricsLogger.putDimensions(DimensionSet.of("FunctionName", "BookDelivery"));
   }
 
@@ -68,13 +72,14 @@ public class BookDelivery implements RequestHandler<APIGatewayProxyRequestEvent,
    *         5xx: if the slot isn't reserved (e.g. runs out of availability) OR
    *         internal error
    */
+  @Logging(correlationIdPath = API_GATEWAY_REST)
   @Tracing
   @Metrics(captureColdStart = true)
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent event, Context context) {
-    Integer httpStatus;
+    int httpStatus;
     String returnVal;
-    Integer farmId;
-    Integer slotId;
+    int farmId;
+    int slotId;
     Integer userId;
     JSONObject jsonObjDelivery;
 

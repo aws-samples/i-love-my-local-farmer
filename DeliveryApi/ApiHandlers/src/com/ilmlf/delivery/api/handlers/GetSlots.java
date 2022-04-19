@@ -31,9 +31,12 @@ import org.json.JSONArray;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
+import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.MetricsUtils;
 import software.amazon.lambda.powertools.tracing.Tracing;
+
+import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.API_GATEWAY_REST;
 
 /**
  * A Lambda handler for GetSlot API Call.
@@ -41,14 +44,15 @@ import software.amazon.lambda.powertools.tracing.Tracing;
 public class GetSlots implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
   private static final Logger logger = LogManager.getLogger(CreateSlots.class);
   private static final MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
-  private SlotService slotService;
+  private final SlotService slotService;
 
   /**
    * Constructor called by AWS Lambda.
    */
+  @SuppressWarnings("unused")
   public GetSlots() {
+    this(new SlotService());
     metricsLogger.putDimensions(DimensionSet.of("FunctionName", "GetSlots"));
-    this.slotService = new SlotService();
   }
 
   /**
@@ -68,15 +72,15 @@ public class GetSlots implements RequestHandler<APIGatewayProxyRequestEvent, API
    *        4xx: thrown if the farm-id is invalid or not found in the database<br/>
    *        5xx: if slots cannot be retrieved for the given farm
    */
+  @Logging(correlationIdPath = API_GATEWAY_REST)
   @Tracing
   @Metrics(captureColdStart = true)
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
-    logger.info("Starting to handle GetSlots request");
-    String returnVal = "";
-    Integer httpStatus = 200;
+    String returnVal;
+    int httpStatus = 200;
     LocalDate availableSlotsBeginDate = LocalDate.now(ZoneId.of("UTC"));
     LocalDate availableSlotsEndDate = availableSlotsBeginDate.plus(Period.ofDays(14)); // Only retrieve next two weeks
-    Integer farmId;
+    int farmId;
     ArrayList<Slot> slotArray;
 
     try {

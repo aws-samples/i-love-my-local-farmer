@@ -501,6 +501,7 @@ public class ApiStack extends Stack {
     env.put("POWERTOOLS_SERVICE_NAME", "DeliveryApi");
     env.put("POWERTOOLS_TRACER_CAPTURE_ERROR", "false");
     env.put("POWERTOOLS_TRACER_CAPTURE_RESPONSE", "false");
+    env.put("POWERTOOLS_LOG_LEVEL", "INFO");
 
     ApiFunction function =
         new ApiFunction(
