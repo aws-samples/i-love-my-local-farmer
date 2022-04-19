@@ -149,8 +149,8 @@ public class SlotService {
 
     while (results.next()) {
       LocalDate slotDate = ((Date) results.getObject("delivery_date")).toLocalDate();
-      LocalDateTime slotFrom = ((Timestamp) results.getObject("slot_from")).toLocalDateTime();
-      LocalDateTime slotTo = ((Timestamp) results.getObject("slot_to")).toLocalDateTime();
+      LocalDateTime slotFrom = (LocalDateTime) results.getObject("slot_from");
+      LocalDateTime slotTo = (LocalDateTime) results.getObject("slot_to");
       Integer slotId = results.getInt("slot_id");
 
       Slot slot = Slot.builder()
