@@ -31,6 +31,7 @@ import org.json.JSONArray;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
+import software.amazon.lambda.powertools.tracing.Tracing;
 
 /**
  * A Lambda handler for GetSlot API Call.
@@ -68,7 +69,7 @@ public class GetSlots implements RequestHandler<APIGatewayProxyRequestEvent, API
    *        4xx: thrown if the farm-id is invalid or not found in the database<br/>
    *        5xx: if slots cannot be retrieved for the given farm
    */
-  @Override
+  @Tracing
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
     logger.info("Starting to handle GetSlots request");
     String returnVal = "";

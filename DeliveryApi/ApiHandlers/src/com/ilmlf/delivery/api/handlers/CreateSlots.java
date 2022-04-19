@@ -19,15 +19,16 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.ilmlf.delivery.api.handlers.service.SlotService;
 import com.ilmlf.delivery.api.handlers.util.ApiUtil;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.ilmlf.delivery.api.handlers.util.SlotParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
+import software.amazon.lambda.powertools.tracing.Tracing;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A Lambda handler for CreateSlot API Call.
@@ -81,7 +82,7 @@ public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, 
    *        4xx: if request doesn't come from authenticated client app<br/>
    *        5xx: if slot can't be persisted
    */
-  @Override
+  @Tracing
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
     String returnVal = "";
     Integer httpStatus = 200;

@@ -27,6 +27,7 @@ import org.json.JSONObject;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
+import software.amazon.lambda.powertools.tracing.Tracing;
 
 
 /**
@@ -68,7 +69,7 @@ public class BookDelivery implements RequestHandler<APIGatewayProxyRequestEvent,
    *         5xx: if the slot isn't reserved (e.g. runs out of availability) OR
    *         internal error
    */
-  @Override
+  @Tracing
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent event, Context context) {
     Integer httpStatus;
     String returnVal;

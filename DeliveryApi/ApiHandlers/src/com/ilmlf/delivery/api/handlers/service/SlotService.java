@@ -17,6 +17,8 @@ import java.util.List;
 import lombok.Data;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import software.amazon.lambda.powertools.tracing.Tracing;
+import software.amazon.lambda.powertools.tracing.TracingUtils;
 
 /**
  * Provides methods to interact with Slots in the data layer.
@@ -65,6 +67,7 @@ public class SlotService {
    * @param slots List of slots to be inserted.
    * @throws SQLException when SQL execution fails
    */
+  @Tracing(segmentName = "Insert_Slot_Transac")
   public int insertSlotList(List<Slot> slots) throws SQLException {
     this.con = refreshDbConnection();
     Integer rowsUpdated = 0;
@@ -99,7 +102,10 @@ public class SlotService {
    * @return number of rows inserted (1 = success, 0 = failure)
    * @throws SQLException when SQL execution fails
    */
+  @Tracing(segmentName = "Insert_Slot_RDS")
   public int insertSlot(Slot slot) throws SQLException {
+    TracingUtils.putAnnotation("farm", slot.getFarmId());
+
     String query = "Insert into deliverydb.delivery_slot "
         + " (delivery_date, slot_from, slot_to, avail_deliveries, booked_deliveries, farm_id)"
         + " values(?,?,?,?,?,?)";
@@ -129,8 +135,10 @@ public class SlotService {
    * @return an ArrayList of Slot objects
    * @throws SQLException if an error occurs during preparing the statement
    */
+  @Tracing(segmentName = "Get_Slot_RDS")
   public ArrayList<Slot> getSlots(Integer farmId, LocalDate availableSlotsBeginDate,
                                   LocalDate availableSlotsEndDate) throws SQLException {
+    TracingUtils.putAnnotation("farm", farmId);
     this.con = refreshDbConnection();
     ArrayList<Slot> slotArray = new ArrayList<>();
     String query = "select * from deliverydb.delivery_slot "
@@ -177,7 +185,9 @@ public class SlotService {
    * @throws SQLException when update to the database fails
    * @throws IllegalStateException when there is no available delivery in the slot
    */
+  @Tracing(segmentName = "Book_Delivery_Transac")
   public Delivery bookDelivery(Integer farmId, Integer slotId, Integer userId) throws SQLException {
+    TracingUtils.putAnnotation("farm", farmId);
     this.con = refreshDbConnection();
     Delivery delivery;
 
@@ -206,7 +216,9 @@ public class SlotService {
     }
   }
 
+  @Tracing(segmentName = "Update_Slot_RDS")
   private boolean decreaseAvailableDeliveries(Integer farmId, Integer slotId) throws SQLException {
+    TracingUtils.putAnnotation("farm", farmId);
     this.con = refreshDbConnection();
     String updateDeliverySlotQuery = "UPDATE deliverydb.delivery_slot "
         + "SET avail_deliveries = avail_deliveries - 1,  booked_deliveries =  booked_deliveries + 1 "
@@ -219,7 +231,9 @@ public class SlotService {
     return updateStmt.executeUpdate() == 1;
   }
 
+  @Tracing(segmentName = "Book_Delivery_RDS")
   private Delivery insertNewDelivery(Integer farmId, Integer slotId, Integer userId) throws SQLException {
+    TracingUtils.putAnnotation("farm", farmId);
     String insertDeliveryQuery = "INSERT INTO deliverydb.delivery "
         + "(farm_id, slot_id, user_id) "
         + "values(?, ?, ?)";

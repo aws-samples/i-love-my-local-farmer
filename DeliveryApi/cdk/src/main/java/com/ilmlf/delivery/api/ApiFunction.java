@@ -33,6 +33,7 @@ public class ApiFunction extends Function {
         .vpc(props.getVpc())
         .securityGroups(props.getSecurityGroups())
         .role(props.getRole())
+        .tracing(props.getTracing())
         .build());
 
     this.apiMethodName = props.getFunctionName();

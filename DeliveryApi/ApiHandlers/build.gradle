@@ -8,10 +8,12 @@
 
 plugins {
     // Apply the java-library plugin for API and implementation separation.
+    id 'java'
     id 'java-library'
     id "nebula.lint" version "16.9.0"
     id 'checkstyle'
     id 'jacoco'
+    id 'io.freefair.aspectj.post-compile-weaving' version '6.4.1'
 }
 // apply plugin: "eclipse" // if using Eclipse
 
@@ -46,7 +48,7 @@ dependencies {
     testImplementation 'org.mockito:mockito-inline:3.7.7'
     testImplementation 'org.mockito:mockito-junit-jupiter:3.7.7'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
-    testImplementation 'org.mockito:mockito-core:3.+'
+    testImplementation 'org.mockito:mockito-core:3.12.4'
     testImplementation 'com.google.code.gson:gson:2.8.9'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
@@ -74,6 +76,9 @@ dependencies {
     compileOnly "org.projectlombok:lombok:1.18.20"
     annotationProcessor 'org.projectlombok:lombok:1.18.20'
 
+    // Aspects for Powertools
+    aspect 'software.amazon.lambda:powertools-tracing:1.12.0'
+
     // Prevent using feature log4j below 2.17.0 which can contain CVE-2021-44228 and CVE-2021-45046
     // See step 3 in https://blog.gradle.org/log4j-vulnerability 
     constraints {
@@ -91,12 +96,15 @@ dependencies {
 test {
     // Use junit platform for unit tests.
     useJUnitPlatform()
+
+    // Configures environment variable to avoid initialization of AWS X-Ray segments for each tests
+    environment "LAMBDA_TASK_ROOT", "handler"
+
     // Use this flag to show output from running the test
     //testLogging.showStandardStreams = true
 
     // report is always generated after tests run
     finalizedBy jacocoTestReport
-
 }
 
 jacocoTestReport {
@@ -107,7 +115,6 @@ sourceSets {
     main.java.srcDirs = ['src']
     main.resources.srcDirs = ['scripts','resources']
     test.java.srcDirs = ['tst']
-
 }
 
 task buildZip(type: Zip) {
@@ -120,3 +127,4 @@ task buildZip(type: Zip) {
 
 build.dependsOn buildZip
 sourceCompatibility = '11'
+targetCompatibility = '11'

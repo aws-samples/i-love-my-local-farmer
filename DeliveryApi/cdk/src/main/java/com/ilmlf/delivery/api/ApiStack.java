@@ -65,10 +65,7 @@ import software.amazon.awscdk.services.iam.PolicyStatementProps;
 import software.amazon.awscdk.services.iam.Role;
 import software.amazon.awscdk.services.iam.RoleProps;
 import software.amazon.awscdk.services.iam.ServicePrincipal;
-import software.amazon.awscdk.services.lambda.CfnFunction;
-import software.amazon.awscdk.services.lambda.Code;
-import software.amazon.awscdk.services.lambda.Function;
-import software.amazon.awscdk.services.lambda.FunctionProps;
+import software.amazon.awscdk.services.lambda.*;
 import software.amazon.awscdk.services.lambda.Runtime;
 import software.amazon.awscdk.services.logs.LogGroup;
 import software.amazon.awscdk.services.logs.LogGroupProps;
@@ -362,6 +359,7 @@ public class ApiStack extends Stack {
             CfnApiProps.builder()
                 .stageName(apiStageName)
                 .definitionBody(openapiSpecAsObject)
+                .tracingEnabled(true)
                 .accessLogSetting(
                     CfnApi.AccessLogSettingProperty.builder()
                         .destinationArn(accessLogGroup.getLogGroupArn())
@@ -494,6 +492,9 @@ public class ApiStack extends Stack {
             FunctionProps.builder()
                 .environment(
                     Map.of(
+                        "POWERTOOLS_SERVICE_NAME", "Delivery",
+                        "POWERTOOLS_TRACER_CAPTURE_ERROR", "false",
+                        "POWERTOOLS_TRACER_CAPTURE_RESPONSE", "false",
                         "DB_ENDPOINT",
                         functionName.equals("PopulateFarmDb")
                             ? props.getDbEndpoint()
@@ -513,13 +514,14 @@ public class ApiStack extends Stack {
                             .assetHash(Hashing.hashDirectory("../ApiHandlers/src", false))
                             .bundling(builderOptions)
                             .build()))
-                .timeout(Duration.seconds(60))
+                .timeout(Duration.seconds(29))
                 .memorySize(2048)
                 .handler("com.ilmlf.delivery.api.handlers." + functionName)
                 .vpc(this.dbVpc)
                 .securityGroups(List.of(this.dbSg))
                 .functionName(functionName)
                 .role(role)
+                .tracing(Tracing.ACTIVE)
                 .build());
 
     return function;
