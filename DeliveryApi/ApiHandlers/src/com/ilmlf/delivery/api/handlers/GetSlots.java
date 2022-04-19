@@ -31,24 +31,24 @@ import org.json.JSONArray;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
+import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.metrics.MetricsUtils;
 import software.amazon.lambda.powertools.tracing.Tracing;
 
 /**
  * A Lambda handler for GetSlot API Call.
  */
 public class GetSlots implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-  private SlotService slotService;
-  private MetricsLogger metricsLogger;
   private static final Logger logger = LogManager.getLogger(CreateSlots.class);
+  private static final MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
+  private SlotService slotService;
 
   /**
    * Constructor called by AWS Lambda.
    */
   public GetSlots() {
+    metricsLogger.putDimensions(DimensionSet.of("FunctionName", "GetSlots"));
     this.slotService = new SlotService();
-    this.metricsLogger = new MetricsLogger();
-    this.metricsLogger.setNamespace("DeliveryApi");
-    this.metricsLogger.putDimensions(DimensionSet.of("FunctionName", "GetSlots"));
   }
 
   /**
@@ -56,9 +56,8 @@ public class GetSlots implements RequestHandler<APIGatewayProxyRequestEvent, API
    *
    * @param slotService Injected SlotService object.
    */
-  public GetSlots(SlotService slotService, MetricsLogger metricsLogger) {
+  GetSlots(SlotService slotService) {
     this.slotService = slotService;
-    this.metricsLogger = metricsLogger;
   }
 
   /**
@@ -70,6 +69,7 @@ public class GetSlots implements RequestHandler<APIGatewayProxyRequestEvent, API
    *        5xx: if slots cannot be retrieved for the given farm
    */
   @Tracing
+  @Metrics(captureColdStart = true)
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
     logger.info("Starting to handle GetSlots request");
     String returnVal = "";
@@ -108,8 +108,6 @@ public class GetSlots implements RequestHandler<APIGatewayProxyRequestEvent, API
 
       metricsLogger.putMetric("SqlException", 1, Unit.COUNT);
     }
-
-    metricsLogger.flush();
 
     return ApiUtil.generateReturnData(httpStatus, returnVal);
   }

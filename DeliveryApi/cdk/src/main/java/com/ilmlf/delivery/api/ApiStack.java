@@ -485,26 +485,29 @@ public class ApiStack extends Stack {
             .outputType(ARCHIVED)
             .build();
 
+    Map<String, String> env = new HashMap<>(Map.of(
+            "DB_ENDPOINT",
+            functionName.equals("PopulateFarmDb")
+                    ? props.getDbEndpoint()
+                    : props.getDbProxyEndpoint(),
+            "DB_PORT", props.getDbPort().toString(),
+            "DB_REGION", props.getDbRegion(),
+            "DB_USER", props.getDbUser(),
+            "DB_ADMIN_SECRET", props.getDbAdminSecretName(),
+            "DB_USER_SECRET", props.getDbUserSecretName(),
+            "CORS_ALLOW_ORIGIN_HEADER", "*"));
+
+    env.put("POWERTOOLS_METRICS_NAMESPACE", "DeliveryApi");
+    env.put("POWERTOOLS_SERVICE_NAME", "DeliveryApi");
+    env.put("POWERTOOLS_TRACER_CAPTURE_ERROR", "false");
+    env.put("POWERTOOLS_TRACER_CAPTURE_RESPONSE", "false");
+
     ApiFunction function =
         new ApiFunction(
             this,
             functionName,
             FunctionProps.builder()
-                .environment(
-                    Map.of(
-                        "POWERTOOLS_SERVICE_NAME", "Delivery",
-                        "POWERTOOLS_TRACER_CAPTURE_ERROR", "false",
-                        "POWERTOOLS_TRACER_CAPTURE_RESPONSE", "false",
-                        "DB_ENDPOINT",
-                        functionName.equals("PopulateFarmDb")
-                            ? props.getDbEndpoint()
-                            : props.getDbProxyEndpoint(),
-                        "DB_PORT", props.getDbPort().toString(),
-                        "DB_REGION", props.getDbRegion(),
-                        "DB_USER", props.getDbUser(),
-                        "DB_ADMIN_SECRET", props.getDbAdminSecretName(),
-                        "DB_USER_SECRET", props.getDbUserSecretName(),
-                        "CORS_ALLOW_ORIGIN_HEADER", "*"))
+                .environment(env)
                 .runtime(Runtime.JAVA_11)
                 .code(
                     Code.fromAsset(

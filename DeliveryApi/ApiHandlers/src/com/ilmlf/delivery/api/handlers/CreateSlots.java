@@ -25,6 +25,8 @@ import org.apache.logging.log4j.Logger;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
+import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.metrics.MetricsUtils;
 import software.amazon.lambda.powertools.tracing.Tracing;
 
 import java.util.ArrayList;
@@ -34,20 +36,18 @@ import java.util.List;
  * A Lambda handler for CreateSlot API Call.
  */
 public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-  private SlotService slotService;
-  private MetricsLogger metricsLogger;
-  private SlotParser slotParser;
   private static final Logger logger = LogManager.getLogger(CreateSlots.class);
+  private static final MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
+  private SlotService slotService;
+  private SlotParser slotParser;
 
   /**
    * Constructor called by AWS Lambda.
    */
   public CreateSlots() {
-    this.slotService = new SlotService();
-    this.metricsLogger = new MetricsLogger();
-    this.slotParser = new SlotParser();
-    this.metricsLogger.setNamespace("DeliveryApi");
     metricsLogger.putDimensions(DimensionSet.of("FunctionName", "CreateSlots"));
+    this.slotService = new SlotService();
+    this.slotParser = new SlotParser();
     logger.info("CreateSlots empty constructor, called by AWS Lambda");
   }
 
@@ -56,9 +56,8 @@ public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, 
    *
    * @param slotService the mocked SlotService instance
    */
-  public CreateSlots(SlotService slotService, MetricsLogger metricsLogger, SlotParser slotParser) {
+  CreateSlots(SlotService slotService, SlotParser slotParser) {
     this.slotService = slotService;
-    this.metricsLogger = metricsLogger;
     this.slotParser = slotParser;
     logger.info("CreateSlots constructor for unit testing, allowing injection of mock SlotService");
   }
@@ -83,6 +82,7 @@ public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, 
    *        5xx: if slot can't be persisted
    */
   @Tracing
+  @Metrics(captureColdStart = true)
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
     String returnVal = "";
     Integer httpStatus = 200;
@@ -123,8 +123,6 @@ public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, 
         metricsLogger.putMetric("CreateSlotsException", 1, Unit.COUNT);
       }
     }
-
-    metricsLogger.flush();
 
     return ApiUtil.generateReturnData(httpStatus, returnVal);
   }
