@@ -21,6 +21,8 @@ import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.rds.RdsUtilities;
 import software.amazon.awssdk.services.rds.model.GenerateAuthenticationTokenRequest;
+import software.amazon.lambda.powertools.tracing.Tracing;
+
 
 /**
  * Database Utility class. Used for connecting to the database and executing RDS commands.
@@ -49,6 +51,7 @@ public class DbUtil {
    * @param port RDS endpoint port
    * @return a connection using IAM authentication
    */
+  @Tracing(segmentName = "CreateDBConnection")
   public Connection createConnectionViaIamAuth(@NonNull String username,
                                                @NonNull String dbEndpoint,
                                                @NonNull String region,

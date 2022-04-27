@@ -64,7 +64,7 @@ public class SlotService {
    * @param slots List of slots to be inserted.
    * @throws SQLException when SQL execution fails
    */
-  @Tracing(segmentName = "Insert_Slot_Transac")
+  @Tracing(segmentName = "Insert_Slot_Transaction")
   public int insertSlotList(List<Slot> slots) throws SQLException {
     this.con = refreshDbConnection();
     int rowsUpdated = 0;
@@ -102,8 +102,8 @@ public class SlotService {
    */
   @Tracing(segmentName = "Insert_Slot_RDS")
   public int insertSlot(Slot slot) throws SQLException {
-    TracingUtils.putAnnotation("farm", slot.getFarmId());
-    logger.info("Inserting slot: {}", slot);
+    TracingUtils.putAnnotation("farmId", slot.getFarmId());
+    logger.debug("Inserting slot: {}", slot);
 
     String query = "Insert into deliverydb.delivery_slot "
         + " (delivery_date, slot_from, slot_to, avail_deliveries, booked_deliveries, farm_id)"
@@ -137,7 +137,9 @@ public class SlotService {
   @Tracing(segmentName = "Get_Slot_RDS")
   public ArrayList<Slot> getSlots(Integer farmId, LocalDate availableSlotsBeginDate,
                                   LocalDate availableSlotsEndDate) throws SQLException {
-    TracingUtils.putAnnotation("farm", farmId);
+    TracingUtils.putAnnotation("farmId", farmId);
+    logger.debug("Retrieving available slots");
+
     this.con = refreshDbConnection();
     ArrayList<Slot> slotArray = new ArrayList<>();
     String query = "select * from deliverydb.delivery_slot "
@@ -184,10 +186,12 @@ public class SlotService {
    * @throws SQLException when update to the database fails
    * @throws IllegalStateException when there is no available delivery in the slot
    */
-  @Tracing(segmentName = "Book_Delivery_Transac")
+  @Tracing(segmentName = "Book_Delivery_Transaction")
   public Delivery bookDelivery(Integer farmId, Integer slotId, Integer userId) throws SQLException {
-    TracingUtils.putAnnotation("farm", farmId);
-    logger.info("Booking slot {} for user {} on farm {}", slotId, userId, farmId);
+    TracingUtils.putAnnotation("farmId", farmId);
+    TracingUtils.putAnnotation("userId", userId);
+    TracingUtils.putAnnotation("slotId", slotId);
+    logger.info("Booking delivery slot");
 
     this.con = refreshDbConnection();
     Delivery delivery;
@@ -209,7 +213,7 @@ public class SlotService {
     } catch (SQLException exception) {
       // If any update fails, we need to rollback to the original state.
       // Else, the data between `delivery_slot` and `delivery` tables will be left inconsistent
-      logger.error(exception.getMessage()+ ", rolling back transaction!", exception);
+      logger.error(exception.getMessage() + ", rolling back transaction!", exception);
       this.con.rollback();
       throw exception;
 
@@ -218,9 +222,12 @@ public class SlotService {
     }
   }
 
-  @Tracing(segmentName = "Update_Slot_RDS")
+  @Tracing(segmentName = "Decrease_Availabilities_RDS")
   private boolean decreaseAvailableDeliveries(Integer farmId, Integer slotId) throws SQLException {
-    TracingUtils.putAnnotation("farm", farmId);
+    TracingUtils.putAnnotation("farmId", farmId);
+    TracingUtils.putAnnotation("slotId", slotId);
+    logger.debug("Decrease available deliveries");
+
     this.con = refreshDbConnection();
     String updateDeliverySlotQuery = "UPDATE deliverydb.delivery_slot "
         + "SET avail_deliveries = avail_deliveries - 1,  booked_deliveries =  booked_deliveries + 1 "
@@ -235,8 +242,10 @@ public class SlotService {
 
   @Tracing(segmentName = "Book_Delivery_RDS")
   private Delivery insertNewDelivery(Integer farmId, Integer slotId, Integer userId) throws SQLException {
-    TracingUtils.putAnnotation("farm", farmId);
-    logger.info("Inserting delivery for slot {}, user {} on farm {}", slotId, userId, farmId);
+    TracingUtils.putAnnotation("farmId", farmId);
+    TracingUtils.putAnnotation("userId", userId);
+    TracingUtils.putAnnotation("slotId", slotId);
+    logger.debug("Inserting delivery in database");
 
     String insertDeliveryQuery = "INSERT INTO deliverydb.delivery "
         + "(farm_id, slot_id, user_id) "
@@ -265,6 +274,7 @@ public class SlotService {
    *
    * @return the existing Connection or a new one in the case it needs to be refreshed
    */
+  @Tracing(segmentName = "RefreshDBConnection")
   protected Connection refreshDbConnection() {
     Connection connection = this.con;
 

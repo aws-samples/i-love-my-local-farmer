@@ -13,6 +13,8 @@ limitations under the License.
 
 package com.ilmlf.delivery.api.handlers;
 
+import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.API_GATEWAY_REST;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
@@ -24,7 +26,6 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.ArrayList;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -32,11 +33,10 @@ import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 import software.amazon.lambda.powertools.logging.Logging;
+import software.amazon.lambda.powertools.logging.LoggingUtils;
 import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.MetricsUtils;
 import software.amazon.lambda.powertools.tracing.Tracing;
-
-import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.API_GATEWAY_REST;
 
 /**
  * A Lambda handler for GetSlot API Call.
@@ -85,6 +85,7 @@ public class GetSlots implements RequestHandler<APIGatewayProxyRequestEvent, API
 
     try {
       farmId = Integer.parseInt(input.getPathParameters().get("farm-id"));
+      LoggingUtils.appendKey("farmId", input.getPathParameters().get("farm-id"));
 
     } catch (NumberFormatException exception) {
       throw new RuntimeException("Farm id must not be blank, and must be a valid integer");
@@ -97,19 +98,21 @@ public class GetSlots implements RequestHandler<APIGatewayProxyRequestEvent, API
         httpStatus = 400;
         returnVal = "No slots found matching the farm id";
 
+        logger.info(returnVal);
         metricsLogger.putMetric("NoSlotsFound", 1, Unit.COUNT);
       } else {
         JSONArray slotJsonArray = new JSONArray(slotArray);
         returnVal = slotJsonArray.toString();
 
+        logger.info("{} slots found", slotArray.size());
         metricsLogger.putMetric("SlotsReturned", slotJsonArray.length(), Unit.COUNT);
       }
 
     } catch (SQLException exception) {
       httpStatus = 500;
       returnVal = "Error encountered while retrieving slots from database";
-      logger.error(exception.getMessage(), exception);
 
+      logger.error(exception.getMessage(), exception);
       metricsLogger.putMetric("SqlException", 1, Unit.COUNT);
     }
 

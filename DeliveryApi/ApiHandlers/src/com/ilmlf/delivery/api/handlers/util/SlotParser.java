@@ -1,14 +1,13 @@
 package com.ilmlf.delivery.api.handlers.util;
 
 import com.ilmlf.delivery.api.handlers.Slot;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class SlotParser {
 

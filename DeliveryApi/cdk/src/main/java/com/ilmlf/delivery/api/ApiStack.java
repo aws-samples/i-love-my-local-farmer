@@ -19,54 +19,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;
-import software.amazon.awscdk.core.AssetHashType;
-import software.amazon.awscdk.core.BundlingOptions;
-import software.amazon.awscdk.core.CfnOutput;
-import software.amazon.awscdk.core.CfnOutputProps;
-import software.amazon.awscdk.core.Construct;
-import software.amazon.awscdk.core.CustomResource;
-import software.amazon.awscdk.core.CustomResourceProps;
-import software.amazon.awscdk.core.Duration;
-import software.amazon.awscdk.core.Environment;
 import software.amazon.awscdk.core.Stack;
-import software.amazon.awscdk.core.StackProps;
+import software.amazon.awscdk.core.*;
 import software.amazon.awscdk.customresources.Provider;
 import software.amazon.awscdk.customresources.ProviderProps;
-import software.amazon.awscdk.services.apigateway.ApiDefinition;
 import software.amazon.awscdk.services.apigateway.CfnAccount;
 import software.amazon.awscdk.services.apigateway.CfnAccountProps;
-import software.amazon.awscdk.services.apigateway.Cors;
-import software.amazon.awscdk.services.apigateway.SpecRestApi;
 import software.amazon.awscdk.services.ec2.ISecurityGroup;
 import software.amazon.awscdk.services.ec2.IVpc;
 import software.amazon.awscdk.services.ec2.SecurityGroup;
 import software.amazon.awscdk.services.ec2.Vpc;
-import software.amazon.awscdk.services.ec2.VpcLookupOptions;
-import software.amazon.awscdk.services.iam.CfnRole;
-import software.amazon.awscdk.services.iam.Effect;
-import software.amazon.awscdk.services.iam.ManagedPolicy;
-import software.amazon.awscdk.services.iam.PolicyStatement;
-import software.amazon.awscdk.services.iam.PolicyStatementProps;
-import software.amazon.awscdk.services.iam.Role;
-import software.amazon.awscdk.services.iam.RoleProps;
-import software.amazon.awscdk.services.iam.ServicePrincipal;
-import software.amazon.awscdk.services.lambda.*;
+import software.amazon.awscdk.services.iam.*;
 import software.amazon.awscdk.services.lambda.Runtime;
+import software.amazon.awscdk.services.lambda.*;
 import software.amazon.awscdk.services.logs.LogGroup;
 import software.amazon.awscdk.services.logs.LogGroupProps;
 import software.amazon.awscdk.services.logs.RetentionDays;
@@ -76,6 +43,11 @@ import software.amazon.awscdk.services.sam.CfnApiProps;
 import software.amazon.awscdk.services.sns.Topic;
 import software.amazon.awscdk.services.sns.TopicProps;
 import software.amazon.awscdk.services.sns.subscriptions.EmailSubscription;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 
 import static software.amazon.awscdk.core.BundlingOutput.ARCHIVED;
 
@@ -138,7 +110,7 @@ public class ApiStack extends Stack {
    * In this case, the custom resource will run the Lambda function handler ("PopulateFarmDb") which contains
    * code to initialize the tables.
    *
-   * See https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources.html for details about custom resource
+   * See <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources.html">https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources.html</a> for details about custom resource
    */
   private void createCustomResourceToPopulateDb(ApiStackProps props, Role lambdaRdsProxyRoleWithPw) throws IOException {
     // See https://docs.aws.amazon.com/cdk/api/latest/java/software/amazon/awscdk/customresources/package-summary.html for details on writing a Lambda function
@@ -499,35 +471,32 @@ public class ApiStack extends Stack {
 
     env.put("POWERTOOLS_METRICS_NAMESPACE", "DeliveryApi");
     env.put("POWERTOOLS_SERVICE_NAME", "DeliveryApi");
-    env.put("POWERTOOLS_TRACER_CAPTURE_ERROR", "false");
+    env.put("POWERTOOLS_TRACER_CAPTURE_ERROR", "true");
     env.put("POWERTOOLS_TRACER_CAPTURE_RESPONSE", "false");
     env.put("POWERTOOLS_LOG_LEVEL", "INFO");
 
-    ApiFunction function =
-        new ApiFunction(
+    return new ApiFunction(
             this,
-            functionName,
-            FunctionProps.builder()
-                .environment(env)
-                .runtime(Runtime.JAVA_11)
-                .code(
-                    Code.fromAsset(
-                        "../ApiHandlers",
-                        AssetOptions.builder()
-                            .assetHashType(AssetHashType.CUSTOM)
-                            .assetHash(Hashing.hashDirectory("../ApiHandlers/src", false))
-                            .bundling(builderOptions)
-                            .build()))
-                .timeout(Duration.seconds(29))
-                .memorySize(2048)
-                .handler("com.ilmlf.delivery.api.handlers." + functionName)
-                .vpc(this.dbVpc)
-                .securityGroups(List.of(this.dbSg))
-                .functionName(functionName)
-                .role(role)
-                .tracing(Tracing.ACTIVE)
-                .build());
-
-    return function;
+        functionName,
+        FunctionProps.builder()
+            .environment(env)
+            .runtime(Runtime.JAVA_11)
+            .code(
+                Code.fromAsset(
+                    "../ApiHandlers",
+                    AssetOptions.builder()
+                        .assetHashType(AssetHashType.CUSTOM)
+                        .assetHash(Hashing.hashDirectory("../ApiHandlers/src", false))
+                        .bundling(builderOptions)
+                        .build()))
+            .timeout(Duration.seconds(29))
+            .memorySize(2048)
+            .handler("com.ilmlf.delivery.api.handlers." + functionName)
+            .vpc(this.dbVpc)
+            .securityGroups(List.of(this.dbSg))
+            .functionName(functionName)
+            .role(role)
+            .tracing(Tracing.ACTIVE)
+            .build());
   }
 }
