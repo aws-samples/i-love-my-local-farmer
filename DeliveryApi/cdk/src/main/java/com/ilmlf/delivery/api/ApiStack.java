@@ -474,6 +474,7 @@ public class ApiStack extends Stack {
     env.put("POWERTOOLS_TRACER_CAPTURE_ERROR", "true");
     env.put("POWERTOOLS_TRACER_CAPTURE_RESPONSE", "false");
     env.put("POWERTOOLS_LOG_LEVEL", "INFO");
+    env.put("JAVA_TOOL_OPTIONS", "-XX:+TieredCompilation -XX:TieredStopAtLevel=1");
 
     return new ApiFunction(
             this,
