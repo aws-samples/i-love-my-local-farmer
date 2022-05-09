@@ -9,20 +9,18 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.ilmlf.delivery.api.handlers.service.SlotService;
+import com.ilmlf.delivery.api.handlers.util.SlotParser;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-
-import com.ilmlf.delivery.api.handlers.util.SlotParser;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 
 /**
  * Unit tests for CreateSlots handler.
@@ -39,16 +37,14 @@ class CreateSlotsTest {
 
   private CreateSlots cs;
   private SlotService slotService;
-  private MetricsLogger metricsLogger;
   private SlotParser slotParser;
 
   @BeforeEach
   public void setUp() {
     slotService = Mockito.mock(SlotService.class);
-    this.metricsLogger = Mockito.mock(MetricsLogger.class);
     this.slotParser = new SlotParser();
 
-    cs = new CreateSlots(slotService, this.metricsLogger, this.slotParser);
+    cs = new CreateSlots(slotService, this.slotParser);
   }
 
   @Test
@@ -168,8 +164,7 @@ class CreateSlotsTest {
 
   @Test
   public void testHandlerMissingArguments() {
-    this.metricsLogger = MockProvider.getMockMetricsLogger();
-    this.cs = new CreateSlots(this.slotService, this.metricsLogger, this.slotParser);
+    this.cs = new CreateSlots(this.slotService, this.slotParser);
 
     APIGatewayProxyRequestEvent request = new APIGatewayProxyRequestEvent();
     APIGatewayProxyResponseEvent response = this.cs.handleRequest(request, Mockito.mock(Context.class));
@@ -180,8 +175,7 @@ class CreateSlotsTest {
   @Test
   public void testHandlerBadParsing() throws NullPointerException {
     this.slotParser = Mockito.mock(SlotParser.class);
-    this.metricsLogger = MockProvider.getMockMetricsLogger();
-    this.cs = new CreateSlots(this.slotService, this.metricsLogger, this.slotParser);
+    this.cs = new CreateSlots(this.slotService, this.slotParser);
 
     Mockito.when(this.slotParser.parseAndCreateSlotList(Mockito.any(), Mockito.any()))
         .thenThrow(new NullPointerException());
@@ -199,8 +193,7 @@ class CreateSlotsTest {
 
   @Test
   public void testHandlerSqlProblem() throws SQLException {
-    this.metricsLogger = MockProvider.getMockMetricsLogger();
-    this.cs = new CreateSlots(this.slotService, this.metricsLogger, this.slotParser);
+    this.cs = new CreateSlots(this.slotService, this.slotParser);
     Mockito.when(this.slotService.insertSlotList(Mockito.any()))
         .thenThrow(new SQLException());
 
@@ -217,8 +210,7 @@ class CreateSlotsTest {
 
   @Test
   public void testHandlerSuccess() throws SQLException {
-    this.metricsLogger = MockProvider.getMockMetricsLogger();
-    this.cs = new CreateSlots(this.slotService, this.metricsLogger, this.slotParser);
+    this.cs = new CreateSlots(this.slotService, this.slotParser);
     Mockito.when(this.slotService.insertSlotList(Mockito.any())).thenReturn(1);
 
     APIGatewayProxyRequestEvent request = new APIGatewayProxyRequestEvent()

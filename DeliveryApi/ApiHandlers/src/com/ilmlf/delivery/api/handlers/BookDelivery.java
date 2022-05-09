@@ -13,6 +13,8 @@ limitations under the License.
 
 package com.ilmlf.delivery.api.handlers;
 
+import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.API_GATEWAY_REST;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
@@ -27,23 +29,27 @@ import org.json.JSONObject;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
-
+import software.amazon.lambda.powertools.logging.Logging;
+import software.amazon.lambda.powertools.logging.LoggingUtils;
+import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.metrics.MetricsUtils;
+import software.amazon.lambda.powertools.tracing.Tracing;
+import software.amazon.lambda.powertools.tracing.TracingUtils;
 
 /**
  * A Lambda handler for BookDelivery API Call.
  */
 public class BookDelivery implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-  private SlotService slotService;
-  private MetricsLogger metricsLogger;
+  private static final MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
   private static final Logger logger = LogManager.getLogger(CreateSlots.class);
+  private final SlotService slotService;
 
   /**
    * Constructor called by AWS Lambda.
    */
+  @SuppressWarnings("unused")
   public BookDelivery() {
-    this.slotService = new SlotService();
-    this.metricsLogger = new MetricsLogger();
-    this.metricsLogger.setNamespace("DeliveryApi");
+    this(new SlotService());
     metricsLogger.putDimensions(DimensionSet.of("FunctionName", "BookDelivery"));
   }
 
@@ -52,9 +58,8 @@ public class BookDelivery implements RequestHandler<APIGatewayProxyRequestEvent,
    *
    * @param slotService Injected SlotService object.
    */
-  public BookDelivery(SlotService slotService, MetricsLogger metricsLogger) {
+  BookDelivery(SlotService slotService) {
     this.slotService = slotService;
-    this.metricsLogger = metricsLogger;
   }
 
   /**
@@ -68,18 +73,22 @@ public class BookDelivery implements RequestHandler<APIGatewayProxyRequestEvent,
    *         5xx: if the slot isn't reserved (e.g. runs out of availability) OR
    *         internal error
    */
-  @Override
+  @Logging(correlationIdPath = API_GATEWAY_REST)
+  @Tracing
+  @Metrics(captureColdStart = true)
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent event, Context context) {
-    Integer httpStatus;
+    int httpStatus;
     String returnVal;
-    Integer farmId;
-    Integer slotId;
+    int farmId;
+    int slotId;
     Integer userId;
     JSONObject jsonObjDelivery;
 
     try {
-      farmId = Integer.parseInt(event.getPathParameters().get("farm-id"));
-      slotId = Integer.parseInt(event.getPathParameters().get("slot-id"));
+      String farm = event.getPathParameters().get("farm-id");
+      String slot = event.getPathParameters().get("slot-id");
+      farmId = Integer.parseInt(farm);
+      slotId = Integer.parseInt(slot);
 
       String body = event.getBody();
       JSONObject bodyJson = new JSONObject(body);
@@ -89,6 +98,13 @@ public class BookDelivery implements RequestHandler<APIGatewayProxyRequestEvent,
         throw new JSONException("userId must be an integer");
       }
       userId = (Integer) userIdInJson;
+
+      LoggingUtils.appendKey("farmId", farm);
+      LoggingUtils.appendKey("slotId", slot);
+      LoggingUtils.appendKey("userId", String.valueOf(userId));
+      TracingUtils.putAnnotation("farmId", farm);
+      TracingUtils.putAnnotation("userId", userId);
+      TracingUtils.putAnnotation("slotId", slot);
 
       Delivery delivery = slotService.bookDelivery(farmId, slotId, userId);
       jsonObjDelivery = new JSONObject(delivery);
@@ -117,8 +133,6 @@ public class BookDelivery implements RequestHandler<APIGatewayProxyRequestEvent,
       returnVal = HandlerErrorMessage.NO_AVAILABLE_DELIVERY.toString();
       metricsLogger.putMetric("NoAvailableDelivery", 1, Unit.COUNT);
     }
-
-    metricsLogger.flush();
 
     return ApiUtil.generateReturnData(httpStatus, returnVal);
   }

@@ -40,8 +40,7 @@ import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 public class BookDeliveryTest {
   private BookDelivery bookDelivery;
   private SlotService slotService;
-  private MetricsLogger metricsLogger;
-  private static Gson GSON;    
+  private static Gson GSON;
 
   /**
    * Initialize GSON to deserialize the response body.
@@ -55,9 +54,7 @@ public class BookDeliveryTest {
   public void setup() {
     this.slotService = Mockito.mock(SlotService.class);
 
-    this.metricsLogger = MockProvider.getMockMetricsLogger();
-
-    this.bookDelivery = new BookDelivery(this.slotService, this.metricsLogger);
+    this.bookDelivery = new BookDelivery(this.slotService);
   }
 
   @Test

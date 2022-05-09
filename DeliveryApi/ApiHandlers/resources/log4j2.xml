@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration packages="com.amazonaws.services.lambda.runtime.log4j2">
+<Configuration>
     <Appenders>
-        <Lambda name="Lambda">
-            <PatternLayout>
-                <pattern>%d{yyyy-MM-dd HH:mm:ss} %X{AWSRequestId} %-5p %c{1} - %m%n</pattern>
-            </PatternLayout>
-        </Lambda>
+        <Console name="JsonAppender" target="SYSTEM_OUT">
+            <JsonTemplateLayout eventTemplateUri="classpath:log_layout.json" />
+        </Console>
     </Appenders>
     <Loggers>
+        <Logger name="JsonLogger" level="INFO" additivity="false">
+            <AppenderRef ref="JsonAppender"/>
+        </Logger>
         <Root level="info">
-            <AppenderRef ref="Lambda" />
+            <AppenderRef ref="JsonAppender"/>
         </Root>
     </Loggers>
 </Configuration>

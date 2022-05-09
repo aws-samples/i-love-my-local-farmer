@@ -84,6 +84,7 @@ public class PopulateFarmDb implements RequestHandler<CloudFormationCustomResour
   /**
    * Constructor called by AWS Lambda.
    */
+  @SuppressWarnings("unused")
   public PopulateFarmDb() {
     // Admin credentials for RDS instance.
     JSONObject dbAdminSecret = SecretsUtil.getSecret(DB_REGION, System.getenv("DB_ADMIN_SECRET"));
@@ -98,11 +99,8 @@ public class PopulateFarmDb implements RequestHandler<CloudFormationCustomResour
       this.con = DbUtil.createConnectionViaUserPwd(dbAdminUser, dbAdminPwd, DB_ENDPOINT);
 
     } catch (Exception e) {
-      logger.info("INIT connection FAILED");
-      logger.error(e.getMessage(), e);
+      logger.error("Init connection failed: " + e.getMessage(), e);
     }
-
-    logger.info("PopulateFarmDb empty constructor, called by AWS Lambda");
   }
 
   /**
@@ -112,7 +110,6 @@ public class PopulateFarmDb implements RequestHandler<CloudFormationCustomResour
    */
   public PopulateFarmDb(Connection connection) {
     this.con = connection;
-    logger.info("PopulateFarmDb constructor for unit testing, allowing injection of mock Connection");
   }
   
   
@@ -120,7 +117,7 @@ public class PopulateFarmDb implements RequestHandler<CloudFormationCustomResour
    * Entry point for Custom Resource call. This function executes dbinit.sql, which 
    * creates a db user with username and password from DB_SECRET.
    * The Sql script will only execute on CREATE/UPDATE requestTypes 
-   * See https://docs.aws.amazon.com/cdk/api/latest/java/software/amazon/awscdk/customresources/package-summary.html 
+   * See <a href="https://docs.aws.amazon.com/cdk/api/latest/java/software/amazon/awscdk/customresources/package-summary.html">https://docs.aws.amazon.com/cdk/api/latest/java/software/amazon/awscdk/customresources/package-summary.html</a>
    *
    * @param customResourceEvent Event object from CloudFormation Custom Resource
    * @param context Context object
@@ -137,10 +134,8 @@ public class PopulateFarmDb implements RequestHandler<CloudFormationCustomResour
       executeSqlStatements(stmts);
     }
 
-    String returnJson = 
-        this.buildReturnJson(customResourceEvent.getRequestType(), 
-            customResourceEvent.getPhysicalResourceId(), runScript);
-    return returnJson;
+    return this.buildReturnJson(customResourceEvent.getRequestType(),
+        customResourceEvent.getPhysicalResourceId(), runScript);
   }
 
   /**
@@ -168,7 +163,7 @@ public class PopulateFarmDb implements RequestHandler<CloudFormationCustomResour
    * @throws IOException on reading error
    */
   public List<String> extractSqlStatements(BufferedReader br) throws IOException {
-    List<String> sqlStmts = new ArrayList<String>();
+    List<String> sqlStmts = new ArrayList<>();
     StringBuilder sb = new StringBuilder();
     String line;
 
@@ -207,13 +202,10 @@ public class PopulateFarmDb implements RequestHandler<CloudFormationCustomResour
    */
   public boolean isExecuteScript(String requestType) {
     if (null != requestType) {
-      if (REQUEST_UPDATE.equals(requestType) || REQUEST_CREATE.equals(requestType)) {
-        return true;
-      }
+      return REQUEST_UPDATE.equals(requestType) || REQUEST_CREATE.equals(requestType);
     } else {
       return true;
     }
-    return false;
   }
   
   /**
@@ -238,7 +230,7 @@ public class PopulateFarmDb implements RequestHandler<CloudFormationCustomResour
     }
 
     retJson.put(SCRIPT_RUN, Boolean.toString(runScript));
-    System.out.println(retJson.toString());
+    logger.info(retJson);
     return retJson.toString();
   }
 
@@ -252,7 +244,7 @@ public class PopulateFarmDb implements RequestHandler<CloudFormationCustomResour
    */
   public List<String> replaceCredentialsArray(@NonNull List<String> sqlStmts, 
         @NonNull String dbUsername, @NonNull String dbPassword) {
-    List<String> replacedCredsList = new ArrayList<String>();
+    List<String> replacedCredsList = new ArrayList<>();
     for (String sqlStmt : sqlStmts) {
       replacedCredsList.add(replaceCredentials(sqlStmt, dbUsername, dbPassword));
     }
@@ -267,8 +259,7 @@ public class PopulateFarmDb implements RequestHandler<CloudFormationCustomResour
    * @return the line with the credentials replaced
    */
   public String replaceCredentials(@NonNull String line, @NonNull String dbUsername, @NonNull String dbPassword) {
-    String l =  line.replaceAll("\\{\\{username\\}\\}", dbUsername)
+    return line.replaceAll("\\{\\{username\\}\\}", dbUsername)
         .replaceAll("\\{\\{password\\}\\}", dbPassword);
-    return l;
   }
 }

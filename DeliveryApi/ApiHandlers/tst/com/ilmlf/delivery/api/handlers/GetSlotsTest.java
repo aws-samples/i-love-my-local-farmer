@@ -34,7 +34,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 
 /**
  * Unit tests for GetSlots handler.
@@ -44,7 +43,6 @@ import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 public class GetSlotsTest {
   private GetSlots getSlots;
   private SlotService slotService;
-  private MetricsLogger metricsLogger;
   private static Gson GSON;
 
   /**
@@ -69,9 +67,8 @@ public class GetSlotsTest {
   public void setup() {
     this.slotService = Mockito.mock(SlotService.class);
 
-    this.metricsLogger = MockProvider.getMockMetricsLogger();
 
-    this.getSlots = new GetSlots(this.slotService, this.metricsLogger);
+    this.getSlots = new GetSlots(this.slotService);
   }
 
   @Test

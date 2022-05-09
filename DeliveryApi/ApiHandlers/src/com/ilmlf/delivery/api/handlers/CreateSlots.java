@@ -13,41 +13,44 @@ limitations under the License.
 
 package com.ilmlf.delivery.api.handlers;
 
+import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.API_GATEWAY_REST;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.ilmlf.delivery.api.handlers.service.SlotService;
 import com.ilmlf.delivery.api.handlers.util.ApiUtil;
+import com.ilmlf.delivery.api.handlers.util.SlotParser;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.ilmlf.delivery.api.handlers.util.SlotParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
+import software.amazon.lambda.powertools.logging.Logging;
+import software.amazon.lambda.powertools.logging.LoggingUtils;
+import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.metrics.MetricsUtils;
+import software.amazon.lambda.powertools.tracing.Tracing;
 
 /**
  * A Lambda handler for CreateSlot API Call.
  */
 public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-  private SlotService slotService;
-  private MetricsLogger metricsLogger;
-  private SlotParser slotParser;
   private static final Logger logger = LogManager.getLogger(CreateSlots.class);
+  private static final MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
+  private final SlotService slotService;
+  private final SlotParser slotParser;
 
   /**
    * Constructor called by AWS Lambda.
    */
+  @SuppressWarnings("unused")
   public CreateSlots() {
-    this.slotService = new SlotService();
-    this.metricsLogger = new MetricsLogger();
-    this.slotParser = new SlotParser();
-    this.metricsLogger.setNamespace("DeliveryApi");
+    this(new SlotService(), new SlotParser());
     metricsLogger.putDimensions(DimensionSet.of("FunctionName", "CreateSlots"));
-    logger.info("CreateSlots empty constructor, called by AWS Lambda");
   }
 
   /**
@@ -55,11 +58,9 @@ public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, 
    *
    * @param slotService the mocked SlotService instance
    */
-  public CreateSlots(SlotService slotService, MetricsLogger metricsLogger, SlotParser slotParser) {
+  CreateSlots(SlotService slotService, SlotParser slotParser) {
     this.slotService = slotService;
-    this.metricsLogger = metricsLogger;
     this.slotParser = slotParser;
-    logger.info("CreateSlots constructor for unit testing, allowing injection of mock SlotService");
   }
 
   /**
@@ -81,14 +82,17 @@ public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, 
    *        4xx: if request doesn't come from authenticated client app<br/>
    *        5xx: if slot can't be persisted
    */
-  @Override
+  @Logging(correlationIdPath = API_GATEWAY_REST)
+  @Tracing
+  @Metrics(captureColdStart = true)
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
     String returnVal = "";
-    Integer httpStatus = 200;
+    int httpStatus = 200;
     List<Slot> slotList = new ArrayList<>();
 
     try {
       String farmIdStr = input.getPathParameters().get("farm-id");
+      LoggingUtils.appendKey("farmId", farmIdStr);
       String body = input.getBody();
       slotList = slotParser.parseAndCreateSlotList(body, farmIdStr);
 
@@ -100,9 +104,12 @@ public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, 
       metricsLogger.putMetric("InvalidSlotList", 1, Unit.COUNT);
     }
 
+    logger.info("{} slots created", slotList.size());
     if (!slotList.isEmpty()) {
       try {
         int rowsUpdated = slotService.insertSlotList(slotList);
+
+        logger.info("{} slots inserted", rowsUpdated);
 
         if (rowsUpdated == 0) {
           returnVal = "There was an error and the data could not be saved";
@@ -122,8 +129,6 @@ public class CreateSlots implements RequestHandler<APIGatewayProxyRequestEvent, 
         metricsLogger.putMetric("CreateSlotsException", 1, Unit.COUNT);
       }
     }
-
-    metricsLogger.flush();
 
     return ApiUtil.generateReturnData(httpStatus, returnVal);
   }
