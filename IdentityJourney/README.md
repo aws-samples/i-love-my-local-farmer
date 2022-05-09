@@ -9,7 +9,14 @@
 ## Dependencies
 
 - Azure Cli - install from this [link](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
-- For Windows 10 with WSL then run the following to ensure zip is installed:
+- For Windows 10 or 11 - please use WSL 
+  - Go to Windows Command prompt and type Bash
+    - To go to your home directory run the following command where _username_ is your login name
+  ```
+  cd /home/_username_
+  ```
+
+- Run the following command to ensure zip is installed:
 
   ```
   apt-get install zip
@@ -54,7 +61,7 @@ There are two functions contained in this repo -
 ## Provide the Input Values to the Azure Functions
 - Before running the following - login to Azure with the Az Cli using the following command **az login**
 - Once the base infrastructure has been deployed run the following which will upload the zip, deploying the functions and the user will be prompted for the values which are stored in Keyvault
-- Run the configure.sh script  (If you receive an error - ensure you run chmod +x configure.h)
+- Run the configure.sh script  (If you receive an error - ensure you run chmod +x configure.sh)
   - ./tools/configure.sh
 
   - The script will prompt the users for the following values to be filled in :
@@ -92,6 +99,6 @@ The App comes with one function, however, to create additional functions to trig
 
 ![Multiple Functions](./images/MultipleFunctions.PNG)
 
-When adding additional functions, you will need to update the main.json template to a [maximum of 10](https://docs.microsoft.com/en-us/azure/azure-functions/functions-app-settings#functions_worker_process_count_). Both of these values are currently set to 4.
+When adding additional functions, you will need to update the main.json template to a [maximum of 10](https://docs.microsoft.com/en-us/azure/azure-functions/functions-app-settings#functions_worker_process_count_). Both of these values to 4.
 
 ![Update Values](./images/WorkerProcess.PNG)
