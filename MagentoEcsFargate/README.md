@@ -27,6 +27,7 @@ The main components of these solutions are in the folder magento_platform :
 3. `magento_es_stack` will set up the Opensearch cluster.
 4. `magento_app_stack` will set up Amazon ECS cluster on Fargate to host the Magento Application.  
 
+
 ## Installation steps
 
 1. cd MagentoEcsFargate (if not already)
@@ -38,7 +39,7 @@ The main components of these solutions are in the folder magento_platform :
 
 ## Need to know 
 
-We have 2 environement variables commented in the magento_app_stack that only needed during the firt initialization of the platform :
+We have 2 environement variables commented in the magento_app_stack. They need to remain commented during the first initialization of the platform :
 
 `MAGENTO_SKIP_BOOTSTRAP` : Whether to skip performing the initial bootstrapping for the application. Default: no
 `MAGENTO_SKIP_REINDEX` : Whether to skip Magento re-index during the initialization. Default: no

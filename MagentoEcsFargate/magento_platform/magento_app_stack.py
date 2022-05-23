@@ -27,8 +27,8 @@ class MagentoAppStack(NestedStack):
                                                       secret_complete_arn=database_instance.secret.secret_arn,
                                                       )
         # Create application user password
-        secretMagentoUser =  sm.Secret(self,  'passwordMagentoUser', secret_name = "passwordMagentoUser")
-
+        secretMagentoUser =  sm.Secret(self,  'passwordMagentoUser', secret_name = "passwordMagentoUser");
+        
         # Create an application load balancer.
         # WARNING : This example is provided as a sample and rely on HTTP, which should never be used in production system. 
         magento_lb = elbv2.ApplicationLoadBalancer(self, "MagentoLB", vpc=vpc, internet_facing=True, load_balancer_name="magento-lb") 
@@ -57,7 +57,7 @@ class MagentoAppStack(NestedStack):
                                                                                     "MAGENTO_USERNAME": "magento_user",
                                                                                     "MAGENTO_EMAIL": "magento_user@example.com",
 
-                                                                                    # The following two variables are needed for the first boot - initialization of the database and the search
+                                                                                    # The following two variables needed to be commented for the first boot - initialization of the database and the search
                                                                                     #"MAGENTO_SKIP_BOOTSTRAP":"yes", #Keep commented for the first run
                                                                                     #"MAGENTO_SKIP_REINDEX" : "yes"  #Keep commented for the first run
                                                                                   },
@@ -78,6 +78,7 @@ class MagentoAppStack(NestedStack):
                                                                               load_balancer_name = "magento_lb",
                                                                               load_balancer = magento_lb,
                                                                               security_groups = [appSG,],
+                                                                              
                                                                               )
         # Define health check
         self.magento_service.target_group.configure_health_check(
