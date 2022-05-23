@@ -28,7 +28,7 @@ The main components of these solutions are in the folder magento_platform :
 
 ## Installation steps
 1. cd MagentoEcsFargate (if not already)
-2. virtualenv venv
+2. python3 -m virtualenv venv
 3. source .venv/bin/activate
 2. pip3 install -r requirements.txt
 1. cdk deploy --all
