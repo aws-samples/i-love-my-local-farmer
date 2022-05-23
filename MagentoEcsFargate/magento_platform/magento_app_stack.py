@@ -1,42 +1,42 @@
 from re import A
 from aws_cdk import (
-    Stack,
+    NestedStack,
     aws_ec2 as ec2,
     aws_ecs as ecs,
     aws_elasticloadbalancingv2 as elbv2,
-    aws_rds as rds,
-    Fn, App, RemovalPolicy,
     aws_ecs_patterns as ecs_patterns,
-    aws_opensearchservice as opensearch,
     aws_secretsmanager as sm,
+    aws_certificatemanager as cm,
     CfnOutput,
     Duration,
-    aws_ecr as ecr
 )
 
 from constructs import Construct
 
 
-class MagentoAppStack(Stack):
+class MagentoAppStack(NestedStack):
 
-    def __init__(self, scope: Construct, construct_id: str, vpc, appSG, database_instance, es_domain, **kwargs) -> None:
-        super().__init__(scope, construct_id, **kwargs)
+    def __init__(self, scope: Construct, vpc, appSG, database_instance, es_domain, **kwargs):
+        super().__init__(scope, "MagentoAppStack", **kwargs)
 
         # Create ECS cluster
         _cluster = ecs.Cluster(self, "MagentoCluster", vpc=vpc)
 
+        # Retrieve DB secret ARN
         dbsecret = sm.Secret.from_secret_complete_arn(self, "DatabaseSecret",
                                                       secret_complete_arn=database_instance.secret.secret_arn,
                                                       )
+        # Create application user password
+        secretMagentoUser =  sm.Secret(self,  'passwordMagentoUser', secret_name = "passwordMagentoUser")
 
-        # Create Fargate service running on an ECS cluster fronted by an application load balancer.
-
-        magento_lb = elbv2.ApplicationLoadBalancer(self, "magento_lb", vpc=vpc, internet_facing=True, load_balancer_name="magento-lb") 
+        # Create an application load balancer.
+        # WARNING : This example is provided as a sample and rely on HTTP, which should never be used in production system. 
+        magento_lb = elbv2.ApplicationLoadBalancer(self, "MagentoLB", vpc=vpc, internet_facing=True, load_balancer_name="magento-lb") 
        
+       # Create Fargate service running on an ECS cluster fronted by the application load balancer.
         self.magento_service = ecs_patterns.ApplicationLoadBalancedFargateService(self, "MagentoService",
                                                                               cluster=_cluster,            # Required
                                                                               cpu=2048,                    # Default is 256
-                                                                              desired_count=1,            # Default is 1
                                                                               task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
                                                                                   image=ecs.ContainerImage.from_registry(
                                                                                       "public.ecr.aws/bitnami/magento:2.4.4"),  # return RepositoryImage
@@ -53,13 +53,18 @@ class MagentoAppStack(Stack):
                                                                                     "MAGENTO_SEARCH_ENGINE": "elasticsearch7",
                                                                                     "MAGENTO_DEPLOY_STATIC_CONTENT": "yes",
                                                                                     "MAGENTO_EXTERNAL_HTTP_PORT_NUMBER": "80",
-                                                                                    "APACHE_HTTP_PORT_NUMBER" : "80"
+                                                                                    "APACHE_HTTP_PORT_NUMBER" : "80",
+                                                                                    "MAGENTO_USERNAME": "magento_user",
+                                                                                    "MAGENTO_EMAIL": "magento_user@example.com",
+
+                                                                                    # The following two variables are needed for the first boot - initialization of the database and the search
                                                                                     #"MAGENTO_SKIP_BOOTSTRAP":"yes", #Keep commented for the first run
                                                                                     #"MAGENTO_SKIP_REINDEX" : "yes"  #Keep commented for the first run
                                                                                   },
                                                                                   secrets={
                                                                                       "MAGENTO_DATABASE_USER": ecs.Secret.from_secrets_manager(dbsecret, "username"),
                                                                                       "MAGENTO_DATABASE_PASSWORD": ecs.Secret.from_secrets_manager(dbsecret, "password"),
+                                                                                      "MAGENTO_PASSWORD":ecs.Secret.from_secrets_manager(secretMagentoUser),
                                                                                   },
                                                                                   container_port=80
                                                                               ),
@@ -69,13 +74,11 @@ class MagentoAppStack(Stack):
                                                                                   3000),
                                                                               listener_port=80,
                                                                               task_subnets=ec2.SubnetSelection(
-                                                                                  subnet_type=ec2.SubnetType.PUBLIC),
-                                                                              assign_public_ip=True,
+                                                                                  subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT),
                                                                               load_balancer_name = "magento_lb",
                                                                               load_balancer = magento_lb,
-                                                                              #security_groups = [appSG,]
+                                                                              security_groups = [appSG,],
                                                                               )
-        
         # Define health check
         self.magento_service.target_group.configure_health_check(
             path="/pub/health_check.php"
@@ -91,12 +94,10 @@ class MagentoAppStack(Stack):
         _scalable_target.scale_on_cpu_utilization("CpuScaling",
                                                   target_utilization_percent=70
                                                   )
-
         # Scaling policy for Memory
         _scalable_target.scale_on_memory_utilization("MemoryScaling",
                                                      target_utilization_percent=70
                                                      )
-
         CfnOutput(self, "Magento_Hostname",
                   value=self.magento_service.load_balancer.load_balancer_dns_name)
         

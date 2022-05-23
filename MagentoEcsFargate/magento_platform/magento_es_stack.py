@@ -1,26 +1,20 @@
 from aws_cdk import (
-    Stack,
+    NestedStack,
     aws_ec2 as ec2,
-    aws_ecs as ecs,
-    aws_rds as rds,
     aws_iam as iam,
-    Fn, App, RemovalPolicy,
-    aws_ecs_patterns as ecs_patterns,
+    RemovalPolicy,
     aws_opensearchservice as opensearch,
-    aws_secretsmanager as sm,
     CfnOutput,
-    Duration,
-    aws_ecr as ecr
 )
 
 from constructs import Construct
 
 
-class MagentoElasticsearchStack(Stack):
+class MagentoElasticsearchStack(NestedStack):
 
-    def __init__(self, scope: Construct, construct_id: str, vpc, osSG, **kwargs) -> None:
-        super().__init__(scope, construct_id, **kwargs)
-
+    def __init__(self, scope: Construct, vpc, osSG, **kwargs):
+        super().__init__(scope, "MagentoElasticsearchStack", **kwargs)
+        
         # Create opensearch domain
         self.es_domain = opensearch.Domain(self, "Mangeto_ES_Domain",
                                            version=opensearch.EngineVersion.OPENSEARCH_1_2,
@@ -36,9 +30,7 @@ class MagentoElasticsearchStack(Stack):
                                                data_nodes=2,
                                                data_node_instance_type="r6g.large.search"
                                            ),
-                                           # use_unsigned_basic_auth=True,
                                            vpc=vpc,
-                                           # vpc_subnets={vpc.private_subnets[0],}
                                            zone_awareness=opensearch.ZoneAwarenessConfig(
                                                availability_zone_count=2
                                            ),
@@ -47,6 +39,7 @@ class MagentoElasticsearchStack(Stack):
                                            security_groups=[osSG, ]
                                            )
 
+        # Define access policies
         self.es_domain.add_access_policies(iam.PolicyStatement(
             principals=[iam.AnyPrincipal()],
             actions=["es:*"],

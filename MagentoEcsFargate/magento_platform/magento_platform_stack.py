@@ -9,6 +9,10 @@ from aws_cdk import (
 
 from constructs import Construct
 
+from magento_platform.magento_app_stack import MagentoAppStack
+from magento_platform.magento_db_stack import MagentoDBStack
+from magento_platform.magento_es_stack import MagentoElasticsearchStack
+
 
 class MagentoPlatformStack(Stack):
 
@@ -22,27 +26,10 @@ class MagentoPlatformStack(Stack):
         #create an SSM parameters which store export VPC ID
         ssm.StringParameter(self, 'VPCID', string_value=self.vpc.vpc_id)
         
-        
         #Create Security Group for each stack
         self.RDS_security_group = ec2.SecurityGroup(self, "RDS SG",vpc=self.vpc)
         self.OS_security_group = ec2.SecurityGroup(self, "Opensearch SG", vpc=self.vpc)
         self.App_security_group = ec2.SecurityGroup(self, "Magento SG", vpc=self.vpc)
-
-        #Open RDS security group for fargate to access it 
-        self.RDS_security_group.connections.allow_from_any_ipv4(
-            port_range=ec2.Port(protocol=ec2.Protocol.TCP, string_representation="tcp_3306", from_port=3306, to_port=3306),
-            description="Allow TCP connections on port 3306"
-        )
-
-        #Open Opensearch security group for fargate to access it 
-        self.OS_security_group.connections.allow_from_any_ipv4(
-            port_range=ec2.Port(protocol=ec2.Protocol.TCP, string_representation="tcp_443", from_port=443, to_port=443),
-            description="Allow TCP connections on port 443"
-        )
-
-        """
-
-        # Issue with cyclic dependancies
 
         #Open RDS security group for fargate to access it 
         self.RDS_security_group.add_ingress_rule(
@@ -56,10 +43,27 @@ class MagentoPlatformStack(Stack):
             ec2.Port(protocol=ec2.Protocol.TCP, string_representation="Autorize Fargate to ES", from_port=443, to_port=443)
         )
         
+        #Launch RDS stack
+        databaseStack = MagentoDBStack(self,
+            vpc=self.vpc, 
+            rdsSG=self.RDS_security_group, 
+        )
+
+        #Launch Opensearch stack
+        elasticsearchStack = MagentoElasticsearchStack(self,
+            vpc=self.vpc, 
+            osSG=self.OS_security_group, 
+        )
+
+        #Launch Magento application stack
+        applicationStack = MagentoAppStack(self,
+            vpc=self.vpc, 
+            appSG=self.App_security_group,
+            database_instance= databaseStack.database_instance, 
+            es_domain = elasticsearchStack.es_domain 
+        )
         
-        CfnOutput(self, "AppSecurityGroup", value=self.App_security_group.security_group_id, export_name='AppSecurityGroup')
-        CfnOutput(self, "OsSecurityGroup", value=self.OS_security_group.security_group_id, export_name='OsSecurityGroup')
-        CfnOutput(self, "RDSSecurityGroup", value=self.RDS_security_group.security_group_id, export_name='RDSSecurityroup')
-        
-        """
-        CfnOutput(self, "VPC", value=self.vpc.vpc_id, export_name='VPC')
+        CfnOutput(self, "MAGENTO_URL",
+                  value="http://" + applicationStack.magento_service.load_balancer.load_balancer_dns_name)
+        CfnOutput(self, "MAGENTO_ADMIN_URL",
+                  value="http://" + applicationStack.magento_service.load_balancer.load_balancer_dns_name + "/admin")
