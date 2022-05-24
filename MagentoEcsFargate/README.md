@@ -15,7 +15,7 @@ The solution uses Amazon ECS on Fargate to host the Magento App, Amazon RDS for 
 
 ![](.README_images/on-aws.jpg)
 
-### !!! This example is provided as a sample and rely on HTTP by default, which should never be used in production system . To use and [encrypted traffic/ HTTPS] (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html), please follow the HTTPS prerequisites below
+### !!! This example is provided as a sample and rely on HTTP by default, which should never be used in production system . To use and [encrypted traffic/ HTTPS](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html), please follow the HTTPS prerequisites below
 
 ## Components 
 
