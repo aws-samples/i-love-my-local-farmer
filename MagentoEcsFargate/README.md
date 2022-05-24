@@ -1,6 +1,6 @@
 # Containerizing our Magento stack
 
-This directory contains only architecture and installation steps. For more details, please check the [blog] (https://medium.com/i-love-my-local-farmer-engineering-blog/xxxx) 
+This directory contains only architecture and installation steps. For more details, please check the [blog](https://medium.com/i-love-my-local-farmer-engineering-blog/containerizing-our-magento-stack-on-aws-81bba5850a6e) 
 
 ## Prerequisites
 1. **NodeJS (v. 12+)** NodeJS is required for running and installing AWS CDK. You can download it [here](https://nodejs.org/en/download/).
@@ -15,7 +15,7 @@ The solution uses Amazon ECS on Fargate to host the Magento App, Amazon RDS for 
 
 ![](.README_images/on-aws.jpg)
 
-### !!! This example is provided as a sample and rely on HTTP by default, which should never be used in production system . To use and [encrypted traffic/ HTTPS] (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html), please follow the HTTPS prerequisites below
+### !!! This example is provided as a sample and rely on HTTP by default, which should never be used in production system . To use and [encrypted traffic/ HTTPS](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html), please follow the HTTPS prerequisites below
 
 ## Components 
 
