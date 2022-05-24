@@ -1,6 +1,6 @@
 # Containerizing our Magento stack
 
-This directory contains only architecture and installation steps. For more details, please check the [blog] (https://medium.com/i-love-my-local-farmer-engineering-blog/xxxx) 
+This directory contains only architecture and installation steps. For more details, please check the [blog](https://medium.com/i-love-my-local-farmer-engineering-blog/containerizing-our-magento-stack-on-aws-81bba5850a6e) 
 
 ## Prerequisites
 1. **NodeJS (v. 12+)** NodeJS is required for running and installing AWS CDK. You can download it [here](https://nodejs.org/en/download/).
