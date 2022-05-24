@@ -5,9 +5,7 @@ import aws_cdk as cdk
 
 from magento_platform.magento_platform_stack import MagentoPlatformStack
 
-
 app = cdk.App()
-
-MagentoPlatformStack(app, "MagentoPlatformStack")
+infrastructureStack = MagentoPlatformStack(app, "MagentoPlatformStack")
 
 app.synth()

@@ -7,6 +7,7 @@ from aws_cdk import (
     aws_ecs_patterns as ecs_patterns,
     aws_secretsmanager as sm,
     aws_certificatemanager as cm,
+    aws_route53 as r53,
     CfnOutput,
     Duration,
 )
@@ -27,11 +28,17 @@ class MagentoAppStack(NestedStack):
                                                       secret_complete_arn=database_instance.secret.secret_arn,
                                                       )
         # Create application user password
-        secretMagentoUser =  sm.Secret(self,  'passwordMagentoUser', secret_name = "passwordMagentoUser");
+        secretMagentoUser = sm.Secret(self,  'passwordMagentoUser', secret_name = "passwordMagentoUser")
         
         # Create an application load balancer.
-        # WARNING : This example is provided as a sample and rely on HTTP, which should never be used in production system. 
+        # WARNING : This example is provided as a sample and rely on HTTP, which should never be used in production system. To enable HTTPS/Encrypted connection, look for ## HTTPS Configuration ## , follow the guidance and replace the missing inputs
         magento_lb = elbv2.ApplicationLoadBalancer(self, "MagentoLB", vpc=vpc, internet_facing=True, load_balancer_name="magento-lb") 
+
+        ## HTTPS Configuration ##
+        # The following code is to activate the HTTPS/Encrypted connection on the load balancer
+        # Load an existing certificate from AWS Certificate Manager
+        #certificate = cm.Certificate.from_certificate_arn(self, "certificate", #CERTIFICATE_ARN#)
+        ## END HTTPS Configuration ##
        
        # Create Fargate service running on an ECS cluster fronted by the application load balancer.
         self.magento_service = ecs_patterns.ApplicationLoadBalancedFargateService(self, "MagentoService",
@@ -43,7 +50,6 @@ class MagentoAppStack(NestedStack):
                                                                                   environment={
                                                                                     "BITNAMI_DEBUG": "true",
                                                                                     "MAGENTO_EXTRA_INSTALL_ARGS": "--enable-debug-logging=true",
-                                                                                    "MAGENTO_HOST": magento_lb.load_balancer_dns_name,
                                                                                     "MAGENTO_DATABASE_HOST": database_instance.db_instance_endpoint_address,
                                                                                     "MAGENTO_DATABASE_PORT_NUMBER": "3306",
                                                                                     "MAGENTO_DATABASE_NAME": "MagentoDB",
@@ -56,6 +62,12 @@ class MagentoAppStack(NestedStack):
                                                                                     "APACHE_HTTP_PORT_NUMBER" : "80",
                                                                                     "MAGENTO_USERNAME": "magento_user",
                                                                                     "MAGENTO_EMAIL": "magento_user@example.com",
+
+                                                                                    ## HTTPS Configuration ##
+                                                                                    #The following code is to activate the HTTPS/Encrypted connection on the load balancer - if this is uncommented, please comment -> "MAGENTO_HOST": magento_lb.load_balancer_dns_name below
+                                                                                    #"MAGENTO_HOST": #SUB_DOMAIN# + "." + #HOSTED_ZONE_ID# ,
+                                                                                    "MAGENTO_HOST": magento_lb.load_balancer_dns_name, #Comment for HTTPS configuration
+                                                                                    ## END HTTPS Configuration ##
 
                                                                                     # The following two variables needed to be commented for the first boot - initialization of the database and the search
                                                                                     #"MAGENTO_SKIP_BOOTSTRAP":"yes", #Keep commented for the first run
@@ -70,15 +82,21 @@ class MagentoAppStack(NestedStack):
                                                                               ),
                                                                               memory_limit_mib=4096,      # Default is 512
                                                                               public_load_balancer=True,  # Default is False
-                                                                              health_check_grace_period=Duration.minutes(
-                                                                                  3000),
-                                                                              listener_port=80,
-                                                                              task_subnets=ec2.SubnetSelection(
-                                                                                  subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT),
+                                                                              health_check_grace_period=Duration.minutes(3000),
+                                                                              task_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT),
                                                                               load_balancer_name = "magento_lb",
                                                                               load_balancer = magento_lb,
                                                                               security_groups = [appSG,],
                                                                               
+                                                                              ## HTTPS Configuration ##
+                                                                              # The following code is to activate the HTTPS/Encrypted connection on the load balancer - if this is uncommented, please comment listener_port=80 below
+                                                                              
+                                                                              # certificate = certificate,
+                                                                              # domain_name = #SUB_DOMAIN#, 
+                                                                              # domain_zone = r53.HostedZone.from_hosted_zone_attributes(self, "httpszone", hosted_zone_id=#HOSTED_ZONE_ID#, zone_name=#HOSTED_ZONE_NAME#), 
+                                                                              # listener_port=443,
+                                                                              listener_port=80, #Comment for HTTPS configuration
+                                                                              ## END HTTPS Configuration ##
                                                                               )
         # Define health check
         self.magento_service.target_group.configure_health_check(
@@ -99,6 +117,11 @@ class MagentoAppStack(NestedStack):
         _scalable_target.scale_on_memory_utilization("MemoryScaling",
                                                      target_utilization_percent=70
                                                      )
-        CfnOutput(self, "Magento_Hostname",
-                  value=self.magento_service.load_balancer.load_balancer_dns_name)
+        CfnOutput(self, "MagentoHostnameHTTP",
+                  value="http://" + self.magento_service.load_balancer.load_balancer_dns_name)
         
+        ## HTTPS Configuration ##
+        # The following code is to activate the HTTPS/Encrypted connection on the load balancer - if this is uncommented, please comment listener_port=80 below
+        #CfnOutput(self, "MagentoHostnameHTTPS",
+        #          value="https://" + #SUB_DOMAIN# + "." + #HOSTED_ZONE_ID#)
+        ## END HTTPS Configuration ##
