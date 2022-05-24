@@ -23,9 +23,6 @@ class MagentoPlatformStack(Stack):
         # default is all AZs in region
         self.vpc = ec2.Vpc(self, "MagentoVpc", max_azs=3)
         
-        #create an SSM parameters which store export VPC ID
-        ssm.StringParameter(self, 'VPCID', string_value=self.vpc.vpc_id)
-        
         #Create Security Group for each stack
         self.RDS_security_group = ec2.SecurityGroup(self, "RDS SG",vpc=self.vpc)
         self.OS_security_group = ec2.SecurityGroup(self, "Opensearch SG", vpc=self.vpc)

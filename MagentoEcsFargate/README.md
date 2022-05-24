@@ -29,7 +29,7 @@ The main components of these solutions are in the folder magento_platform :
 ## HTTPS Prerequisites 
 
 1. Create a HostedZone in Amazon Route53 or use and existing one (ex. mydomain.com)
-2. Create a certificate in Certificate Manager based on the previous HostedZone in Route53 (ex. public certificate on *.mydomain.com)
+2. Create/Use a certificate in Certificate Manager based on the previous HostedZone in Route53 (ex. public certificate on *.mydomain.com)
 3. Replace #CERTIFICATE_ARN# in magento_app_stack.py by the arn of the certificate created in the previous step
 4. Replace #HOSTED_ZONE_ID#, #HOSTED_ZONE_NAME# in magento_app_stack.py with the id and name of the HostedZone of step 1.
 5. Replace #SUB_DOMAIN# in magento_app_stack.py by the sub-domain of your mangeto app (ex. magento in https://magento.mydomain.com)

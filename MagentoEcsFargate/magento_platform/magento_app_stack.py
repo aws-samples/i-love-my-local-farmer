@@ -28,7 +28,7 @@ class MagentoAppStack(NestedStack):
                                                       secret_complete_arn=database_instance.secret.secret_arn,
                                                       )
         # Create application user password
-        secretMagentoUser = sm.Secret(self,  'passwordMagentoUser', secret_name = "passwordMagentoUser")
+        secretMagentoUser = sm.Secret(self, "passwordMagentoUser", secret_name = "passwordMagentoUser")
         
         # Create an application load balancer.
         # WARNING : This example is provided as a sample and rely on HTTP, which should never be used in production system. To enable HTTPS/Encrypted connection, look for ## HTTPS Configuration ## , follow the guidance and replace the missing inputs
@@ -65,7 +65,7 @@ class MagentoAppStack(NestedStack):
 
                                                                                     ## HTTPS Configuration ##
                                                                                     #The following code is to activate the HTTPS/Encrypted connection on the load balancer - if this is uncommented, please comment -> "MAGENTO_HOST": magento_lb.load_balancer_dns_name below
-                                                                                    #"MAGENTO_HOST": #SUB_DOMAIN# + "." + #HOSTED_ZONE_ID# ,
+                                                                                    #"MAGENTO_HOST": #SUB_DOMAIN# + "." + #HOSTED_ZONE_NAME# ,
                                                                                     "MAGENTO_HOST": magento_lb.load_balancer_dns_name, #Comment for HTTPS configuration
                                                                                     ## END HTTPS Configuration ##
 
@@ -90,7 +90,6 @@ class MagentoAppStack(NestedStack):
                                                                               
                                                                               ## HTTPS Configuration ##
                                                                               # The following code is to activate the HTTPS/Encrypted connection on the load balancer - if this is uncommented, please comment listener_port=80 below
-                                                                              
                                                                               # certificate = certificate,
                                                                               # domain_name = #SUB_DOMAIN#, 
                                                                               # domain_zone = r53.HostedZone.from_hosted_zone_attributes(self, "httpszone", hosted_zone_id=#HOSTED_ZONE_ID#, zone_name=#HOSTED_ZONE_NAME#), 
@@ -123,5 +122,5 @@ class MagentoAppStack(NestedStack):
         ## HTTPS Configuration ##
         # The following code is to activate the HTTPS/Encrypted connection on the load balancer - if this is uncommented, please comment listener_port=80 below
         #CfnOutput(self, "MagentoHostnameHTTPS",
-        #          value="https://" + #SUB_DOMAIN# + "." + #HOSTED_ZONE_ID#)
+        #          value="https://" + #SUB_DOMAIN# + "." + #HOSTED_ZONE_NAME#)
         ## END HTTPS Configuration ##
