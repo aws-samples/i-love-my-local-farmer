@@ -20,7 +20,7 @@ import software.amazon.awscdk.services.lambda.FunctionProps;
  */
 @Getter
 public class ApiFunction extends Function {
-  private String apiMethodName;
+  private final String apiMethodName;
 
   public ApiFunction(Construct scope, String id, FunctionProps props) {
     super(scope, id, FunctionProps.builder()

@@ -1,0 +1,14 @@
+FROM --platform=linux/amd64 amazonlinux:2 as builder
+
+RUN yum -y update
+RUN yum install -y java-11-amazon-corretto
+ENV JAVA_HOME="/usr/lib/jvm/java-11-amazon-corretto.x86_64"
+
+COPY ApiHandlers .
+RUN ./gradlew clean build
+
+FROM public.ecr.aws/lambda/java:11
+
+COPY --from=builder build/libs/lambda-uber-all.jar ${LAMBDA_TASK_ROOT}/lib/
+
+CMD [ "com.ilmlf.delivery.api.handlers.CreateSlots::handleRequest"]

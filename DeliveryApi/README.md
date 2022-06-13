@@ -179,3 +179,23 @@ curl --location --request PUT 'https://{{API_GATEWAY_ENDPOINT}}.execute-api.{{RE
     "userId": 22222
 }'
 ```
+
+## Package API
+
+To explore the different ways to package your Lambda function we have provided an own PackageAPI construct.
+This creates a new API Gateway that provides the CreateSlots functionality on different endpoints. Since the PackagingAPI-
+Construct builds different custom runtimes and images for the same functionality the build process is slower. Therefore,
+you can manually decide whether to include the packaging module in your application:
+
+```java
+cdk deploy --all --outputs-file output.json -c deployPackagingApi=true
+```
+
+After the deployment you can test the different versions via the endpoint provided in the output.json file
+or use the provided artillery script to run a simple load test via the following command in the root folder:
+
+```bash
+artillery run -t $(cat cdk/output.json | jq -r '."DeliveryProject-Api".ApiPackagingUrl') -v '{ "url": "/farm/11111/slots/custom" }' loadtest.yaml
+```
+
+Change the path to /zip /uber /custom /container /container-custom accordingly.

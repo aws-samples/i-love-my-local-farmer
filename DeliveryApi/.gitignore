@@ -4,8 +4,10 @@ target
 .classpath
 .project
 .idea
+.gradle
 .settings
 .vscode
+cdk/output.json
 *.iml
 **/.DS_Store
 .attach_pid*
@@ -23,6 +25,7 @@ lambda-env.json
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+*.snap
 
 # Exclude cdk.context.json as it contains account information.
 # Consider including it in your (private) repo to make the build deterministic.

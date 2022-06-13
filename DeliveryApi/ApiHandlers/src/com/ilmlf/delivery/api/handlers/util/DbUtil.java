@@ -177,9 +177,8 @@ public class DbUtil {
    */
   public static X509Certificate createCertificate(String certFile) throws  GeneralSecurityException, IOException {
     CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
-    URL url = new File(certFile).toURI().toURL();
 
-    try (InputStream certInputStream = url.openStream()) {
+    try (InputStream certInputStream = DbUtil.class.getResourceAsStream("/" + certFile)) {
       return (X509Certificate) certFactory.generateCertificate(certInputStream);
     }
   }
