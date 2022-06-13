@@ -1,0 +1,23 @@
+FROM --platform=linux/amd64 amazonlinux:2
+
+RUN yum -y update
+RUN yum install -y java-11-amazon-corretto zip
+ENV JAVA_HOME="/usr/lib/jvm/java-11-amazon-corretto.x86_64"
+
+COPY ApiHandlers .
+RUN ./gradlew clean build --no-daemon
+
+RUN jdeps -q --ignore-missing-deps --multi-release 11 --print-module-deps \
+    build/libs/lambda-uber-all.jar > jre-deps.info
+
+RUN jlink --verbose --compress 2 --strip-debug --no-header-files --no-man-pages --output /jre11-slim \
+    --add-modules $(cat jre-deps.info)
+
+RUN /jre11-slim/bin/java -Xshare:dump
+
+# Package everything together into a custom runtime archive
+WORKDIR /
+RUN cp /resources/bootstrap bootstrap
+RUN chmod 755 bootstrap
+RUN cp /build/libs/lambda-uber-all.jar function.jar
+RUN zip -r runtime.zip bootstrap function.jar /jre11-slim

@@ -1,0 +1,15 @@
+config:
+  phases:
+    - duration: 60
+      arrivalRate: 50
+  http:
+    timeout: 29
+scenarios:
+  - flow:
+      - post:
+          url: "{{ url }}"
+          json:
+            slots:
+              - numDeliveries: 2
+                from: "2021-06-30T08:00:00"
+                to: "2021-06-30T12:00:00"

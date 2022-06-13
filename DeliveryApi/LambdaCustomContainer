@@ -1,0 +1,11 @@
+FROM openjdk:11-jdk-slim as builder
+
+COPY ApiHandlers .
+RUN ./gradlew clean build
+
+FROM openjdk:11-jre-slim
+
+COPY --from=builder build/libs/lambda-uber-all.jar .
+
+ENTRYPOINT [ "java", "-cp", "./*", "-XX:TieredStopAtLevel=1", "com.amazonaws.services.lambda.runtime.api.client.AWSLambda" ]
+CMD [ "com.ilmlf.delivery.api.handlers.CreateSlots::handleRequest" ]

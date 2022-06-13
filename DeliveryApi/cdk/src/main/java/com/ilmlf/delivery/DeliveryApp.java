@@ -51,6 +51,7 @@ public class DeliveryApp {
     Integer dbPort = (dbPortStr == null ? 3306: Integer.valueOf(dbPortStr));
 
     boolean isPublicSubnetDb = "public".equals(app.getNode().tryGetContext("subnetType"));
+    boolean deployPackagingApi = "true".equals(app.getNode().tryGetContext("deployPackagingApi"));
 
     DbStack db = new DbStack(app, "DeliveryProject-Db", DbStack.DbStackProps.builder()
         .description("MySQL database, RDS proxy, secrets, and network components of Delivery project (uksb-1rsq7leeu)")
@@ -79,6 +80,7 @@ public class DeliveryApp {
             .dbSg(db.getSecurityGroup())
             .dbVpc(db.getVpc())
             .alertEmail(email)
+            .deployPackagingApi(deployPackagingApi)
             .build());
 
     app.synth();
