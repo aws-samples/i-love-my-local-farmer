@@ -1,0 +1,117 @@
+﻿@page "/"
+@using System.Net.Http.Headers
+@using Microsoft.Extensions.Configuration
+@implements IAsyncDisposable
+@inject HttpClient Http
+@inject IJSRuntime JS
+@inject IConfiguration Configuration
+
+<PageTitle>Upload your form</PageTitle>
+<AuthorizeView>
+    <Authorized>
+        <div class="input-group mb-3">
+            <InputFile @key="_inputFileGuid" @ref="inputFile" id="input-file" class="form-control" disable="@_fileSelectionDisable" OnChange="@LoadFile" aria-describedby="button-upload" />
+            <button id="button-reset" class="btn btn-outline-primary" disabled="@_buttonsDisable" @onclick="OnResetClick">Reset</button>
+            <button id="button-upload" class="btn btn-outline-primary" disabled="@_buttonsDisable" @onclick="OnUploadClick">Upload</button>
+        </div>
+        <img class="img-thumbnail" id="selectedImage" hidden="@_buttonsDisable" />
+    </Authorized>
+    <NotAuthorized>
+        You must be signed in to upload your form
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private IJSObjectReference? _module;
+    private bool _buttonsDisable = true;
+    private bool _fileSelectionDisable = false;
+    private Guid _inputFileGuid = Guid.NewGuid();
+    private InputFile? inputFile;
+    private IBrowserFile? _imageFile;
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module = await JS.InvokeAsync<IJSObjectReference>("import", "./Pages/Upload.razor.js");
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task<string> GetPresignedUrl()
+    {
+        var request = new HttpRequestMessage()
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri(Configuration["GetPresignedUrl"])
+            };
+        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+        var response = await Http.SendAsync(request);
+        string presignedUrl = await response.Content.ReadAsStringAsync();
+        return presignedUrl;
+    }
+
+    private async Task OnResetClick()
+    {
+        await Reset();
+    }
+
+    private async Task Reset()
+    {
+        _buttonsDisable = true;
+        if (inputFile is not null)
+        {
+            _inputFileGuid = Guid.NewGuid();
+        }
+        if (_module is not null)
+        {
+            await _module.InvokeVoidAsync("resetImage", "selectedImage");
+        }
+        if(_imageFile is not null)
+        {
+            _imageFile = null;
+        }
+    }
+
+    private async Task OnUploadClick()
+    {
+        if (_imageFile != null)
+        {
+            string presignedUrl = await GetPresignedUrl();
+            using (Stream imageStream = _imageFile.OpenReadStream())
+            {
+                HttpContent content = new StreamContent(imageStream);
+                content.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+                var response = await Http.PutAsync(presignedUrl, content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    await Reset();
+                }
+            }
+        }
+    }
+
+    private async Task LoadFile(InputFileChangeEventArgs e)
+    {
+        _buttonsDisable = false;
+        _imageFile = e.File;
+        using (DotNetStreamReference dotnetImageStream = new DotNetStreamReference(_imageFile.OpenReadStream()))
+        {
+            if (_module is not null)
+            {
+                await _module.InvokeVoidAsync("setImageUsingStreaming", "selectedImage", dotnetImageStream);
+            }
+        }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (_module is not null)
+        {
+            await _module.InvokeVoidAsync("disposeUrl");
+            await _module.DisposeAsync();
+        }
+    }
+}

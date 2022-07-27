@@ -12,6 +12,7 @@ The top-level folders contain working example code for each blog series. Each fo
 | [IdentityJourney](IdentityJourney) |  Our identity journey to AWS  | [1. Charting our identity journey Part 1](https://medium.com/i-love-my-local-farmer-engineering-blog/charting-our-identity-journey-in-aws-part-1-4353a3eb3c27) <br/>[2. Charting our identity journey Part 2](https://medium.com/i-love-my-local-farmer-engineering-blog/charting-our-identity-journey-in-aws-part-2-e4a99e6b1de3)|
 | [MultiAccountDNS](MultiAccountDNS) |  Manage DNS for Multi-Accounts using CDK  | [DNS Multi Account Management using CDK](https://medium.com/i-love-my-local-farmer-engineering-blog/dns-multi-account-management-using-cdk-6394ef295eee) |
 | [MagentoEcsFargate](MagentoEcsFargate) |  Magento migration  | [Containerizing our Magento stack on AWS](https://medium.com/i-love-my-local-farmer-engineering-blog/containerizing-our-magento-stack-on-aws-81bba5850a6e) |
+| [ProofOfAddress](ProofOfAddress) |  Blazor WebAssembly application on AWS  | [Blazor WebAssembly applications, .NET based Single-Page Applications for real?](https://medium.com/i-love-my-local-farmer-engineering-blog/blazor-webassembly-applications-7cfece9609f6) |
 
 ## What is "I Love My Local Farmer"?
 
