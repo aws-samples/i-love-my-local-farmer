@@ -11,24 +11,24 @@ popd
 
 echo -e "==> Uploading function source..."
 az functionapp deployment source config-zip \
-    --name $PROJECT \
-    --resource-group $RESOURCE_GROUP \
+    --name "$PROJECT" \
+    --resource-group "$RESOURCE_GROUP" \
     --src ./src/app.zip
 
 echo -e '==> Creating key vault secrets...'
 
 read -p "Enter the Tenant Id: " TENANT_ID
-az keyvault secret set --name "x-tenant-id" --value $TENANT_ID --vault-name $PROJECT
+az keyvault secret set --name "x-tenant-id" --value "$TENANT_ID" --vault-name "$PROJECT"
 
 read -p "Enter the Display Name: " DISPLAY_NAME
-az keyvault secret set --name "x-display-name" --value $DISPLAY_NAME --vault-name $PROJECT
+az keyvault secret set --name "x-display-name" --value "$DISPLAY_NAME" --vault-name "$PROJECT"
 
 read -p "Enter the Application Id: " APPLICATION_ID
-az keyvault secret set --name "x-application-id" --value $APPLICATION_ID --vault-name $PROJECT
+az keyvault secret set --name "x-application-id" --value "$APPLICATION_ID" --vault-name "$PROJECT"
 
 read -s -p "Enter the Client Secret: " CLIENT_SECRET
-az keyvault secret set --name "x-client-secret" --value $CLIENT_SECRET --vault-name $PROJECT
-echo ""
+az keyvault secret set --name "x-client-secret" --value "$CLIENT_SECRET" --vault-name "$PROJECT"
+#echo ""
 
 echo -e "==> Removing function archive..."
 rm -f ./src/app.zip

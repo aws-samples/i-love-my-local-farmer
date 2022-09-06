@@ -1,4 +1,5 @@
-﻿param($Timer)
+﻿# AUTHOR: Aidan Keane - Senior Solutions Architect - Microsoft Platform | AWS
+param($Timer)
 
 # Get the current universal time in the default string format.
 $currentUTCtime = (Get-Date).ToUniversalTime()

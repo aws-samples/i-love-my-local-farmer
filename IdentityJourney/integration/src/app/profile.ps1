@@ -1,3 +1,4 @@
+# AUTHOR: Aidan Keane - Senior Solutions Architect - Microsoft Platform | AWS
 # Azure Functions profile.ps1
 # This profile.ps1 will get executed every "cold start" of your Function App.
 # "cold start" occurs when:
@@ -15,7 +16,7 @@ if ($env:MSI_SECRET) {
     Connect-AzAccount -Identity
 }
 
-# Remove the # from the lines below starting at 28 and paste in the SCIM Job Id
+# Remove the # from the lines below starting at 29 and paste in the SCIM Job Id
 # As you add move functions - copy and paste those lines for new Global Variables
 
 # Provide the SCIM Job ID for each function.  
