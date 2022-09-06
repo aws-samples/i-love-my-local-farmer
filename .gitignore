@@ -1,2 +1,5 @@
 **/.idea/
 .DS_Store
+**/.vs
+**/obj
+**/*.csproj.user

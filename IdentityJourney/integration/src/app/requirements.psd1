@@ -3,5 +3,5 @@
 #
 @{
     # For latest supported version, go to 'https://www.powershellgallery.com/packages/Az'. 
-    'Az.Accounts' = '2.*'
+    'Az' = '6.*'
 }
