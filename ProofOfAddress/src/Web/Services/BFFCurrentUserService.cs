@@ -20,7 +20,7 @@ namespace MyLocalFarmer.ProofOfAddress.Web.Services
             var request = new HttpRequestMessage()
             {
                 Method = HttpMethod.Get,
-                RequestUri = new Uri(_configuration[nameof(Config.RemoteConfigurationProvider.RemoteConfiguration.GetCurrentUserUrl)])
+                RequestUri = new Uri(_configuration["GetCurrentUserUrl"])
             };
 
             request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);

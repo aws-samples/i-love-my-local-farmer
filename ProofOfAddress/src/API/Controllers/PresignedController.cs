@@ -2,7 +2,6 @@
 using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MyLocalFarmer.ProofOfAddress.API.Controllers
@@ -25,7 +24,7 @@ namespace MyLocalFarmer.ProofOfAddress.API.Controllers
         {
             _logger.LogInformation("Start processing get presigned request");
 
-            // Retrieve the ID token from the HttpContexte and use it to get user temporary credentials from Amazon Cognito
+            // Retrieve the ID token from the HttpContext and use it to get user temporary credentials from Amazon Cognito
             var idToken = await HttpContext.GetTokenAsync("Cognito", "id_token");
             CognitoAWSCredentials credentials = new CognitoAWSCredentials(_configuration["IdentityPoolId"], Amazon.RegionEndpoint.GetBySystemName(_configuration["IdentityPoolRegion"]));
             _logger.LogInformation($"Authority: {_configuration["Authority"]}");

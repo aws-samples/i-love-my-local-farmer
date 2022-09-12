@@ -1,6 +1,6 @@
 # Proof of Address Application
 
-The Proof of Address application is the companion app of this post from [Blazor WebAssembly applications, .NET based Single-Page Applications for real?](https://medium.com/i-love-my-local-farmer-engineering-blog/blazor-webassembly-applications-7cfece9609f6) published on Medium. It demonstrates how to build and deploy a Blazor WebAssembly application that leverages AWS services for authentication, authorization, file storage, hosting and content delivery.
+The Proof of Address application is the companion app of this post from *I Love My Local Farmer* Medium publication. It demonstrates how to build and deploy a Blazor WebAssembly application that leverages AWS services for authentication, authorization, file storage, hosting and content delivery.
 
 ## Pre-requisites
 
@@ -15,6 +15,12 @@ In order, to build and deploy this application sample, you need:
 
 
 You can open the .NET solution in your preferred IDE (Visual Studio, VS Code or JetBrains Rider) but it is not required.
+
+## Regions
+
+At the time of writing, AWS App Runner is deployed in US East (Ohio), US East (N. Virginia), US West (Oregon), Asia Pacific (Tokyo) and Europe (Ireland).
+
+When you want to deploy this sample application, be sure to select an AWS Regions where AWS App Runner is deployed. You can check [here](https://docs.aws.amazon.com/general/latest/gr/apprunner.html ). 
 
 ## Architecture
 
@@ -56,7 +62,7 @@ On Linux, if your docker daemon runs with privileges, you may need to prefix `cd
 To build and deploy the sample, run the following commands:
 
 ```bash
-git clone https://github.com/aws-samples/i-love-my-local-farmer
+git clone https://gitlab.aws.dev/i-love-my-local-farmer/proof-of-address.git
 cd proof-of-address/src
 dotnet build
 cd Infra

@@ -174,7 +174,7 @@ namespace MyLocalFarmer.ProofOfAddress.Infra
             {
                 CognitoDomain = new CognitoDomainOptions()
                 {
-                    DomainPrefix = Names.UniqueResourceName(userPool, new UniqueResourceNameOptions()).ToLower()
+                    DomainPrefix = Guid.NewGuid().ToString().ToLower()
                 }
             });
 

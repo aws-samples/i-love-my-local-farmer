@@ -19,19 +19,15 @@ namespace MyLocalFarmer.ProofOfAddress.Web.Providers
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var identiy = new ClaimsIdentity();
+            var identity = new ClaimsIdentity();
             try
             {
                 var userInfo = await GetCurrentUser();
                 if (userInfo.IsAuthenticated)
                 {
-                    var claims = new List<Claim>();
-                    claims.Add(new Claim(ClaimTypes.Name, userInfo!.UserName));
-                    foreach (var claim in userInfo.Claims)
-                    {
-                        claims.Add(new Claim(claim.Key, claim.Value));
-                    }
-                    identiy = new ClaimsIdentity(claims, "Server authentication");
+                    var claims = new List<Claim>() { new Claim(ClaimTypes.Name, userInfo!.UserName) };
+                    claims.AddRange(userInfo.Claims.Select(kvp => new Claim(kvp.Key, kvp.Value)));
+                    identity = new ClaimsIdentity(claims, "Server authentication");
                 }
             }
             catch (HttpRequestException ex)
@@ -39,7 +35,7 @@ namespace MyLocalFarmer.ProofOfAddress.Web.Providers
                 _logger.LogInformation($"Request failed: {ex.ToString}");
             }
 
-            return new AuthenticationState(new ClaimsPrincipal(identiy));
+            return new AuthenticationState(new ClaimsPrincipal(identity));
 
         }
 

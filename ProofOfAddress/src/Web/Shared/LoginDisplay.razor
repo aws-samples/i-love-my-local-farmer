@@ -25,7 +25,7 @@
         base.OnParametersSet();
         var authState = authenticationStateTask is not null ? await authenticationStateTask : null;
         var user = authState is not null ? authState.User : null;
-        if(user is not null && user.Identity is not null && user.Identity.IsAuthenticated)
+        if (user?.Identity?.IsAuthenticated == true)
         {
             _userName = user.Identity.Name;
         }

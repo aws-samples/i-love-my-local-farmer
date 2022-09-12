@@ -19,11 +19,7 @@ namespace MyLocalFarmer.ProofOfAddress.API.Controllers
             }
             else
             {
-                Dictionary<string, string> claims = new Dictionary<string, string>();
-                foreach (var claim in this.User.Claims)
-                {
-                    claims.Add(claim.Type, claim.Value);
-                }
+                var claims = this.User.Claims.ToDictionary(c => c.Type, c => c.Value);
                 currentUser = new CurrentUser(this.User.Identity.IsAuthenticated, this.User.Identity.Name ?? String.Empty, claims);
             }
             return currentUser;
