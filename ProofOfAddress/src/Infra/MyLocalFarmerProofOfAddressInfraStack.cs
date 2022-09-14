@@ -9,10 +9,10 @@ using Amazon.CDK.AWS.Ecr.Assets;
 using Amazon.CDK.AWS.IAM;
 using Amazon.CDK.AWS.Lambda;
 using Amazon.CDK.AWS.S3;
-using Amazon.CDK.AWS.S3.Assets;
 using Amazon.CDK.AWS.S3.Deployment;
 using Amazon.CDK.CustomResources;
 using Constructs;
+using MyLocalFarmer.ProofOfAddress.ConfigFunction;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -56,11 +56,11 @@ namespace MyLocalFarmer.ProofOfAddress.Infra
                 "export DOTNET_CLI_HOME=\"/tmp/DOTNET_CLI_HOME\"",
                 "export PATH=\"$PATH:/tmp/DOTNET_CLI_HOME/.dotnet/tools\"",
                 $"cd {nameof(MyLocalFarmer.ProofOfAddress.Web)}",
-                "dotnet build -c Release",
                 "dotnet publish -c Release",
                 "cp -t /asset-output -R ./bin/Release/net6.0/publish/wwwroot/*"
             };
-            BucketDeployment contentS3Deployment = new BucketDeployment(this, nameof(contentS3Deployment), new BucketDeploymentProps
+
+            new BucketDeployment(this, "ContentS3Deployment", new BucketDeploymentProps
             {
                 Sources = new[] {
                     Source.Asset(
@@ -174,7 +174,7 @@ namespace MyLocalFarmer.ProofOfAddress.Infra
             {
                 CognitoDomain = new CognitoDomainOptions()
                 {
-                    DomainPrefix = Guid.NewGuid().ToString().ToLower()
+                    DomainPrefix = this.Account + "-" + Names.UniqueResourceName(userPool, new UniqueResourceNameOptions() { MaxLength = 50 }).ToLower()
                 }
             });
 
@@ -242,10 +242,10 @@ namespace MyLocalFarmer.ProofOfAddress.Infra
                 {
                     new CorsRule()
                     {
-                        AllowedHeaders = new string[]{"*"},
-                        AllowedMethods = new HttpMethods[]{HttpMethods.PUT},
-                        AllowedOrigins = new string[]{$"https://{cloudFrontDistribution.DomainName}"},
-                        ExposedHeaders = new string[]{},
+                        AllowedHeaders = new []{"*"},
+                        AllowedMethods = new []{HttpMethods.PUT},
+                        AllowedOrigins = new []{$"https://{cloudFrontDistribution.DomainName}"},
+                        ExposedHeaders = Array.Empty<string>(),
                     }
                 }
             });
@@ -254,87 +254,55 @@ namespace MyLocalFarmer.ProofOfAddress.Infra
             #endregion
 
             #region UPDATE AWS APP RUNNER SERVICE ENVIRONMENT VARIABLE
-            var appRunnerCustomResource = new AwsCustomResource(this, "AppRunnerServiceEnvironmentVariables", new AwsCustomResourceProps()
+
+            var awsSdkCall = new AwsSdkCall()
+            {
+                Service = "AppRunner",
+                Action = "updateService",
+                Parameters = new Dictionary<string, object>
+                    {
+                        { "ServiceArn", appRunnerService.AttrServiceArn },
+                        { "SourceConfiguration", new Dictionary<string, object>()
+                            {
+                                { "ImageRepository", new Dictionary<string, object>()
+                                    {
+                                        { "ImageIdentifier", asset.ImageUri },
+                                        { "ImageRepositoryType", "ECR"},
+                                        { "ImageConfiguration", new Dictionary<string, object>()
+                                            {
+                                                { "Port", "80" },
+                                                { "RuntimeEnvironmentVariables", new Dictionary<string, string>()
+                                                    {
+                                                        { "Authority", userPool.UserPoolProviderUrl },
+                                                        { "LogoutUri", $"{userPoolDomain.BaseUrl()}/logout" },
+                                                        { "ClientOrigin", $"https://{cloudFrontDistribution.DomainName}"},
+                                                        { "BucketName", fileStorage.BucketName},
+                                                        { "IdentityPoolId", identityPool.IdentityPoolId},
+                                                        { "IdentityPoolRegion", identityPool.Env.Region},
+                                                        { "ClientId", clientApp.UserPoolClientId},
+                                                        { "ClientSecret", userPoolClientCustomResource.GetResponseField("UserPoolClient.ClientSecret")}
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                PhysicalResourceId = PhysicalResourceId.Of(appRunnerService.AttrServiceArn + "EnvironmentVariable")
+            };
+
+
+            new AwsCustomResource(this, "AppRunnerServiceEnvironmentVariables", new AwsCustomResourceProps()
             {
                 InstallLatestAwsSdk = true,
                 Policy = AwsCustomResourcePolicy.FromSdkCalls(new SdkCallsPolicyOptions()
                 {
                     Resources = new string[] { appRunnerService.AttrServiceArn }
                 }),
-                OnCreate = new AwsSdkCall()
-                {
-                    Service = "AppRunner",
-                    Action = "updateService",
-                    Parameters = new Dictionary<string, object>
-                    {
-                        { "ServiceArn", appRunnerService.AttrServiceArn },
-                        { "SourceConfiguration", new Dictionary<string, object>()
-                            {
-                                { "ImageRepository", new Dictionary<string, object>()
-                                    {
-                                        { "ImageIdentifier", asset.ImageUri },
-                                        { "ImageRepositoryType", "ECR"},
-                                        { "ImageConfiguration", new Dictionary<string, object>()
-                                            {
-                                                { "Port", "80" },
-                                                { "RuntimeEnvironmentVariables", new Dictionary<string, string>()
-                                                    {
-                                                        { "Authority", userPool.UserPoolProviderUrl },
-                                                        { "LogoutUri", $"{userPoolDomain.BaseUrl()}/logout" },
-                                                        { "ClientOrigin", $"https://{cloudFrontDistribution.DomainName}"},
-                                                        { "BucketName", fileStorage.BucketName},
-                                                        { "IdentityPoolId", identityPool.IdentityPoolId},
-                                                        { "IdentityPoolRegion", identityPool.Env.Region},
-                                                        { "ClientId", clientApp.UserPoolClientId},
-                                                        { "ClientSecret", userPoolClientCustomResource.GetResponseField("UserPoolClient.ClientSecret")}
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    PhysicalResourceId = PhysicalResourceId.Of(appRunnerService.AttrServiceArn + "EnvironmentVariable")
-                },
-                OnUpdate = new AwsSdkCall()
-                {
-                    Service = "AppRunner",
-                    Action = "updateService",
-                    Parameters = new Dictionary<string, object>
-                    {
-                        { "ServiceArn", appRunnerService.AttrServiceArn },
-                        { "SourceConfiguration", new Dictionary<string, object>()
-                            {
-                                { "ImageRepository", new Dictionary<string, object>()
-                                    {
-                                        { "ImageIdentifier", asset.ImageUri },
-                                        { "ImageRepositoryType", "ECR"},
-                                        { "ImageConfiguration", new Dictionary<string, object>()
-                                            {
-                                                { "Port", "80" },
-                                                { "RuntimeEnvironmentVariables", new Dictionary<string, string>()
-                                                    {
-                                                        { "Authority", userPool.UserPoolProviderUrl },
-                                                        { "LogoutUri", $"{userPoolDomain.BaseUrl()}/logout" },
-                                                        { "ClientOrigin", $"https://{cloudFrontDistribution.DomainName}"},
-                                                        { "BucketName", fileStorage.BucketName},
-                                                        { "IdentityPoolId", identityPool.IdentityPoolId},
-                                                        { "IdentityPoolRegion", identityPool.Env.Region},
-                                                        { "ClientId", clientApp.UserPoolClientId},
-                                                        { "ClientSecret", userPoolClientCustomResource.GetResponseField("UserPoolClient.ClientSecret")}
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    PhysicalResourceId = PhysicalResourceId.Of(appRunnerService.AttrServiceArn + "EnvironmentVariable")
-                }
+                OnCreate = awsSdkCall,
+                OnUpdate = awsSdkCall
             });
             #endregion
 
@@ -371,11 +339,13 @@ namespace MyLocalFarmer.ProofOfAddress.Infra
                 Handler = configFunction,
             });
 
+#pragma warning disable JSII001 // A required property is missing or null - this is not true here
             cloudFrontDistribution.AddBehavior("config", new RestApiOrigin(configApi), new BehaviorOptions()
             {
                 AllowedMethods = AllowedMethods.ALLOW_GET_HEAD,
                 CachePolicy = CachePolicy.CACHING_DISABLED
             });
+#pragma warning restore JSII001 // A required property is missing or null - this is not true here
 
             AwsCustomResource awsCustomResource = new AwsCustomResource(this, "ConfigApiEnvironmentVariables", new AwsCustomResourceProps()
             {
@@ -395,10 +365,10 @@ namespace MyLocalFarmer.ProofOfAddress.Infra
                             {
                                 { "Variables", new Dictionary<string, string>()
                                     {
-                                        { MyLocalFarmer.ProofOfAddress.ConfigFunction.Config.GET_PRESIGNED_URL.ToString(), $"https://{appRunnerService.AttrServiceUrl}/presigned" },
-                                        { MyLocalFarmer.ProofOfAddress.ConfigFunction.Config.LOGIN_URL.ToString(), $"https://{appRunnerService.AttrServiceUrl}/auth/login" },
-                                        { MyLocalFarmer.ProofOfAddress.ConfigFunction.Config.LOGOUT_URL.ToString(), $"https://{appRunnerService.AttrServiceUrl}/auth/logout" },
-                                        { MyLocalFarmer.ProofOfAddress.ConfigFunction.Config.GET_CURRENT_USER_URL.ToString(), $"https://{appRunnerService.AttrServiceUrl}/auth/getcurrentuser" }
+                                        { Config.GET_PRESIGNED_URL.ToString(), $"https://{appRunnerService.AttrServiceUrl}/presigned" },
+                                        { Config.LOGIN_URL.ToString(), $"https://{appRunnerService.AttrServiceUrl}/auth/login" },
+                                        { Config.LOGOUT_URL.ToString(), $"https://{appRunnerService.AttrServiceUrl}/auth/logout" },
+                                        { Config.GET_CURRENT_USER_URL.ToString(), $"https://{appRunnerService.AttrServiceUrl}/auth/getcurrentuser" }
                                     }
                                 }
                             }
@@ -417,10 +387,10 @@ namespace MyLocalFarmer.ProofOfAddress.Infra
                             {
                                 { "Variables", new Dictionary<string, string>()
                                     {
-                                        { MyLocalFarmer.ProofOfAddress.ConfigFunction.Config.GET_PRESIGNED_URL.ToString(), $"https://{appRunnerService.AttrServiceUrl}/presigned" },
-                                        { MyLocalFarmer.ProofOfAddress.ConfigFunction.Config.LOGIN_URL.ToString(), $"https://{appRunnerService.AttrServiceUrl}/auth/login" },
-                                        { MyLocalFarmer.ProofOfAddress.ConfigFunction.Config.LOGOUT_URL.ToString(), $"https://{appRunnerService.AttrServiceUrl}/auth/logout" },
-                                        { MyLocalFarmer.ProofOfAddress.ConfigFunction.Config.GET_CURRENT_USER_URL.ToString(), $"https://{appRunnerService.AttrServiceUrl}/auth/getcurrentuser" }
+                                        { Config.GET_PRESIGNED_URL.ToString(), $"https://{appRunnerService.AttrServiceUrl}/presigned" },
+                                        { Config.LOGIN_URL.ToString(), $"https://{appRunnerService.AttrServiceUrl}/auth/login" },
+                                        { Config.LOGOUT_URL.ToString(), $"https://{appRunnerService.AttrServiceUrl}/auth/logout" },
+                                        { Config.GET_CURRENT_USER_URL.ToString(), $"https://{appRunnerService.AttrServiceUrl}/auth/getcurrentuser" }
                                     }
                                 }
                             }

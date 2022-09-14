@@ -2,6 +2,7 @@
 using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MyLocalFarmer.ProofOfAddress.API.Controllers
@@ -10,6 +11,7 @@ namespace MyLocalFarmer.ProofOfAddress.API.Controllers
     [ApiController]
     public class PresignedController : ControllerBase
     {
+        private const int Duration = 600;
         private readonly IConfiguration _configuration;
         private readonly ILogger<PresignedController> _logger;
 
@@ -19,7 +21,7 @@ namespace MyLocalFarmer.ProofOfAddress.API.Controllers
             _logger = logger;
         }
 
-        //[Authorize]
+        [Authorize]
         public async Task<string> Get()
         {
             _logger.LogInformation("Start processing get presigned request");
@@ -33,10 +35,10 @@ namespace MyLocalFarmer.ProofOfAddress.API.Controllers
             await credentials.GetCredentialsAsync();
 
             // Use the user temporary credentials to get a presigned URL from Amazon S3
-            return GeneratePresignedUrl(credentials, 600, _configuration["BucketName"], $"{Guid.NewGuid()}.jpg");
+            return GeneratePresignedUrl(credentials, Duration, _configuration["BucketName"], $"{Guid.NewGuid()}.jpg");
         }
 
-        private string GeneratePresignedUrl(CognitoAWSCredentials credentials, int duration, string bucket, string key)
+        private static string GeneratePresignedUrl(CognitoAWSCredentials credentials, int duration, string bucket, string key)
         {
             IAmazonS3 s3Client = new AmazonS3Client(credentials);
 

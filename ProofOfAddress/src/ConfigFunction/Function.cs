@@ -1,7 +1,8 @@
+using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.RuntimeSupport;
 using Amazon.Lambda.Serialization.SystemTextJson;
-using Amazon.Lambda.APIGatewayEvents;
+using MyLocalFarmer.ProofOfAddress.ConfigFunction;
 
 // The function handler that will be called for each Lambda event
 var handler = (APIGatewayProxyRequest request, ILambdaContext context) =>
@@ -12,10 +13,10 @@ var handler = (APIGatewayProxyRequest request, ILambdaContext context) =>
     {
         StatusCode = 200,
         Body = System.Text.Json.JsonSerializer.Serialize(new {
-            GetPresignedUrl = Environment.GetEnvironmentVariable(MyLocalFarmer.ProofOfAddress.ConfigFunction.Config.GET_PRESIGNED_URL.ToString()),
-            LoginUrl = Environment.GetEnvironmentVariable(MyLocalFarmer.ProofOfAddress.ConfigFunction.Config.LOGIN_URL.ToString()),
-            LogoutUrl = Environment.GetEnvironmentVariable(MyLocalFarmer.ProofOfAddress.ConfigFunction.Config.LOGOUT_URL.ToString()),
-            GetCurrentUserUrl = Environment.GetEnvironmentVariable(MyLocalFarmer.ProofOfAddress.ConfigFunction.Config.GET_CURRENT_USER_URL.ToString())
+            GetPresignedUrl = Environment.GetEnvironmentVariable(Config.GET_PRESIGNED_URL.ToString()),
+            LoginUrl = Environment.GetEnvironmentVariable(Config.LOGIN_URL.ToString()),
+            LogoutUrl = Environment.GetEnvironmentVariable(Config.LOGOUT_URL.ToString()),
+            GetCurrentUserUrl = Environment.GetEnvironmentVariable(Config.GET_CURRENT_USER_URL.ToString())
         })
     };
 };

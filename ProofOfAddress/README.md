@@ -62,7 +62,7 @@ On Linux, if your docker daemon runs with privileges, you may need to prefix `cd
 To build and deploy the sample, run the following commands:
 
 ```bash
-git clone https://gitlab.aws.dev/i-love-my-local-farmer/proof-of-address.git
+git clone https://github.com/aws-samples/i-love-my-local-farmer.git
 cd proof-of-address/src
 dotnet build
 cd Infra
