@@ -1,0 +1,44 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.Extensions.Configuration
+@inject NavigationManager navigationManager;
+@inject IConfiguration Configuration
+
+<AuthorizeView>
+    <Authorized>
+        Hello !
+        <button class="btn btn-link" @onclick="OnSubmitSignOut">Sign out</button>
+    </Authorized>
+    <NotAuthorized>
+        <button class="btn btn-link" @onclick="OnSubmitSignIn">Sign in</button>
+    </NotAuthorized>
+
+</AuthorizeView>
+
+@code{
+    [CascadingParameter]    
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+
+    private string? _userName;
+
+    protected override async void OnParametersSet()
+    {
+        base.OnParametersSet();
+        var authState = authenticationStateTask is not null ? await authenticationStateTask : null;
+        var user = authState is not null ? authState.User : null;
+        if (user?.Identity?.IsAuthenticated == true)
+        {
+            _userName = user.Identity.Name;
+        }
+    }
+
+    void OnSubmitSignIn()
+    {
+        var loginUrl = Configuration["LoginUrl"];
+        navigationManager.NavigateTo(Configuration["LoginUrl"]+ $"?returnUrl={navigationManager.BaseUri}", true);
+    }
+
+    void OnSubmitSignOut()
+    {
+        navigationManager.NavigateTo(Configuration["LogoutUrl"]+ $"?returnUrl={navigationManager.BaseUri}", true);
+    }
+}
