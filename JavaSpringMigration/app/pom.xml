@@ -12,7 +12,7 @@
 	<properties>
 		<springframework.version>5.3.20</springframework.version>
 		<hibernate.version>5.4.24.Final</hibernate.version>
-		<mysql.version>8.0.27</mysql.version>		
+		<mysql.version>8.0.28</mysql.version>
 	</properties>
 
 	<dependencies>
