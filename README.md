@@ -13,6 +13,7 @@ The top-level folders contain working example code for each blog series. Each fo
 | [MultiAccountDNS](MultiAccountDNS) |  Manage DNS for Multi-Accounts using CDK  | [DNS Multi Account Management using CDK](https://medium.com/i-love-my-local-farmer-engineering-blog/dns-multi-account-management-using-cdk-6394ef295eee) |
 | [MagentoEcsFargate](MagentoEcsFargate) |  Magento migration  | [Containerizing our Magento stack on AWS](https://medium.com/i-love-my-local-farmer-engineering-blog/containerizing-our-magento-stack-on-aws-81bba5850a6e) |
 | [ProofOfAddress](ProofOfAddress) |  Blazor WebAssembly application on AWS  | [Blazor WebAssembly applications, .NET based Single-Page Applications for real?](https://medium.com/i-love-my-local-farmer-engineering-blog/blazor-webassembly-applications-7cfece9609f6) |
+| [E2EMobileTesting](E2EMobileTesting) |  End-to-End mobile testing on physical devices with Device Farm  | [End-to-End mobile testing on physical devices with Device Farm](https://medium.com/i-love-my-local-farmer-engineering-blog/end-to-end-mobile-testing-on-physical-devices-with-device-farm-3b90ff77a903) |
 
 ## What is "I Love My Local Farmer"?
 
