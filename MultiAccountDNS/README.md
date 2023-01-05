@@ -6,6 +6,8 @@ This README.md contains only architecture and installation steps. For more detai
 
 # Pre-requisites
 
+1. Minimum of 2 AWS accounts (one for root domain stack and atleast one for sub domain stack)
+1. A registered domain name
 1. **AWS CLI v2:** with AWS credentials configured (See steps [here](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html#getting_started_prerequisites))
 1. **AWS CDK (v. 2.2.0 or higher):** for infrastructure and code deployment (See installation steps [here](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html#getting_started_install)
 
