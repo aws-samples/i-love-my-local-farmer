@@ -86,6 +86,9 @@ export class IlmlfE2ETestStack extends Stack {
 
     const buildFilePath = 'target/zip-with-dependencies.zip';
     const codebuild = new aws_codebuild.PipelineProject(this, 'MyProject', {
+      environment: {
+        buildImage: aws_codebuild.LinuxBuildImage.AMAZON_LINUX_2_4
+      },
       buildSpec: aws_codebuild.BuildSpec.fromObject({
         version: '0.2',
         artifacts: {
