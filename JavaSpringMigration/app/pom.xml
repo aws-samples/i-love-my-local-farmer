@@ -11,6 +11,7 @@
 
 	<properties>
 		<springframework.version>6.0.15</springframework.version>
+
 		<hibernate.version>5.4.24.Final</hibernate.version>
 		<mysql.version>8.0.28</mysql.version>
 	</properties>
